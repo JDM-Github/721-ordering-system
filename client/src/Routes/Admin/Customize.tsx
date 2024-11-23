@@ -39,14 +39,10 @@ const CustomizationPage: React.FC = () => {
 	const [selectedSize, setSelectedSize] = useState<string | null>(null);
 	const [logo, setLogo] = useState<File | string | null>(null);
 	const [product, setProduct] = useState<Product | null>(null);
-	const [logoPosition, setLogoPosition] = useState({
-		x: 0,
-		y: 0,
-	});
-	const [logoPositionPixel, setLogoPositionPixel] = useState({
-		x: 0,
-		y: 0,
-	});
+
+	const xyState = { x: 0, y: 0 };
+	const [logoPosition, setLogoPosition] = useState(xyState);
+	const [logoPositionPixel, setLogoPositionPixel] = useState(xyState);
 
 	const saveData = async () => {
 		const id = product?.id;

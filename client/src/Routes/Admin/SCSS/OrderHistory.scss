@@ -1,0 +1,84 @@
+/* Tailwind CSS for Order History */
+.order-history-table {
+	font-size: 16px;
+	color: #333;
+	border-collapse: collapse;
+}
+
+.order-history-table .tabulator {
+	background-color: #fff;
+	border-radius: 8px;
+	box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.order-history-table .tabulator-header {
+	background-color: #ff6f00; /* Orange color */
+	color: #fff;
+	font-weight: bold;
+	text-transform: uppercase;
+}
+
+.order-history-table .tabulator-cell {
+	padding: 12px;
+	text-align: left;
+}
+
+.order-history-table .tabulator-row {
+	border-bottom: 1px solid #ddd;
+}
+
+.order-history-table .tabulator-row:hover {
+	background-color: #ffecd5; /* Light orange background on hover */
+	cursor: pointer;
+}
+
+.order-history-table .view-btn {
+	padding: 8px 16px;
+	background-color: #ff6f00;
+	color: white;
+	border: none;
+	border-radius: 5px;
+	cursor: pointer;
+	transition: background-color 0.3s;
+}
+
+.order-history-table .view-btn:hover {
+	background-color: #e65100; /* Darker orange on hover */
+}
+
+input {
+	padding: 12px;
+	border: 2px solid #ddd;
+	border-radius: 6px;
+	width: 100%;
+	font-size: 16px;
+}
+
+input:focus {
+	border-color: #ff6f00;
+	box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.1);
+}
+
+button {
+	background-color: #ff6f00;
+	padding: 12px 20px;
+	color: white;
+	font-size: 16px;
+	border-radius: 5px;
+	border: none;
+	cursor: pointer;
+}
+
+button:hover {
+	background-color: #e65100; /* Darker orange */
+}
+
+/* Pagination controls */
+.tabulator .tabulator-paginator .pagination-button {
+	background-color: #ff6f00;
+	color: white;
+}
+
+.tabulator .tabulator-paginator .pagination-button:hover {
+	background-color: #e65100;
+}

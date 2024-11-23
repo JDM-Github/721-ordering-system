@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { toast } from "react-toastify";
-import RequestHandler from "../Routes/Functions/RequestHandler";
+import RequestHandler from "../Functions/RequestHandler";
 
 function ChangePasswordModal({ onClose, userData, setUserData }) {
 	const [passwordData, setPasswordData] = useState({

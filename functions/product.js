@@ -189,6 +189,27 @@ router.get("/get-all-product", async (req, res) => {
 	}
 });
 
+router.post("/get-all-order", async (req, res) => {
+	try {
+		const products = await OrderProduct.findAll({
+			include: [
+				{
+					model: Product,
+					attributes: ["productName", "price"],
+				},
+			],
+		});
+		res.status(200).json({ success: true, products });
+	} catch (error) {
+		console.error(error);
+		res.status(500).json({
+			success: false,
+			message: "Failed to fetch orders",
+			error: error.message,
+		});
+	}
+});
+
 router.get("/get-all-product-customizable", async (req, res) => {
 	try {
 		const { status } = req.query;
@@ -204,7 +225,6 @@ router.get("/get-all-product-customizable", async (req, res) => {
 		});
 	}
 });
-
 
 router.get("/get-product", async (req, res) => {
 	try {

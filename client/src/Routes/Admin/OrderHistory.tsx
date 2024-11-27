@@ -1,44 +1,68 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { ReactTabulator } from "react-tabulator"; // import Tabulator
 import "react-tabulator/lib/styles.css"; // import Tabulator styles
 import "react-tabulator/lib/css/bootstrap/tabulator_bootstrap.min.css"; // optional, if you want to use the bootstrap theme
+import RequestHandler from "../../Functions/RequestHandler";
+import { toast } from "react-toastify";
 
 // Sample order data
 const orderData = [
-	{
-		id: 1,
-		itemName: "BB Top",
-		quantity: 2,
-		size: "M",
-		price: "$29.99",
-		status: "Shipped",
-		notes: "N/A",
-	},
-	{
-		id: 2,
-		itemName: "Jacket",
-		quantity: 1,
-		size: "L",
-		price: "$49.99",
-		status: "Pending",
-		notes: "Custom design",
-	},
-	{
-		id: 3,
-		itemName: "T-shirt",
-		quantity: 3,
-		size: "S",
-		price: "$19.99",
-		status: "Delivered",
-		notes: "Urgent delivery",
-	},
+	// {
+	// 	id: 1,
+	// 	itemName: "BB Top",
+	// 	quantity: 2,
+	// 	size: "M",
+	// 	price: "$29.99",
+	// 	status: "Shipped",
+	// 	notes: "N/A",
+	// },
+	// {
+	// 	id: 2,
+	// 	itemName: "Jacket",
+	// 	quantity: 1,
+	// 	size: "L",
+	// 	price: "$49.99",
+	// 	status: "Pending",
+	// 	notes: "Custom design",
+	// },
+	// {
+	// 	id: 3,
+	// 	itemName: "T-shirt",
+	// 	quantity: 3,
+	// 	size: "S",
+	// 	price: "$19.99",
+	// 	status: "Delivered",
+	// 	notes: "Urgent delivery",
+	// },
 	// Add more sample data as needed
 ];
 
 const OrderHistory = () => {
 	const [orders, setOrders] = useState(orderData);
 
-	// Configure Tabulator columns
+	const loadRequest = async () => {
+		try {
+			const data = await RequestHandler.handleRequest(
+				"post",
+				"product/get-all-order",
+				{}
+			);
+			if (data.success) {
+				// setOrders(data);
+			} else {
+				toast.error(data.message || "Unable to load order history");
+				return;
+			}
+		} catch (error) {
+			toast.error(error.message || "Unable to load order history");
+			return;
+		}
+	};
+
+	useEffect(() => {
+		loadRequest();
+	});
+
 	const columns = [
 		{
 			title: "Order ID",
@@ -50,7 +74,7 @@ const OrderHistory = () => {
 		},
 		{
 			title: "Item Name",
-			field: "itemName",
+			field: "Product.productName",
 			width: 200,
 			headerHozAlign: "center",
 			hozAlign: "center",
@@ -65,14 +89,14 @@ const OrderHistory = () => {
 		},
 		{
 			title: "Size",
-			field: "size",
+			field: "customization.size",
 			width: 100,
 			headerHozAlign: "center",
 			hozAlign: "center",
 		},
 		{
 			title: "Price",
-			field: "price",
+			field: "customization.price",
 			width: 100,
 			sorter: "number",
 			headerHozAlign: "center",
@@ -87,7 +111,7 @@ const OrderHistory = () => {
 		},
 		{
 			title: "Notes",
-			field: "notes",
+			field: "customization.notes",
 			width: 200,
 			headerHozAlign: "center",
 			hozAlign: "center",
@@ -97,7 +121,6 @@ const OrderHistory = () => {
 			field: "action",
 			width: 150,
 			formatter: (cell) => {
-				// Create a View button and add event listener to call viewOrder
 				const button = document.createElement("button");
 				button.classList.add(
 					"view-btn",
@@ -110,7 +133,7 @@ const OrderHistory = () => {
 					"transition-all"
 				);
 				button.innerText = "View";
-				button.onclick = () => viewOrder(cell.getRow().getData().id); // Call viewOrder on button click
+				button.onclick = () => viewOrder(cell.getRow().getData().id);
 				return button;
 			},
 			headerHozAlign: "center",

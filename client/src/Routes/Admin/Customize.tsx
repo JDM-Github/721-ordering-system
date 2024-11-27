@@ -3,6 +3,7 @@ import RequestHandler from "../../Functions/RequestHandler";
 import { useLocation, useNavigate } from "react-router-dom";
 import { saveAs } from "file-saver";
 import { toast } from "react-toastify";
+import { CirclePicker, ChromePicker } from "react-color";
 import ProductImageWithLogo from "../../Component/ProductImageWithLogo.tsx";
 
 interface Product {
@@ -43,6 +44,8 @@ const CustomizationPage: React.FC = () => {
 	const xyState = { x: 0, y: 0 };
 	const [logoPosition, setLogoPosition] = useState(xyState);
 	const [logoPositionPixel, setLogoPositionPixel] = useState(xyState);
+	const [logoHeight, setLogoHeight] = useState(100);
+	const [logoWidth, setLogoWidth] = useState(100);
 
 	const saveData = async () => {
 		const id = product?.id;
@@ -100,6 +103,8 @@ const CustomizationPage: React.FC = () => {
 			logoPosition,
 			logoPositionPixel,
 			logo: logoURL,
+			width: logoWidth,
+			height: logoHeight,
 		};
 
 		try {
@@ -220,6 +225,8 @@ const CustomizationPage: React.FC = () => {
 			logoPosition,
 			logoPositionPixel,
 			logo: logoURL,
+			width: logoWidth,
+			height: logoHeight,
 		};
 
 		try {
@@ -344,6 +351,8 @@ const CustomizationPage: React.FC = () => {
 						setLogoPosition={setLogoPosition}
 						logoPositionPixel={logoPositionPixel}
 						setLogoPositionPixel={setLogoPositionPixel}
+						width={`${logoWidth}px`}
+						height={`${logoHeight}px`}
 					/>
 
 					<div className="flex flex-col justify-between">
@@ -352,53 +361,16 @@ const CustomizationPage: React.FC = () => {
 								<h3 className="text-xl font-semibold text-gray-700 mb-2">
 									Select Color
 								</h3>
-								<div className="flex space-x-2">
-									{product?.availableColors.map(
-										(colorOption) => (
-											<button
-												key={colorOption}
-												onClick={() =>
-													handleColorChange(
-														colorOption
-													)
-												}
-												className={`px-4 py-2 rounded-lg border ${
-													color === colorOption
-														? "bg-orange-500 text-white border-orange-500"
-														: "bg-white text-gray-800 border-gray-300 hover:border-orange-500"
-												} transition duration-200`}
-											>
-												{colorOption}
-											</button>
-										)
-									)}
+								<div>
+									<ChromePicker
+										color={color} // Current selected color
+										onChange={(updatedColor) =>
+											handleColorChange(updatedColor.hex)
+										} // Update on color change
+										disableAlpha // Remove alpha slider if not needed
+									/>
 								</div>
 							</div>
-
-							{/* <div>
-								<h3 className="text-xl font-semibold text-gray-700 mb-2">
-									Select Pattern
-								</h3>
-								<div className="flex space-x-2">
-									{product?.patterns.map((patternOption) => (
-										<button
-											key={patternOption}
-											onClick={() =>
-												handlePatternChange(
-													patternOption
-												)
-											}
-											className={`px-4 py-2 rounded-lg border ${
-												pattern === patternOption
-													? "bg-orange-500 text-white border-orange-500"
-													: "bg-white text-gray-800 border-gray-300 hover:border-orange-500"
-											} transition duration-200`}
-										>
-											{patternOption}
-										</button>
-									))}
-								</div>
-							</div> */}
 
 							<div className="mb-8">
 								<h3 className="text-xl font-semibold text-gray-700 mb-3">
@@ -465,6 +437,27 @@ const CustomizationPage: React.FC = () => {
 										className="w-[30%] h-[30%] object-contain py-2"
 									/>
 								)}
+							</div>
+
+							<div className="flex flex-col space-y-4">
+								<input
+									type="text"
+									placeholder="Enter Width"
+									value={logoWidth}
+									onChange={(e) =>
+										setLogoWidth(parseInt(e.target.value))
+									}
+									className="p-3 border border-gray-300 rounded-lg"
+								/>
+								<input
+									type="text"
+									placeholder="Enter Width"
+									value={logoHeight}
+									onChange={(e) =>
+										setLogoHeight(parseInt(e.target.value))
+									}
+									className="p-3 border border-gray-300 rounded-lg"
+								/>
 							</div>
 
 							<div className="flex flex-col space-y-2">

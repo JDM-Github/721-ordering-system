@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { FaShoppingCart, FaUserCircle, FaTshirt } from "react-icons/fa";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
+const image = require("../../Assets/icon.jpeg");
 
 function Navigation({ setUser, user }) {
 	const navigate = useNavigate();
@@ -11,7 +12,11 @@ function Navigation({ setUser, user }) {
 	return (
 		<header className="bg-orange-500 text-white p-2 px-5 lg:px-20 flex justify-between items-center shadow-lg">
 			<div className="flex items-center space-x-3">
-				<FaTshirt className="w-8 h-8 text-gray-800" />
+				<img
+					src={image}
+					alt="Custom Icon"
+					className="w-8 h-8 object-contain"
+				/>
 				<div className="text-2xl font-bold text-gray-800">
 					<Link to="/" className="flex items-center">
 						721&nbsp;

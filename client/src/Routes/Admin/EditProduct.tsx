@@ -3,6 +3,7 @@ import RequestHandler from "../../Functions/RequestHandler";
 import { useLocation, useNavigate } from "react-router-dom";
 import { saveAs } from "file-saver";
 import { toast } from "react-toastify";
+import { CirclePicker, ChromePicker } from "react-color";
 import ProductImageWithLogo from "../../Component/ProductImageWithLogo.tsx";
 
 interface Product {
@@ -55,6 +56,8 @@ export default function EditPageRoute() {
 	const [logoPositionPixel, setLogoPositionPixel] = useState(
 		order.customization.logoPositionPixel
 	);
+	const [logoHeight, setLogoHeight] = useState(order.customization.height);
+	const [logoWidth, setLogoWidth] = useState(order.customization.width);
 
 	const saveData = async () => {
 		const id = product?.id;
@@ -112,6 +115,8 @@ export default function EditPageRoute() {
 			logoPosition,
 			logoPositionPixel,
 			logo: logoURL,
+			width: logoWidth,
+			height: logoHeight,
 		};
 
 		try {
@@ -226,6 +231,8 @@ export default function EditPageRoute() {
 			logoPosition,
 			logoPositionPixel,
 			logo: logoURL,
+			width: logoWidth,
+			height: logoHeight,
 		};
 
 		try {
@@ -319,6 +326,8 @@ export default function EditPageRoute() {
 						setLogoPosition={setLogoPosition}
 						logoPositionPixel={logoPositionPixel}
 						setLogoPositionPixel={setLogoPositionPixel}
+						width={`${logoWidth}px`}
+						height={`${logoHeight}px`}
 					/>
 
 					<div className="flex flex-col justify-between">
@@ -327,26 +336,14 @@ export default function EditPageRoute() {
 								<h3 className="text-xl font-semibold text-gray-700 mb-2">
 									Select Color
 								</h3>
-								<div className="flex space-x-2">
-									{product?.availableColors.map(
-										(colorOption) => (
-											<button
-												key={colorOption}
-												onClick={() =>
-													handleColorChange(
-														colorOption
-													)
-												}
-												className={`px-4 py-2 rounded-lg border ${
-													color === colorOption
-														? "bg-orange-500 text-white border-orange-500"
-														: "bg-white text-gray-800 border-gray-300 hover:border-orange-500"
-												} transition duration-200`}
-											>
-												{colorOption}
-											</button>
-										)
-									)}
+								<div>
+									<ChromePicker
+										color={color} // Current selected color
+										onChange={(updatedColor) =>
+											handleColorChange(updatedColor.hex)
+										} // Update on color change
+										disableAlpha // Remove alpha slider if not needed
+									/>
 								</div>
 							</div>
 
@@ -440,6 +437,27 @@ export default function EditPageRoute() {
 										className="w-[30%] h-[30%] object-contain py-2"
 									/>
 								)}
+							</div>
+
+							<div className="flex flex-col space-y-4">
+								<input
+									type="text"
+									placeholder="Enter Width"
+									value={logoWidth}
+									onChange={(e) =>
+										setLogoWidth(parseInt(e.target.value))
+									}
+									className="p-3 border border-gray-300 rounded-lg"
+								/>
+								<input
+									type="text"
+									placeholder="Enter Width"
+									value={logoHeight}
+									onChange={(e) =>
+										setLogoHeight(parseInt(e.target.value))
+									}
+									className="p-3 border border-gray-300 rounded-lg"
+								/>
 							</div>
 
 							<div className="flex flex-col space-y-2">

@@ -7,6 +7,8 @@ export default function ProductImageWithLogo({
 	setLogoPosition,
 	logoPositionPixel,
 	setLogoPositionPixel,
+	width,
+	height,
 }) {
 	const containerRef = useRef<HTMLImageElement | null>(null);
 	const [isDragging, setIsDragging] = useState(false);
@@ -91,7 +93,7 @@ export default function ProductImageWithLogo({
 							: "https://placehold.co/600x400"
 					}
 					alt={product?.productName}
-					className="w-full h-full object-cover rounded-lg"
+					className="w-full h-full object-fill rounded-lg"
 				/>
 				{logo && (
 					<img
@@ -104,8 +106,8 @@ export default function ProductImageWithLogo({
 						className="rounded-lg absolute cursor-move"
 						style={{
 							...getLogoPositionStyle(),
-							width: "100px",
-							height: "100px",
+							width: width,
+							height: height,
 						}}
 						onMouseDown={handleMouseDown}
 					/>

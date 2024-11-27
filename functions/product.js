@@ -81,7 +81,6 @@ router.post("/edit-to-cart", async (req, res) => {
 			});
 			return;
 		}
-
 		await order.update({ customization, quantity });
 		res.status(201).json({ success: true, order });
 	} catch (error) {

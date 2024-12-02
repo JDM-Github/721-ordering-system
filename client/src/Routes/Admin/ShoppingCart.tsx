@@ -44,7 +44,9 @@ const ShoppingCart: React.FC = () => {
 			// toast.error("Please login to get cart products.");
 			return;
 		}
-		const toastId = toast.loading("Loading all cart products.");
+		const toastId = toast.loading("Loading all cart products.", {
+			position: "top-center",
+		});
 		try {
 			const data = await RequestHandler.handleRequest(
 				"post",
@@ -60,6 +62,7 @@ const ShoppingCart: React.FC = () => {
 					type: "success",
 					isLoading: false,
 					autoClose: 3000,
+					position: "top-center",
 				});
 			} else {
 				toast.update(toastId, {
@@ -76,6 +79,7 @@ const ShoppingCart: React.FC = () => {
 				type: "error",
 				isLoading: false,
 				autoClose: 3000,
+				position: "top-center",
 			});
 			return;
 		}

@@ -37,7 +37,9 @@ const Login = ({ setUser }) => {
 	};
 
 	const login = async () => {
-		const pendingToastId = toast.loading("Logging in...");
+		const pendingToastId = toast.loading("Logging in...", {
+			position: "top-center",
+		});
 
 		try {
 			const data = await RequestHandler.handleRequest(
@@ -55,6 +57,7 @@ const Login = ({ setUser }) => {
 					type: "error",
 					isLoading: false,
 					autoClose: 3000,
+					position: "top-center",
 				});
 			} else {
 				localStorage.setItem("user", JSON.stringify(data.user));
@@ -65,6 +68,7 @@ const Login = ({ setUser }) => {
 					type: "success",
 					isLoading: false,
 					autoClose: 3000,
+					position: "top-center",
 				});
 			}
 		} catch (error) {
@@ -73,6 +77,7 @@ const Login = ({ setUser }) => {
 				type: "error",
 				isLoading: false,
 				autoClose: 3000,
+				position: "top-center",
 			});
 		}
 	};

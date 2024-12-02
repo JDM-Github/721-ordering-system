@@ -1,58 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom"; // Assuming you're using react-router-dom
 import RequestHandler from "../../Functions/RequestHandler";
-
-// Sample product data for customizable products
-// const products = [
-// 	{
-// 		id: 1,
-// 		name: "BB Top",
-// 		price: "$29.99",
-// 		image: "https://via.placeholder.com/200x200/FF5733/FFFFFF?text=BB+Top",
-// 	},
-// 	{
-// 		id: 2,
-// 		name: "BB Bottom",
-// 		price: "$34.99",
-// 		image: "https://via.placeholder.com/200x200/33A1FF/FFFFFF?text=BB+Bottom",
-// 	},
-// 	{
-// 		id: 3,
-// 		name: "Jacket",
-// 		price: "$49.99",
-// 		image: "https://via.placeholder.com/200x200/FF33A1/FFFFFF?text=Jacket",
-// 	},
-// 	{
-// 		id: 4,
-// 		name: "Collared Shirt",
-// 		price: "$39.99",
-// 		image: "https://via.placeholder.com/200x200/33FF57/FFFFFF?text=Collared+Shirt",
-// 	},
-// 	{
-// 		id: 5,
-// 		name: "Hoodie",
-// 		price: "$59.99",
-// 		image: "https://via.placeholder.com/200x200/FFD700/FFFFFF?text=Hoodie",
-// 	},
-// 	{
-// 		id: 6,
-// 		name: "Shorts",
-// 		price: "$24.99",
-// 		image: "https://via.placeholder.com/200x200/8A2BE2/FFFFFF?text=Shorts",
-// 	},
-// 	{
-// 		id: 7,
-// 		name: "Sports Pants",
-// 		price: "$39.99",
-// 		image: "https://via.placeholder.com/200x200/20B2AA/FFFFFF?text=Sports+Pants",
-// 	},
-// 	{
-// 		id: 8,
-// 		name: "Windbreaker",
-// 		price: "$69.99",
-// 		image: "https://via.placeholder.com/200x200/DC143C/FFFFFF?text=Windbreaker",
-// 	},
-// ];
+import { toast } from "react-toastify";
 
 interface Product {
 	id: string;
@@ -79,17 +28,15 @@ function CustomizeSection() {
 			);
 			setLoading(false);
 			if (data.success === false) {
-				// toast.error(
-				// 	data.message ||
-				// 		"Error occurred. Please check your credentials."
-				// );
 				alert(JSON.stringify(data));
 			} else {
 				setProducts(data.products);
 				// getChatHistory();
 			}
 		} catch (error) {
-			// toast.error(`An error occurred while archiving data. ${error}`);
+			toast.error(`An error occurred while archiving data. ${error}`, {
+				position: "top-center",
+			});
 		}
 	};
 	useEffect(() => {

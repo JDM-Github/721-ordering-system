@@ -7,14 +7,14 @@ const { Op } = require("sequelize");
 router.post("/register", async (req, res) => {
 	try {
 		const {
-			username,
-			email,
-			password,
 			firstName,
 			lastName,
 			middleName,
+			email,
+			username,
 			address,
 			contactNumber,
+			password,
 		} = req.body;
 
 		const existingUser = await User.findOne({
@@ -32,14 +32,14 @@ router.post("/register", async (req, res) => {
 
 		const hashedPassword = await bcrypt.hash(password, 10);
 		const newUser = await User.create({
-			username,
-			email,
-			password: hashedPassword,
 			firstName,
 			lastName,
 			middleName,
+			email,
+			username,
 			address,
 			contactNumber,
+			password: hashedPassword,
 		});
 
 		return res.send({

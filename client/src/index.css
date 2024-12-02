@@ -2,6 +2,10 @@
 @tailwind components;
 @tailwind utilities;
 
+.view-order-btn {
+	@apply bg-red-600 text-white py-2 px-4 rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500;
+}
+
 /* body {
 	margin: 0;
 	font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto",
@@ -20,4 +24,27 @@ code {
 */
 * {
 	user-select: none;
+}
+
+.scrollbar-thin {
+	scrollbar-width: thin;
+}
+
+.scrollbar-thin::-webkit-scrollbar {
+	width: 5px;
+	height: 5px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb {
+	background: transparent;
+	border-radius: 3px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb:hover {
+	background: #9ca3af;
+}
+
+.scrollbar-thin::-webkit-scrollbar-track {
+	background: #f3f4f6;
+	border-radius: 3px;
 }

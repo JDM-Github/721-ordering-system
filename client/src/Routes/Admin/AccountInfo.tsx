@@ -39,7 +39,9 @@ function AccountInfo({ userData, setUserData }) {
 			contactNumber: formData.contactNumber,
 		};
 
-		const pendingToastId = toast.loading("Updating your account...");
+		const pendingToastId = toast.loading("Updating your account...", {
+			position: "top-center",
+		});
 		try {
 			const data = await RequestHandler.handleRequest(
 				"post",
@@ -53,6 +55,7 @@ function AccountInfo({ userData, setUserData }) {
 					type: "error",
 					isLoading: false,
 					autoClose: 3000,
+					position: "top-center",
 				});
 			} else {
 				localStorage.setItem("user", JSON.stringify(data.user));
@@ -62,6 +65,7 @@ function AccountInfo({ userData, setUserData }) {
 					type: "success",
 					isLoading: false,
 					autoClose: 3000,
+					position: "top-center",
 				});
 			}
 		} catch (error) {
@@ -70,6 +74,7 @@ function AccountInfo({ userData, setUserData }) {
 				type: "error",
 				isLoading: false,
 				autoClose: 3000,
+				position: "top-center",
 			});
 		}
 	};

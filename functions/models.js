@@ -106,6 +106,14 @@ const User = sequelize.define("User", {
 const OrderProduct = sequelize.define(
 	"OrderProduct",
 	{
+		userId: {
+			type: DataTypes.INTEGER,
+			references: {
+				model: "Users",
+				key: "id",
+			},
+			onDelete: "CASCADE",
+		},
 		productId: {
 			type: DataTypes.INTEGER,
 			references: {

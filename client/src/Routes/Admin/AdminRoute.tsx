@@ -7,7 +7,7 @@ import RegistrationPage from "./RegistrationPage.tsx";
 import LoginPage from "./LoginPage.tsx";
 import Footer from "./Footer.tsx";
 
-import { ToastContainer } from "react-toastify";
+import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 import ShoppingCart from "./ShoppingCart.tsx";
@@ -57,7 +57,10 @@ export default function AdminRoute({ className }) {
 							/>
 						}
 					/>
-					<Route path="/history" element={<OrderHistory />} />
+					<Route
+						path="/history"
+						element={<OrderHistory user={user} />}
+					/>
 					{/* <Route index path="/login" element={<AdminLogin />} />
 					<Route index path="/users" element={<Users />} />
 					<Route index path="/orders" element={<Orders />} /> */}

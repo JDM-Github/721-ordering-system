@@ -1,54 +1,44 @@
 import React, { useEffect, useState } from "react";
-import { ReactTabulator } from "react-tabulator"; // import Tabulator
-import "react-tabulator/lib/styles.css"; // import Tabulator styles
-import "react-tabulator/lib/css/bootstrap/tabulator_bootstrap.min.css"; // optional, if you want to use the bootstrap theme
 import RequestHandler from "../../Functions/RequestHandler";
+import { DataGrid } from "@mui/x-data-grid";
+import { Button } from "@mui/material";
+import { createTheme, ThemeProvider } from "@mui/material/styles";
+import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 
-// Sample order data
-const orderData = [
-	// {
-	// 	id: 1,
-	// 	itemName: "BB Top",
-	// 	quantity: 2,
-	// 	size: "M",
-	// 	price: "$29.99",
-	// 	status: "Shipped",
-	// 	notes: "N/A",
-	// },
-	// {
-	// 	id: 2,
-	// 	itemName: "Jacket",
-	// 	quantity: 1,
-	// 	size: "L",
-	// 	price: "$49.99",
-	// 	status: "Pending",
-	// 	notes: "Custom design",
-	// },
-	// {
-	// 	id: 3,
-	// 	itemName: "T-shirt",
-	// 	quantity: 3,
-	// 	size: "S",
-	// 	price: "$19.99",
-	// 	status: "Delivered",
-	// 	notes: "Urgent delivery",
-	// },
-	// Add more sample data as needed
-];
+const OrderHistory = ({ user }) => {
+	const [orders, setOrders] = useState([]);
+	const navigate = useNavigate();
 
-const OrderHistory = () => {
-	const [orders, setOrders] = useState(orderData);
+	const handleViewOrder = (order) => {
+		navigate("/view-design", {
+			state: {
+				order: order.productData,
+				orders: null,
+			},
+		});
+	};
 
 	const loadRequest = async () => {
 		try {
 			const data = await RequestHandler.handleRequest(
 				"post",
 				"product/get-all-order",
-				{}
+				{ userId: user?.id }
 			);
 			if (data.success) {
-				// setOrders(data);
+				const ord = data.products.map((product) => ({
+					id: product.id,
+					productName: product.Product.productName,
+					price: product.Product.price,
+					quantity: product.quantity,
+					color: product.customization.color,
+					size: product.customization.selectedSize,
+					pattern: product.customization.pattern,
+					createdAt: new Date(product.createdAt).toLocaleDateString(),
+					productData: product,
+				}));
+				setOrders(ord);
 			} else {
 				toast.error(data.message || "Unable to load order history");
 				return;
@@ -58,112 +48,78 @@ const OrderHistory = () => {
 			return;
 		}
 	};
-
 	useEffect(() => {
 		loadRequest();
-	});
+	}, []);
 
 	const columns = [
+		{ field: "id", headerName: "Order ID" },
+		{ field: "productName", headerName: "Product Name" },
+		{ field: "price", headerName: "Price" },
+		{ field: "quantity", headerName: "Quantity" },
+		{ field: "color", headerName: "Color" },
+		{ field: "size", headerName: "Size" },
+		{ field: "pattern", headerName: "Pattern" },
+		{ field: "createdAt", headerName: "Order Date" },
 		{
-			title: "Order ID",
-			field: "id",
-			width: 100,
-			sorter: "number",
-			headerHozAlign: "center",
-			hozAlign: "center",
-		},
-		{
-			title: "Item Name",
-			field: "Product.productName",
-			width: 200,
-			headerHozAlign: "center",
-			hozAlign: "center",
-		},
-		{
-			title: "Quantity",
-			field: "quantity",
-			width: 100,
-			sorter: "number",
-			headerHozAlign: "center",
-			hozAlign: "center",
-		},
-		{
-			title: "Size",
-			field: "customization.size",
-			width: 100,
-			headerHozAlign: "center",
-			hozAlign: "center",
-		},
-		{
-			title: "Price",
-			field: "customization.price",
-			width: 100,
-			sorter: "number",
-			headerHozAlign: "center",
-			hozAlign: "center",
-		},
-		{
-			title: "Status",
-			field: "status",
-			width: 120,
-			headerHozAlign: "center",
-			hozAlign: "center",
-		},
-		{
-			title: "Notes",
-			field: "customization.notes",
-			width: 200,
-			headerHozAlign: "center",
-			hozAlign: "center",
-		},
-		{
-			title: "Action",
-			field: "action",
-			width: 150,
-			formatter: (cell) => {
-				const button = document.createElement("button");
-				button.classList.add(
-					"view-btn",
-					"text-white",
-					"bg-orange-500",
-					"py-2",
-					"px-4",
-					"rounded-lg",
-					"hover:bg-orange-600",
-					"transition-all"
-				);
-				button.innerText = "View";
-				button.onclick = () => viewOrder(cell.getRow().getData().id);
-				return button;
-			},
-			headerHozAlign: "center",
-			hozAlign: "center",
+			field: "actions",
+			headerName: "Actions",
+			renderCell: (params) => (
+				<Button
+					variant="contained"
+					color="primary"
+					onClick={() => handleViewOrder(params.row)}
+					style={{ backgroundColor: "#FFA500" }}
+				>
+					View Order
+				</Button>
+			),
 		},
 	];
 
-	const viewOrder = (id) => {
-		alert(`Viewing order with ID: ${id}`);
-	};
+	const theme = createTheme({
+		palette: {
+			primary: {
+				main: "#FFA500",
+			},
+			background: {
+				default: "#F5F5F5",
+			},
+		},
+		typography: {
+			fontFamily: "'Roboto', sans-serif",
+		},
+	});
 
 	return (
-		<div className="container mx-auto px-20 h-[100vh] py-8">
-			<h1 className="text-3xl font-bold mb-6">Order History</h1>
-
-			<ReactTabulator
-				data={orders}
-				columns={columns}
-				layout="fitDataFill"
-				options={{
-					pagination: "local",
-					paginationSize: 5,
-					paginationSizeSelector: [5, 10, 20],
-					placeholder: "No orders available",
-					responsiveLayout: "hide",
-					theme: "bootstrap",
-				}}
-				className="order-history-table w-full rounded-lg shadow-lg border border-gray-200"
-			/>
-		</div>
+		<ThemeProvider theme={theme}>
+			<div className="flex justify-center  w-full min-h-[80vh] p-4">
+				<div className="bg-white shadow-lg rounded-lg p-4">
+					<DataGrid
+						rows={orders}
+						columns={columns}
+						checkboxSelection
+						style={{ borderRadius: "8px" }}
+						sx={{
+							"& .MuiDataGrid-root": {
+								border: "none",
+							},
+							"& .MuiDataGrid-columnHeaders": {
+								backgroundColor: "#FFA500",
+								color: "black",
+							},
+							"& .MuiDataGrid-cell": {
+								borderBottom: "1px solid #f1f1f1",
+							},
+							"& .MuiDataGrid-footerContainer": {
+								backgroundColor: "#FFF",
+								borderTop: "1px solid #f1f1f1",
+							},
+						}}
+					/>
+				</div>
+			</div>
+		</ThemeProvider>
 	);
 };
 

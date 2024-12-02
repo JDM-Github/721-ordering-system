@@ -9,10 +9,14 @@ export default function ClientRoute() {
 	return (
 		<>
 			<div className="min-h-screen bg-gray-100 flex">
-				<div className="w-1/4 bg-gradient-to-tl from-orange-500 via-orange-600 to-orange-700 text-white p-6 flex flex-col">
-					<div className="flex items-center mb-6">
-						<div className="w-12 h-12 bg-white rounded-full flex justify-center items-center">
-							<span className="text-3xl font-semibold">A</span>
+				{/* Sidebar */}
+				<div className="w-1/5 bg-gradient-to-tl from-orange-500 via-orange-600 to-orange-700 text-white p-6 flex flex-col shadow-lg rounded-lg">
+					{/* Admin Profile */}
+					<div className="flex items-center mb-8">
+						<div className="w-14 h-14 bg-white rounded-full flex justify-center items-center shadow-lg">
+							<span className="text-2xl font-semibold text-orange-600">
+								A
+							</span>
 						</div>
 						<div className="ml-4">
 							<h2 className="text-xl font-bold">ADMINISTRATOR</h2>
@@ -21,71 +25,135 @@ export default function ClientRoute() {
 							</p>
 						</div>
 					</div>
-
-					<div className="mt-8">
-						<h3 className="text-lg font-semibold mb-4">
+					{/* Navigation */}
+					<div className="mt-4">
+						<h3 className="text-lg font-semibold mb-6 text-gray-200">
 							Navigation
 						</h3>
-						<ul className="space-y-4">
+						<ul className="space-y-5">
+							{/* Dashboard Link */}
 							<li>
 								<NavLink
 									to="/admin/dashboard"
 									className={({ isActive }) =>
-										`block py-2 px-4 rounded-md transition duration-200 ${
+										`flex items-center py-3 px-5 rounded-lg transition duration-300 ${
 											isActive
-												? "bg-orange-700 text-white font-semibold"
+												? "bg-orange-800 text-white font-semibold"
 												: "hover:bg-orange-700 hover:text-white"
 										}`
 									}
 								>
+									<svg
+										xmlns="http://www.w3.org/2000/svg"
+										className="w-5 h-5 mr-3"
+										fill="none"
+										viewBox="0 0 24 24"
+										stroke="currentColor"
+									>
+										<path
+											stroke-linecap="round"
+											stroke-linejoin="round"
+											stroke-width="2"
+											d="M3 3h18M3 12h18M3 21h18"
+										/>
+									</svg>
 									Dashboard
 								</NavLink>
 							</li>
+
+							{/* Inventory Link */}
 							<li>
 								<NavLink
-									to="inventory"
+									to="/admin/inventory"
 									className={({ isActive }) =>
-										`block py-2 px-4 rounded-md transition duration-200 ${
+										`flex items-center py-3 px-5 rounded-lg transition duration-300 ${
 											isActive
-												? "bg-orange-700 text-white font-semibold"
+												? "bg-orange-800 text-white font-semibold"
 												: "hover:bg-orange-700 hover:text-white"
 										}`
 									}
 								>
+									<svg
+										xmlns="http://www.w3.org/2000/svg"
+										className="w-5 h-5 mr-3"
+										fill="none"
+										viewBox="0 0 24 24"
+										stroke="currentColor"
+									>
+										<path
+											stroke-linecap="round"
+											stroke-linejoin="round"
+											stroke-width="2"
+											d="M3 3h18M3 12h18M3 21h18"
+										/>
+									</svg>
 									Inventory
 								</NavLink>
 							</li>
+
+							{/* Orders Link */}
 							<li>
 								<NavLink
-									to="history"
+									to="/admin/history"
 									className={({ isActive }) =>
-										`block py-2 px-4 rounded-md transition duration-200 ${
+										`flex items-center py-3 px-5 rounded-lg transition duration-300 ${
 											isActive
-												? "bg-orange-700 text-white font-semibold"
+												? "bg-orange-800 text-white font-semibold"
 												: "hover:bg-orange-700 hover:text-white"
 										}`
 									}
 								>
+									<svg
+										xmlns="http://www.w3.org/2000/svg"
+										className="w-5 h-5 mr-3"
+										fill="none"
+										viewBox="0 0 24 24"
+										stroke="currentColor"
+									>
+										<path
+											stroke-linecap="round"
+											stroke-linejoin="round"
+											stroke-width="2"
+											d="M3 3h18M3 12h18M3 21h18"
+										/>
+									</svg>
 									Orders
 								</NavLink>
 							</li>
+
+							{/* Logout Link */}
 							<li>
 								<NavLink
 									to="/"
 									className={({ isActive }) =>
-										`block py-2 px-4 rounded-md transition duration-200 ${
+										`flex items-center py-3 px-5 rounded-lg transition duration-300 ${
 											isActive
-												? "bg-orange-700 text-white font-semibold"
+												? "bg-orange-800 text-white font-semibold"
 												: "hover:bg-orange-700 hover:text-white"
 										}`
 									}
 								>
+									<svg
+										xmlns="http://www.w3.org/2000/svg"
+										className="w-5 h-5 mr-3"
+										fill="none"
+										viewBox="0 0 24 24"
+										stroke="currentColor"
+									>
+										<path
+											stroke-linecap="round"
+											stroke-linejoin="round"
+											stroke-width="2"
+											d="M17 9l4 4m0 0l-4 4m4-4H7"
+										/>
+									</svg>
 									Logout
 								</NavLink>
 							</li>
 						</ul>
 					</div>
 				</div>
+
 				<Routes>
 					<Route index path="/dashboard" element={<Dashboard />} />
 					<Route path="/inventory" element={<Inventory />} />

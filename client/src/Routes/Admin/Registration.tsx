@@ -1,5 +1,7 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
+import RequestHandler from "../../Functions/RequestHandler";
 
 interface FormRegister {
 	firstName: string;
@@ -18,6 +20,7 @@ interface FormErrors {
 }
 
 const Register: React.FC = () => {
+	const navigate = useNavigate();
 	const [formData, setFormData] = useState<FormRegister>({
 		firstName: "",
 		lastName: "",
@@ -32,13 +35,62 @@ const Register: React.FC = () => {
 
 	const [errors, setErrors] = useState<FormErrors>({});
 
-	// Handle form input changes
 	const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 		const { name, value } = e.target;
 		setFormData((prevData) => ({
 			...prevData,
 			[name]: value,
 		}));
+	};
+
+	const handleCreateAccount = async () => {
+		const toastId = toast.loading("Creating account...", {
+			position: "top-center",
+		});
+		try {
+			const data = await RequestHandler.handleRequest(
+				"post",
+				"user/register",
+				{
+					firstName: formData.firstName,
+					lastName: formData.lastName,
+					middleName: formData.mi,
+					email: formData.email,
+					username: formData.username,
+					password: formData.password,
+					address: formData.address,
+					contactNumber: formData.contactNo,
+				}
+			);
+
+			if (data.success) {
+				toast.update(toastId, {
+					render: "User created successfully!",
+					type: "success",
+					isLoading: false,
+					autoClose: 3000,
+					position: "top-center",
+				});
+				navigate("/login");
+			} else {
+				toast.update(toastId, {
+					render: data.message,
+					type: "error",
+					isLoading: false,
+					autoClose: 3000,
+					position: "top-center",
+				});
+				return;
+			}
+		} catch (e) {
+			toast.update(toastId, {
+				render: `${e}`,
+				type: "error",
+				isLoading: false,
+				autoClose: 3000,
+				position: "top-center",
+			});
+		}
 	};
 
 	// Validate form fields and set errors
@@ -67,6 +119,7 @@ const Register: React.FC = () => {
 		if (validate()) {
 			console.log("Form submitted:", formData);
 		}
+		handleCreateAccount();
 	};
 
 	return (

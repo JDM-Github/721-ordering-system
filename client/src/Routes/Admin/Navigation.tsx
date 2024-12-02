@@ -67,7 +67,8 @@ function Navigation({ setUser, user }) {
 											setUser({});
 											navigate("/");
 											toast.success(
-												"You have been logged out."
+												"You have been logged out.",
+												{ position: "top-center" }
 											);
 										}}
 									>

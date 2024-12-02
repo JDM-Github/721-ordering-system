@@ -14,6 +14,7 @@ router.post("/add-to-cart", async (req, res) => {
 	try {
 		const { userId, productId, customization, quantity } = req.body;
 		const newOrder = await OrderProduct.create({
+			userId,
 			productId,
 			customization,
 			quantity,
@@ -152,15 +153,23 @@ router.post("/checkout-orders", async (req, res) => {
 
 router.post("/create", async (req, res) => {
 	try {
-		const { productName, price, size, stocks, description, status } =
-			req.body;
-		const newProduct = await Product.create({
+		const {
+			productImage,
 			productName,
 			price,
 			size,
 			stocks,
 			description,
-			status,
+			isCustomizable,
+		} = req.body;
+		const newProduct = await Product.create({
+			productImage,
+			productName,
+			price,
+			size,
+			stocks,
+			description,
+			isCustomizable,
 		});
 		res.status(201).json({ success: true, product: newProduct });
 	} catch (error) {
@@ -189,13 +198,20 @@ router.get("/get-all-product", async (req, res) => {
 	}
 });
 
+// OrderItem;
+
 router.post("/get-all-order", async (req, res) => {
+	const { userId } = req.body;
 	try {
+		const whereClause = {};
+		if (userId !== undefined) whereClause["userId"] = userId;
+		whereClause["status"] = "FINISHED";
 		const products = await OrderProduct.findAll({
+			where: whereClause,
 			include: [
 				{
 					model: Product,
-					attributes: ["productName", "price"],
+					attributes: { exclude: [] },
 				},
 			],
 		});

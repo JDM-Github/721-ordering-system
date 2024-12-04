@@ -12,6 +12,8 @@ import LabelComponent from "../../Component/LabelComponent.tsx";
 interface Product {
 	id: string;
 	productImage: string;
+	productImages: [string];
+	productAllNames: [string];
 	productName: string;
 	price: [number];
 	status: string;
@@ -34,6 +36,7 @@ interface ImageComp {
 	widthPercent: number;
 	heightPercent: number;
 	isActive: boolean;
+	isPattern: boolean;
 }
 
 interface LabelComp {
@@ -72,7 +75,30 @@ const CustomizationPage: React.FC = () => {
 	const [product, setProduct] = useState<Product | null>(null);
 	const [activeImage, setActiveImage] = useState(null);
 
+	const [imagePattern, setImagePattern] = useState<ImageComp | null>({
+		uniqueId: "pattern-image",
+		img: "",
+		width: 500,
+		height: 500,
+		widthPercent: 1,
+		heightPercent: 1,
+		x: 0,
+		y: 0,
+		pixelx: 0,
+		pixely: 0,
+		isActive: true,
+		isPattern: false,
+	});
+	const [isreloaded, setisreloaded] = useState(true);
 	const [imageComponents, setImageComponents] = useState<ImageComp[]>([]);
+	const [labelComponents, setLabelComponents] = useState<LabelComp[]>([]);
+	const [index, setIndex] = useState(0);
+	const updateImagePattern = (uniqueId, updatedProperties) => {
+		setImagePattern((prev) =>
+			prev ? { ...prev, ...updatedProperties } : null
+		);
+	};
+
 	const updateImageComponent = (uniqueId, updatedProperties) => {
 		setImageComponents((prevComponents) =>
 			prevComponents.map((comp) =>
@@ -82,7 +108,6 @@ const CustomizationPage: React.FC = () => {
 			)
 		);
 	};
-	const [labelComponents, setLabelComponents] = useState<LabelComp[]>([]);
 	const updateLabelComponent = (uniqueId, updatedProperties) => {
 		setLabelComponents((prevComponents) =>
 			prevComponents.map((comp) =>
@@ -91,6 +116,36 @@ const CustomizationPage: React.FC = () => {
 					: comp
 			)
 		);
+	};
+	const [customization, setCustomization] = useState({});
+
+	const setTargetIndex = (newIndex) => {
+		setActiveImage(null);
+		setisreloaded(true);
+		const oldIndex = index;
+		setIndex(newIndex);
+
+		const customize = {
+			image: imageComponents,
+			label: labelComponents,
+		};
+		if (customization.hasOwnProperty(newIndex)) {
+			const oldCustomization = customization[newIndex];
+			setCustomization((prevCustomization) => ({
+				...prevCustomization,
+				[oldIndex]: customize,
+			}));
+			setImageComponents(oldCustomization.image);
+			setLabelComponents(oldCustomization.label);
+		} else {
+			setCustomization((prevCustomization) => ({
+				...prevCustomization,
+				[newIndex]: customize,
+			}));
+
+			setImageComponents([]);
+			setLabelComponents([]);
+		}
 	};
 
 	useEffect(() => {
@@ -105,9 +160,7 @@ const CustomizationPage: React.FC = () => {
 				);
 				setLabelComponents((prevComponents) =>
 					prevComponents.map((comp) =>
-						comp.uniqueId === activeImage
-							? { ...comp, isActive: false }
-							: comp
+						comp.uniqueId === activeImage ? { ...comp } : comp
 					)
 				);
 			}
@@ -399,10 +452,33 @@ const CustomizationPage: React.FC = () => {
 						pixelx: 0,
 						pixely: 0,
 						isActive: true,
+						isPattern: false,
 					},
 				];
 			});
 		}
+	};
+	const handleAvailableImageUpload = (image, isPattern = false) => {
+		setImageComponents((prevComponents) => {
+			const newImageId = `image-${Date.now()}-${Math.random()}`;
+			return [
+				...prevComponents,
+				{
+					uniqueId: newImageId,
+					img: image,
+					width: 50,
+					height: 50,
+					widthPercent: 0.1,
+					heightPercent: 0.1,
+					x: 0,
+					y: 0,
+					pixelx: 0,
+					pixely: 0,
+					isActive: true,
+					isPattern: isPattern,
+				},
+			];
+		});
 	};
 	const handleLabelUpload = () => {
 		setLabelComponents((prevComponents) => {
@@ -445,6 +521,7 @@ const CustomizationPage: React.FC = () => {
 
 		fileInput.value = "";
 	};
+
 	const containerRef = useRef<HTMLImageElement | null>(null);
 
 	return (
@@ -469,9 +546,15 @@ const CustomizationPage: React.FC = () => {
 								ref={containerRef}
 							>
 								<ProductImageWithLogo
+									index={index}
 									color={color}
 									product={product}
 									selectedPattern={pattern}
+									imagePattern={imagePattern}
+									containerRef={containerRef}
+									activeImage={activeImage}
+									setActiveImage={setActiveImage}
+									updateImageComponent={updateImagePattern}
 								/>
 							</div>
 							{labelComponents.map((labelComp, index) => (
@@ -483,6 +566,8 @@ const CustomizationPage: React.FC = () => {
 									activeImage={activeImage}
 									setActiveImage={setActiveImage}
 									updateLabelComponent={updateLabelComponent}
+									isreloaded={isreloaded}
+									setisreloaded={setisreloaded}
 								/>
 							))}
 							{imageComponents.map((imageComp, index) => (
@@ -494,25 +579,54 @@ const CustomizationPage: React.FC = () => {
 									activeImage={activeImage}
 									setActiveImage={setActiveImage}
 									updateImageComponent={updateImageComponent}
+									isreloaded={isreloaded}
+									setisreloaded={setisreloaded}
 								/>
 							))}
 						</div>
 					</div>
 
-					{/* Right Side: Editing Section */}
 					<div className="flex flex-col justify-between h-[70vh] overflow-y-auto px-4 scrollbar-thin border border-gray-300">
 						<div className="space-y-6">
+							<div className="fixed top-1/2 left-0 transform -translate-y-1/2 flex flex-col space-y-4 bg-white shadow-[0_20px_40px_rgba(0,0,0,0.5)] rounded-lg p-2">
+								{product.productImages &&
+									product.productImages.map(
+										(image, index) => (
+											<img
+												key={index}
+												src={image}
+												alt={`Thumbnail ${index}`}
+												className={`w-16 h-16 object-cover rounded-lg cursor-pointer border-2 ${
+													activeImage === index
+														? "border-blue-500"
+														: "border-white"
+												}`}
+												onClick={() =>
+													setTargetIndex(index)
+												}
+											/>
+										)
+									)}
+							</div>
 							<ToolComponent
 								color={color}
 								handleColorChange={handleColorChange}
 								handleImageUpload={handleImageUpload}
+								handleAvailableImageUpload={
+									handleAvailableImageUpload
+								}
 								handleLabelUpload={handleLabelUpload}
 								selectedPattern={pattern}
 								setSelectedPattern={handlePatternChange}
 								setActiveImage={setActiveImage}
+								updateImagePattern={updateImagePattern}
 							/>
 
 							<div className="mb-8">
+								<h1 className="text-3xl font-semibold text-gray-700 mb-3">
+									{product.productName} (
+									{product.productAllNames[index]})
+								</h1>
 								<h3 className="text-xl font-semibold text-gray-700 mb-3">
 									Available Sizes
 								</h3>

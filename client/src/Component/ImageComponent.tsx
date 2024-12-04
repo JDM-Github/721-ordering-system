@@ -8,20 +8,14 @@ const ImageComponent = ({
 	setActiveImage,
 	updateImageComponent,
 	disabled = false,
+	pattern = false,
+	isreloaded,
+	setisreloaded,
 }) => {
 	const [isMoving, setIsMoving] = useState(false);
 	const [isDragging, setIsDragging] = useState(false);
 	const [startDrag, setStartDrag] = useState({ x: 0, y: 0 });
 	const [startResize, setStartResize] = useState({ x: 0, y: 0 });
-
-	useEffect(() => {
-		if (disabled) return;
-		const containerRect = containerRef.current.getBoundingClientRect();
-		updateImageComponent(imageComp.uniqueId, {
-			pixelx: containerRect.left,
-			pixely: containerRect.top,
-		});
-	}, []);
 
 	useEffect(() => {
 		if (disabled) return;
@@ -53,15 +47,7 @@ const ImageComponent = ({
 			const rect = target.getBoundingClientRect();
 			const absoluteX = rect.left + window.scrollX;
 			const absoluteY = rect.top + window.scrollY;
-
 			const containerRect = containerRef.current.getBoundingClientRect();
-
-			updateImageComponent(imageComp.uniqueId, {
-				pixelx: imageComp.x * containerRect.width,
-				pixely: imageComp.y * containerRect.widthy,
-				width: imageComp.widthPercent * containerRect.width,
-				height: imageComp.heightPercent * containerRect.width,
-			});
 
 			setStartDrag({
 				x: event.clientX - absoluteX,
@@ -108,6 +94,14 @@ const ImageComponent = ({
 	};
 
 	const getImageCompPosition = () => {
+		if (isreloaded) {
+			setisreloaded(false);
+			return {
+				left: `${imageComp.pixelx}px`,
+				top: `${imageComp.pixely}px`,
+			};
+		}
+
 		if (containerRef.current) {
 			const containerRect = containerRef.current.getBoundingClientRect();
 			const width = imageComp.widthPercent * containerRect.width;
@@ -145,7 +139,6 @@ const ImageComponent = ({
 				height: `${height}px`,
 			};
 		}
-
 		return {
 			left: `${imageComp.pixelx}px`,
 			top: `${imageComp.pixely}px`,
@@ -239,6 +232,11 @@ const ImageComponent = ({
 						style={{
 							width: "100%",
 							height: "100%",
+							...(pattern && {
+								objectFit: "contain",
+								mixBlendMode: "multiply",
+								opacity: 0.8,
+							}),
 						}}
 					/>
 				</div>

@@ -9,20 +9,22 @@ export default function LabelComponent({
 	setActiveImage,
 	updateLabelComponent,
 	disabled = false,
+	isreloaded,
+	setisreloaded,
 }) {
 	const [isMoving, setIsMoving] = useState(false);
 	const [isDragging, setIsDragging] = useState(false);
 	const [startDrag, setStartDrag] = useState({ x: 0, y: 0 });
 	const [startResize, setStartResize] = useState({ x: 0, y: 0 });
 
-	useEffect(() => {
-		if (disabled) return;
-		const containerRect = containerRef.current.getBoundingClientRect();
-		updateLabelComponent(labelComp.uniqueId, {
-			pixelx: containerRect.left,
-			pixely: containerRect.top,
-		});
-	}, []);
+	// useEffect(() => {
+	// 	if (disabled) return;
+	// 	const containerRect = containerRef.current.getBoundingClientRect();
+	// 	updateLabelComponent(labelComp.uniqueId, {
+	// 		pixelx: containerRect.left,
+	// 		pixely: containerRect.top,
+	// 	});
+	// }, []);
 
 	useEffect(() => {
 		if (disabled) return;
@@ -57,12 +59,12 @@ export default function LabelComponent({
 
 			const containerRect = containerRef.current.getBoundingClientRect();
 
-			updateLabelComponent(labelComp.uniqueId, {
-				pixelx: labelComp.x * containerRect.width,
-				pixely: labelComp.y * containerRect.widthy,
-				width: labelComp.widthPercent * containerRect.width,
-				height: labelComp.heightPercent * containerRect.width,
-			});
+			// updateLabelComponent(labelComp.uniqueId, {
+			// 	pixelx: labelComp.x * containerRect.width,
+			// 	pixely: labelComp.y * containerRect.widthy,
+			// 	width: labelComp.widthPercent * containerRect.width,
+			// 	height: labelComp.heightPercent * containerRect.width,
+			// });
 
 			setStartDrag({
 				x: event.clientX - absoluteX,
@@ -109,6 +111,13 @@ export default function LabelComponent({
 	};
 
 	const getLabelCompPosition = () => {
+		if (isreloaded) {
+			setisreloaded(false);
+			return {
+				left: `${labelComp.pixelx}px`,
+				top: `${labelComp.pixely}px`,
+			};
+		}
 		if (containerRef.current) {
 			const containerRect = containerRef.current.getBoundingClientRect();
 			const width = labelComp.widthPercent * containerRect.width;

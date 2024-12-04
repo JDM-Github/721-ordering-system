@@ -5,10 +5,12 @@ export default function ToolComponent({
 	color,
 	handleColorChange,
 	handleImageUpload,
+	handleAvailableImageUpload,
 	handleLabelUpload,
 	setSelectedPattern,
 	selectedPattern,
 	setActiveImage,
+	updateImagePattern,
 }) {
 	const [activeTool, setActiveTool] = useState<string | null>(null); // Track the active tool
 
@@ -167,12 +169,46 @@ export default function ToolComponent({
 					<h3 className="text-xl font-semibold text-gray-700 mb-2">
 						Upload Image
 					</h3>
+					{/* File Upload */}
 					<input
 						type="file"
 						accept="image/*"
 						onChange={handleImageUpload}
 						className="mt-2 text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:border-0 file:text-sm file:font-semibold file:bg-orange-500 file:text-white hover:file:bg-orange-600"
 					/>
+
+					{/* Pre-uploaded Images */}
+					<div className="mt-4">
+						<h4 className="text-lg font-medium text-gray-600 mb-2">
+							Available Images
+						</h4>
+						<div
+							className="grid grid-cols-4 gap-2 max-h-60 overflow-y-auto"
+							style={{
+								scrollbarWidth: "thin",
+								scrollbarColor: "#ddd transparent",
+							}}
+						>
+							{[
+								"https://res.cloudinary.com/djheiqm47/image/upload/v1733352515/earth_rdnnyv.png",
+								"https://res.cloudinary.com/djheiqm47/image/upload/v1733352514/ape_oqibfa.png",
+								"https://res.cloudinary.com/djheiqm47/image/upload/v1733352514/cars_fycd6r.png",
+								"https://res.cloudinary.com/djheiqm47/image/upload/v1733352513/bulls_qsknzx.png",
+								"https://res.cloudinary.com/djheiqm47/image/upload/v1733352513/alien_b8x8dr.png",
+								"https://res.cloudinary.com/djheiqm47/image/upload/v1733352512/apple_ljjpmd.png",
+							].map((image, index) => (
+								<img
+									key={index}
+									src={image}
+									alt={`Pre-uploaded ${index}`}
+									className="w-14 h-14 object-cover rounded-lg cursor-pointer border-2 hover:border-orange-500"
+									onClick={() =>
+										handleAvailableImageUpload(image)
+									}
+								/>
+							))}
+						</div>
+					</div>
 				</div>
 			)}
 
@@ -184,68 +220,28 @@ export default function ToolComponent({
 					<h3 className="text-lg font-semibold text-gray-700 mb-3">
 						Select a Pattern
 					</h3>
-					<div className="grid grid-cols-2 gap-3">
+					<div
+						className="grid grid-cols-4 gap-2 max-h-60 overflow-y-auto"
+						style={{
+							scrollbarWidth: "thin",
+							scrollbarColor: "#ddd transparent",
+						}}
+					>
 						{[
-							{
-								value: "none",
-								label: "None",
-							},
-							{
-								value: "deemed",
-								label: "Deemed",
-							},
-							{
-								value: "stripes",
-								label: "Stripes",
-							},
-							{
-								value: "dots",
-								label: "Dots",
-							},
-							{
-								value: "diagonal",
-								label: "Diagonal",
-							},
-							{
-								value: "grid",
-								label: "Grid",
-							},
-							{
-								value: "checkerboard",
-								label: "Checkerboard",
-							},
-							{
-								value: "wave",
-								label: "Wave",
-							},
-							{
-								value: "hexagon",
-								label: "Hexagon",
-							},
-							{
-								value: "crosshatch",
-								label: "Crosshatch",
-							},
-							{
-								value: "ldots",
-								label: "Large Dots",
-							},
-						].map((pattern) => (
-							<button
-								key={pattern.value}
+							"https://upload.wikimedia.org/wikipedia/commons/thumb/8/89/HD_transparent_picture.png/1280px-HD_transparent_picture.png",
+							"https://res.cloudinary.com/djheiqm47/image/upload/v1733352242/1_l6cehd.png",
+							"https://res.cloudinary.com/djheiqm47/image/upload/v1733352242/3_q2gpsd.png",
+							"https://res.cloudinary.com/djheiqm47/image/upload/v1733352241/4_jvjwc9.png",
+						].map((image, index) => (
+							<img
+								key={index}
+								src={image}
+								alt={`Pre-uploaded ${index}`}
+								className="w-14 h-14 object-cover rounded-lg cursor-pointer border-2 hover:border-orange-500"
 								onClick={() =>
-									setSelectedPattern(pattern.value)
+									updateImagePattern("", { img: image })
 								}
-								className={`flex items-center justify-center h-16 rounded-lg border transition-all ${
-									selectedPattern === pattern.value
-										? "bg-blue-500 text-white border-blue-600"
-										: "bg-gray-100 text-gray-700 hover:bg-gray-200"
-								}`}
-							>
-								<span className="text-sm font-medium">
-									{pattern.label}
-								</span>
-							</button>
+							/>
 						))}
 					</div>
 				</div>

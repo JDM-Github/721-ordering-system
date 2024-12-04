@@ -6,6 +6,7 @@ import { toast } from "react-toastify";
 interface Product {
 	id: string;
 	productImage: string;
+	productImages: [string];
 	productName: string;
 	price: [number];
 	status: string;
@@ -153,16 +154,11 @@ const ProductView: React.FC = () => {
 				</div>
 			) : (
 				<div className="bg-white rounded-lg shadow-xl p-8 w-full max-w-7xl grid grid-cols-1 lg:grid-cols-2 gap-12">
-					<div className="flex justify-center items-center">
+					<div className="flex justify-center items-center w-full h-[60vh]">
 						<img
-							src={
-								product?.productImage
-								// product?.productImage != ""
-								// 	? product?.productImage
-								// 	: "https://via.placeholder.com/200x200/33FF57/FFFFFF?text=Product+"
-							}
+							src={product?.productImages[0]}
 							alt={product?.productName}
-							className="w-full h-full max-h-96 object-cover rounded-lg"
+							className="w-full h-full object-fit rounded-lg"
 						/>
 					</div>
 

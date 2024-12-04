@@ -6,6 +6,7 @@ interface Product {
 	id: string;
 	productName: string;
 	productImage: string;
+	productImages: [string];
 	price: [number];
 }
 
@@ -64,7 +65,7 @@ function ProductSection() {
 							onClick={() => handleProductClick(product.id)}
 						>
 							<img
-								src={product.productImage}
+								src={product.productImages[0]}
 								alt={product.productName}
 								className="w-full h-64 object-cover"
 							/>

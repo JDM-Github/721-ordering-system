@@ -6,6 +6,7 @@ import { toast } from "react-toastify";
 interface Product {
 	id: string;
 	productImage: string;
+	productImages: [string];
 	productName: string;
 	price: [number];
 	status: string;
@@ -69,25 +70,21 @@ function CustomizeSection() {
 							className="bg-white border rounded-lg shadow-lg overflow-hidden cursor-pointer hover:shadow-2xl transition-shadow duration-300"
 							onClick={() => handleCustomizeClick(product.id)}
 						>
-							{/* Product Image */}
 							<img
-								src={product.productImage}
+								src={product.productImages[0]}
 								alt={product.productName}
 								className="w-full h-64 object-cover"
 							/>
 
 							<div className="p-4">
-								{/* Product Name */}
 								<h3 className="text-xl font-semibold text-gray-800">
 									{product.productName}
 								</h3>
 
-								{/* Product Price */}
 								<p className="text-lg font-medium text-gray-600 mt-2">
 									₱ {product.price}
 								</p>
 
-								{/* Customize Button */}
 								<button
 									className="mt-4 w-full bg-red-500 text-white py-2 rounded-lg hover:bg-red-600 transition-colors duration-200"
 									onClick={() =>

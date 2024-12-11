@@ -67,7 +67,7 @@ function ProductSection() {
 							<img
 								src={product.productImages[0]}
 								alt={product.productName}
-								className="w-full h-64 object-cover"
+								className="w-full h-64 object-fit"
 							/>
 
 							<div className="p-4">

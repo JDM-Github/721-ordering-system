@@ -19,6 +19,8 @@ import AccountInfo from "./AccountInfo.tsx";
 import OrderHistory from "./OrderHistory.tsx";
 import EditPageRoute from "./EditProduct.tsx";
 import ViewDesign from "./ViewDesign.tsx";
+import PaymentSuccess from "./PaymentSuccess.tsx";
+import PaymentFailed from "./PaymentFailed.tsx";
 
 export default function AdminRoute({ className }) {
 	const [user, setUser] = useState({});
@@ -41,6 +43,11 @@ export default function AdminRoute({ className }) {
 					<Route path="/cart" element={<ShoppingCart />} />
 					<Route path="/product" element={<ProductView />} />
 					<Route path="/customize" element={<CustomizationPage />} />
+					<Route
+						path="/payment-success"
+						element={<PaymentSuccess />}
+					/>
+					<Route path="/payment-failed" element={<PaymentFailed />} />
 					<Route path="/edit" element={<EditPageRoute />} />
 					<Route path="/view-design" element={<ViewDesign />} />
 					<Route

@@ -58,43 +58,71 @@ function OrderSummary() {
 	const subtotal = calculateSubtotal();
 	const total = subtotal;
 
-	const handleCheckout = async () => {
-		const toastId = toast.loading("Checking out all products.");
+	const createPaymentSession = async () => {
 		try {
-			const data = await RequestHandler.handleRequest(
+			const response = await RequestHandler.handleRequest(
 				"post",
-				"product/checkout-orders",
+				"create-payment",
 				{
-					orders,
+					amount: calculateSubtotal(),
 					userId: user?.id,
+					body: {
+						userId: user?.id,
+						orders,
+					},
 				}
 			);
-			if (data.success) {
-				navigate("/cart");
-				toast.update(toastId, {
-					render: "Orders successfully checked out.",
-					type: "success",
-					isLoading: false,
-					autoClose: 3000,
-				});
+			if (response.redirectUrl) {
+				window.location.href = response.redirectUrl;
 			} else {
-				toast.update(toastId, {
-					render: data.message,
-					type: "error",
-					isLoading: false,
-					autoClose: 3000,
-				});
-				return;
+				console.error("Payment URL not found.");
+				toast.error("Failed	to get the payment link.");
 			}
 		} catch (error) {
-			toast.update(toastId, {
-				render: "Error loading all cart products.",
-				type: "error",
-				isLoading: false,
-				autoClose: 3000,
-			});
-			return;
+			console.error("Error creating payment session:", error);
+			toast.error("Failed	to create payment session.");
 		}
+	};
+
+	const handleCheckout = async () => {
+		// create-payment
+		await createPaymentSession();
+		// const toastId = toast.loading("Checking out all products.");
+		// try {
+		// 	const data = await RequestHandler.handleRequest(
+		// 		"post",
+		// 		"product/checkout-orders",
+		// 		{
+		// 			orders,
+		// 			userId: user?.id,
+		// 		}
+		// 	);
+		// 	if (data.success) {
+		// 		navigate("/cart");
+		// 		toast.update(toastId, {
+		// 			render: "Orders successfully checked out.",
+		// 			type: "success",
+		// 			isLoading: false,
+		// 			autoClose: 3000,
+		// 		});
+		// 	} else {
+		// 		toast.update(toastId, {
+		// 			render: data.message,
+		// 			type: "error",
+		// 			isLoading: false,
+		// 			autoClose: 3000,
+		// 		});
+		// 		return;
+		// 	}
+		// } catch (error) {
+		// 	toast.update(toastId, {
+		// 		render: "Error loading all cart products.",
+		// 		type: "error",
+		// 		isLoading: false,
+		// 		autoClose: 3000,
+		// 	});
+		// 	return;
+		// }
 	};
 
 	const handleNoteChange = (id: string, value: string) => {

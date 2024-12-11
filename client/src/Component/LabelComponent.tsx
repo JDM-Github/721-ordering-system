@@ -1,5 +1,30 @@
 import React, { useEffect, useState } from "react";
 import { ChromePicker } from "react-color";
+import ReactDOM from "react-dom";
+
+const FloatingToolbar = ({ location, activeImage, uniqueId, children }) => {
+	if (activeImage !== uniqueId) {
+		return null;
+	}
+
+	return ReactDOM.createPortal(
+		<div
+			className="flex gap-2 p-1 bg-white border rounded shadow-lg z-100"
+			style={{
+				position: "absolute",
+				top: location.top,
+				left: location.left,
+				width: "20vw",
+				height: "50px",
+				zIndex: 1000,
+			}}
+			onMouseDown={(e) => e.stopPropagation()}
+		>
+			{children}
+		</div>,
+		document.body
+	);
+};
 
 export default function LabelComponent({
 	containerRef,
@@ -12,6 +37,7 @@ export default function LabelComponent({
 	isreloaded,
 	setisreloaded,
 }) {
+	const [doesMove, setDoesMove] = useState(false);
 	const [isMoving, setIsMoving] = useState(false);
 	const [isDragging, setIsDragging] = useState(false);
 	const [startDrag, setStartDrag] = useState({ x: 0, y: 0 });
@@ -31,6 +57,21 @@ export default function LabelComponent({
 		if (isDragging) {
 			const handleMouseMove = (event) => {
 				if (!isResizing) {
+					if (!doesMove) {
+						const containerRect =
+							containerRef.current.getBoundingClientRect();
+						updateLabelComponent(labelComp.uniqueId, {
+							pixelx:
+								labelComp.pixelx -
+								containerRect.left -
+								labelComp.width / 2,
+							pixely:
+								labelComp.pixely -
+								containerRect.top -
+								labelComp.height / 2,
+						});
+					}
+					setDoesMove(true);
 					updateLabelComponent(labelComp.uniqueId, {
 						pixelx:
 							event.clientX + labelComp.width / 2 - startDrag.x,
@@ -52,20 +93,11 @@ export default function LabelComponent({
 	const handleMouseDown = (event) => {
 		if (disabled) return;
 		if (containerRef.current) {
+			setDoesMove(false);
 			const target = event.currentTarget;
 			const rect = target.getBoundingClientRect();
 			const absoluteX = rect.left + window.scrollX;
 			const absoluteY = rect.top + window.scrollY;
-
-			const containerRect = containerRef.current.getBoundingClientRect();
-
-			// updateLabelComponent(labelComp.uniqueId, {
-			// 	pixelx: labelComp.x * containerRect.width,
-			// 	pixely: labelComp.y * containerRect.widthy,
-			// 	width: labelComp.widthPercent * containerRect.width,
-			// 	height: labelComp.heightPercent * containerRect.width,
-			// });
-
 			setStartDrag({
 				x: event.clientX - absoluteX,
 				y: event.clientY - absoluteY,
@@ -97,16 +129,25 @@ export default function LabelComponent({
 			let width = labelComp.width / containerRect.width;
 			let height = labelComp.height / containerRect.height;
 
+			if (doesMove) {
+				updateLabelComponent(labelComp.uniqueId, {
+					x: x,
+					y: y,
+					pixelx:
+						labelComp.pixelx -
+						containerRect.left -
+						labelComp.width / 2,
+					pixely:
+						labelComp.pixely -
+						containerRect.top -
+						labelComp.height / 2,
+				});
+			}
 			updateLabelComponent(labelComp.uniqueId, {
-				x: x,
-				y: y,
-				pixelx:
-					labelComp.pixelx - containerRect.left - labelComp.width / 2,
-				pixely:
-					labelComp.pixely - containerRect.top - labelComp.height / 2,
 				widthPercent: width,
 				heightPercent: height,
 			});
+			setDoesMove(false);
 		}
 	};
 
@@ -215,11 +256,33 @@ export default function LabelComponent({
 	const [textColor, setColor] = useState(labelComp.textColor || false);
 
 	const [showColorPicker, setShowColorPicker] = useState(false);
+	const [skewX, setSkewX] = useState(0);
+	const [skewY, setSkewY] = useState(0);
+	const [rotation, setRotation] = useState(0);
 
 	const handleFontStyleChange = (event) => {
 		setFontStyle(event.target.value);
 		updateLabelComponent(labelComp.uniqueId, {
 			fontStyle: event.target.value,
+		});
+	};
+
+	const handleSkewX = (event) => {
+		setSkewX(event.target.value);
+		updateLabelComponent(labelComp.uniqueId, {
+			skewX: event.target.value,
+		});
+	};
+	const handleSkewY = (event) => {
+		setSkewY(event.target.value);
+		updateLabelComponent(labelComp.uniqueId, {
+			skewY: event.target.value,
+		});
+	};
+	const handleRotation = (event) => {
+		setRotation(event.target.value);
+		updateLabelComponent(labelComp.uniqueId, {
+			rotation: event.target.value,
 		});
 	};
 
@@ -231,8 +294,8 @@ export default function LabelComponent({
 	};
 
 	const toggleBold = () => {
-		setIsBold(!isBold);
 		updateLabelComponent(labelComp.uniqueId, { isBold: !isBold });
+		setIsBold(!isBold);
 	};
 
 	const handleDoubleClick = () => {
@@ -243,6 +306,7 @@ export default function LabelComponent({
 	};
 	const handleInputChange = (event) => {
 		setLabelText(event.target.value);
+		updateLabelComponent(labelComp.uniqueId, { text: event.target.value });
 	};
 
 	return (
@@ -262,7 +326,6 @@ export default function LabelComponent({
 						...getLabelCompPosition(),
 					}}
 				>
-					{/* Text Editing or Display */}
 					{isEditing ? (
 						<input
 							type="text"
@@ -276,6 +339,7 @@ export default function LabelComponent({
 								lineHeight: `${labelComp.height}px`,
 								fontFamily: fontStyle,
 								fontWeight: isBold ? "bold" : "normal",
+								transform: `skew(${skewX}deg, ${skewY}deg) rotate(${rotation}deg)`,
 							}}
 						/>
 					) : (
@@ -290,13 +354,13 @@ export default function LabelComponent({
 								fontFamily: fontStyle,
 								fontWeight: isBold ? "bold" : "normal",
 								color: textColor,
+								transform: `skew(${skewX}deg, ${skewY}deg) rotate(${rotation}deg)`,
 							}}
 						>
 							{labelText}
 						</span>
 					)}
 
-					{/* Resize Handlers */}
 					<div
 						className="absolute w-2 h-full top-0 -right-1 cursor-ew-resize"
 						onMouseDown={() => handleResizeMouseDown("right")}
@@ -311,78 +375,133 @@ export default function LabelComponent({
 					></div>
 
 					{activeImage === uniqueId && (
-						<div
-							className="absolute top-[-60px] h-[50px] left-[-50%] flex gap-2 p-1 bg-white border rounded shadow-lg z-100"
-							style={{ zIndex: 1000 }}
-							onMouseDown={(e) => e.stopPropagation()}
-						>
-							<select
-								value={fontStyle}
-								onChange={handleFontStyleChange}
-								disabled={disabled}
-								className="border rounded p-1"
-							>
-								<option value="Arial">Arial</option>
-								<option value="Verdana">Verdana</option>
-								<option value="Times New Roman">
-									Times New Roman
-								</option>
-								<option value="Courier New">Courier New</option>
-								<option value="Georgia">Georgia</option>
-								<option value="Tahoma">Tahoma</option>
-								<option value="Trebuchet MS">
-									Trebuchet MS
-								</option>
-								<option value="Impact">Impact</option>
-								<option value="Comic Sans MS">
-									Comic Sans MS
-								</option>
-								<option value="Lucida Console">
-									Lucida Console
-								</option>
-								<option value="Palatino Linotype">
-									Palatino Linotype
-								</option>
-								<option value="Gill Sans">Gill Sans</option>
-								<option value="Futura">Futura</option>
-								<option value="Optima">Optima</option>
-							</select>
+						<FloatingToolbar
+							location={getLabelCompPosition()}
+							activeImage={activeImage}
+							uniqueId={uniqueId}
+							children={
+								<>
+									<select
+										value={fontStyle}
+										onChange={handleFontStyleChange}
+										disabled={disabled}
+										className="border rounded p-1"
+									>
+										<option value="Arial">Arial</option>
+										<option value="Verdana">Verdana</option>
+										<option value="Times New Roman">
+											Times New Roman
+										</option>
+										<option value="Courier New">
+											Courier New
+										</option>
+										<option value="Georgia">Georgia</option>
+										<option value="Tahoma">Tahoma</option>
+										<option value="Trebuchet MS">
+											Trebuchet MS
+										</option>
+										<option value="Impact">Impact</option>
+										<option value="Comic Sans MS">
+											Comic Sans MS
+										</option>
+										<option value="Lucida Console">
+											Lucida Console
+										</option>
+										<option value="Palatino Linotype">
+											Palatino Linotype
+										</option>
+										<option value="Gill Sans">
+											Gill Sans
+										</option>
+										<option value="Futura">Futura</option>
+										<option value="Optima">Optima</option>
+									</select>
 
-							<button
-								onClick={toggleBold}
-								disabled={disabled}
-								className={`px-3 py-1 border rounded ${
-									isBold ? "bg-gray-300" : ""
-								}`}
-							>
-								{isBold ? "Unbold" : "Bold"}
-							</button>
+									<button
+										onClick={toggleBold}
+										disabled={disabled}
+										className={`px-3 py-1 border rounded ${
+											isBold ? "bg-gray-300" : ""
+										}`}
+									>
+										{isBold ? "Unbold" : "Bold"}
+									</button>
 
-							<div className="relative">
-								<div
-									onClick={() => {
-										if (disabled) return;
-										setShowColorPicker(!showColorPicker);
-									}}
-									className="w-8 h-8 border rounded cursor-pointer"
-									style={{
-										backgroundColor: textColor,
-									}}
-								></div>
+									<div className="relative">
+										<div
+											onClick={() => {
+												if (disabled) return;
+												setShowColorPicker(
+													!showColorPicker
+												);
+											}}
+											className="w-8 h-8 border rounded cursor-pointer"
+											style={{
+												backgroundColor: textColor,
+											}}
+										></div>
 
-								{showColorPicker && (
-									<div className="absolute z-10 mt-2">
-										<ChromePicker
-											color={textColor}
-											onChange={(color) =>
-												handleTextColorChange(color.hex)
-											}
-											disableAlpha={true}
-										/>
+										{showColorPicker && (
+											<div className="absolute z-10 mt-2">
+												<ChromePicker
+													color={textColor}
+													onChange={(color) =>
+														handleTextColorChange(
+															color.hex
+														)
+													}
+													disableAlpha={true}
+												/>
+											</div>
+										)}
 									</div>
-								)}
-							</div>
-						</div>
+
+									{/* <div
+										className="mt-2 d-flex"
+										style={{ display: "flex" }}
+									>
+										<label className="block me-3">
+											Skew X:
+										</label>
+										<input
+											type="number"
+											value={skewX}
+											onChange={handleSkewX}
+											disabled={disabled}
+											className="w-full border rounded p-2 me-3"
+											min="-30"
+											max="30"
+										/>
+
+										<label className="block me-3">
+											Skew Y:
+										</label>
+										<input
+											type="number"
+											value={skewY}
+											onChange={handleSkewY}
+											disabled={disabled}
+											className="w-full border rounded p-2 me-3"
+											min="-30"
+											max="30"
+										/>
+
+										<label className="block me-3">
+											Rotate:
+										</label>
+										<input
+											type="number"
+											value={rotation}
+											onChange={handleRotation}
+											disabled={disabled}
+											className="w-full border rounded p-2"
+											min="-360"
+											max="360"
+										/> */}
+									{/* </div> */}
+								</>
+							}
+						/>
 					)}
 				</div>
 			)}

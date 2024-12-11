@@ -11,6 +11,8 @@ export default function ToolComponent({
 	selectedPattern,
 	setActiveImage,
 	updateImagePattern,
+	backgroundColor,
+	setBackgroundColor,
 }) {
 	const [activeTool, setActiveTool] = useState<string | null>(null); // Track the active tool
 
@@ -65,8 +67,6 @@ export default function ToolComponent({
 				<div
 					className="cursor-pointer flex items-center justify-center w-12 h-12 bg-purple-100 rounded-full"
 					onClick={() => {
-						// if (activeTool === "text") setActiveTool(null);
-						// else setActiveTool("text");
 						setActiveTool(null);
 						handleLabelUpload();
 					}}
@@ -112,6 +112,29 @@ export default function ToolComponent({
 				</div>
 
 				<div
+					className="cursor-pointer flex items-center justify-center w-12 h-12 bg-blue-100 rounded-full"
+					onClick={() => {
+						if (activeTool === "background") setActiveTool(null);
+						else setActiveTool("background");
+					}}
+				>
+					<svg
+						xmlns="http://www.w3.org/2000/svg"
+						className="h-6 w-6 text-blue-500"
+						fill="none"
+						viewBox="0 0 24 24"
+						stroke="currentColor"
+					>
+						<path
+							strokeLinecap="round"
+							strokeLinejoin="round"
+							strokeWidth="2"
+							d="M19 10L4 10l5-5L9 2a1 1 0 011.414 0l1.172 1.172a1 1 0 010 1.414L10 6l5 5h4zm0 2h-2a3 3 0 010-6h2a3 3 0 010 6zm-3.5 4a1.5 1.5 0 01-3 0V16h-1v4h5v-4h-1v1z"
+						/>
+					</svg>
+				</div>
+
+				<div
 					className="cursor-pointer flex items-center justify-center w-12 h-12 bg-red-100 rounded-full"
 					onClick={() => {
 						setActiveTool(null);
@@ -147,6 +170,22 @@ export default function ToolComponent({
 					</svg>
 				</div>
 			</div>
+
+			{activeTool === "background" && (
+				<div className="fixed top-1/2 right-20 transform -translate-y-1/2 bg-white shadow-xl rounded-lg p-4 w-auto">
+					<h3 className="text-xl font-semibold text-gray-700 mb-2">
+						Background Color Picker
+					</h3>
+					<ChromePicker
+						color={backgroundColor}
+						onChange={(updatedColor) =>
+							setBackgroundColor(updatedColor.hex)
+						}
+						disableAlpha
+						className="mt-2"
+					/>
+				</div>
+			)}
 
 			{activeTool === "colorPicker" && (
 				<div className="fixed top-1/2 right-20 transform -translate-y-1/2 bg-white shadow-xl rounded-lg p-4 w-auto">

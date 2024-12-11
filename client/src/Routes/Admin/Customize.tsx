@@ -4,6 +4,8 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { saveAs } from "file-saver";
 import { toast } from "react-toastify";
 import { CirclePicker, ChromePicker } from "react-color";
+import html2canvas from "html2canvas";
+import { useReactToPrint } from "react-to-print";
 import ProductImageWithLogo from "../../Component/ProductImageWithLogo.tsx";
 import ToolComponent from "../../Component/ToolComponent.tsx";
 import ImageComponent from "../../Component/ImageComponent.tsx";
@@ -26,6 +28,7 @@ interface Product {
 
 interface ImageComp {
 	uniqueId: string;
+	imgFileUrl: string;
 	img: string | File;
 	x: number;
 	y: number;
@@ -51,6 +54,10 @@ interface LabelComp {
 	heightPercent: number;
 	isActive: boolean;
 	text: string;
+	isBold: boolean;
+	skewX: any;
+	skewY: any;
+	rotation: any;
 }
 
 const CustomizationPage: React.FC = () => {
@@ -78,6 +85,7 @@ const CustomizationPage: React.FC = () => {
 	const [imagePattern, setImagePattern] = useState<ImageComp | null>({
 		uniqueId: "pattern-image",
 		img: "",
+		imgFileUrl: "",
 		width: 500,
 		height: 500,
 		widthPercent: 1,
@@ -92,6 +100,8 @@ const CustomizationPage: React.FC = () => {
 	const [isreloaded, setisreloaded] = useState(true);
 	const [imageComponents, setImageComponents] = useState<ImageComp[]>([]);
 	const [labelComponents, setLabelComponents] = useState<LabelComp[]>([]);
+
+	const [backgroundColor, setBackgroundColor] = useState("#eee");
 	const [index, setIndex] = useState(0);
 	const updateImagePattern = (uniqueId, updatedProperties) => {
 		setImagePattern((prev) =>
@@ -119,132 +129,94 @@ const CustomizationPage: React.FC = () => {
 	};
 	const [customization, setCustomization] = useState({});
 
-	const setTargetIndex = (newIndex) => {
+	const saveToLocalStorage = (key, value) => {
+		localStorage.setItem(key, JSON.stringify(value));
+	};
+	const loadFromLocalStorage = (key) => {
+		const data = localStorage.getItem(key);
+		return data ? JSON.parse(data) : null;
+	};
+	const setTargetIndex = async (newIndex) => {
 		setActiveImage(null);
 		setisreloaded(true);
-		const oldIndex = index;
-		setIndex(newIndex);
 
 		const customize = {
 			image: imageComponents,
 			label: labelComponents,
+			background: backgroundColor,
+			color: color,
+			pattern: pattern,
 		};
-		if (customization.hasOwnProperty(newIndex)) {
-			const oldCustomization = customization[newIndex];
-			setCustomization((prevCustomization) => ({
-				...prevCustomization,
-				[oldIndex]: customize,
-			}));
-			setImageComponents(oldCustomization.image);
-			setLabelComponents(oldCustomization.label);
-		} else {
-			setCustomization((prevCustomization) => ({
-				...prevCustomization,
-				[newIndex]: customize,
-			}));
 
+		saveToLocalStorage(`customization-${index}`, customize);
+		const newCustomization = loadFromLocalStorage(
+			`customization-${newIndex}`
+		);
+		setIndex(newIndex);
+		if (newCustomization) {
+			setImageComponents(newCustomization.image);
+			setLabelComponents(newCustomization.label);
+			setBackgroundColor(newCustomization.background);
+			setColor(newCustomization.color);
+			setPattern(newCustomization.pattern);
+		} else {
 			setImageComponents([]);
 			setLabelComponents([]);
+			setBackgroundColor("#eee");
+			setColor("#fff");
+			setPattern("none");
 		}
 	};
+
+	// const setTargetIndex = (newIndex) => {
+	// 	setActiveImage(null);
+	// 	setisreloaded(true);
+
+	// 	const customize = {
+	// 		image: imageComponents,
+	// 		label: labelComponents,
+	// 	};
+
+	// 	setCustomization((prevCustomization) => ({
+	// 		...prevCustomization,
+	// 		[index]: customize,
+	// 	}));
+
+	// 	setIndex(newIndex);
+
+	// 	if (customization.hasOwnProperty(newIndex)) {
+	// 		const oldCustomization = customization[newIndex];
+	// 		setImageComponents(oldCustomization.image);
+	// 		setLabelComponents(oldCustomization.label);
+	// 	} else {
+	// 		setImageComponents([]);
+	// 		setLabelComponents([]);
+	// 	}
+	// };
 
 	useEffect(() => {
 		const handleKeyDown = (event: KeyboardEvent) => {
 			if (event.key === "Delete" && activeImage) {
 				setImageComponents((prevComponents) =>
-					prevComponents.map((comp) =>
-						comp.uniqueId === activeImage
-							? { ...comp, isActive: false }
-							: comp
+					prevComponents.filter(
+						(comp) => comp.uniqueId !== activeImage
 					)
 				);
 				setLabelComponents((prevComponents) =>
-					prevComponents.map((comp) =>
-						comp.uniqueId === activeImage ? { ...comp } : comp
+					prevComponents.filter(
+						(comp) => comp.uniqueId !== activeImage
 					)
 				);
+				setActiveImage(null);
 			}
 		};
-
 		window.addEventListener("keydown", handleKeyDown);
 		return () => {
 			window.removeEventListener("keydown", handleKeyDown);
 		};
-	}, [activeImage, setImageComponents]);
+	}, [activeImage, setImageComponents, setLabelComponents, setActiveImage]);
 
-	const saveData = async () => {
-		// const id = product?.id;
-		// const toastId = toast.loading("Saving your customization...");
-		// let logoURL = "";
-		// if (logo && logo instanceof File) {
-		// 	const formData = new FormData();
-		// 	formData.append("file", logo);
-		// 	try {
-		// 		const data = await RequestHandler.handleRequest(
-		// 			"post",
-		// 			"file/upload-image",
-		// 			formData,
-		// 			{
-		// 				headers: {
-		// 					"Content-Type": "multipart/form-data",
-		// 				},
-		// 			}
-		// 		);
-		// 		if (data.success) {
-		// 			logoURL = data.uploadedDocument;
-		// 		} else {
-		// 			toast.update(toastId, {
-		// 				render: data.message,
-		// 				type: "error",
-		// 				isLoading: false,
-		// 				autoClose: 3000,
-		// 			});
-		// 			return;
-		// 		}
-		// 	} catch (error) {
-		// 		console.error("Error submitting the document:", error);
-		// 		toast.update(toastId, {
-		// 			render: "Error submitting the document",
-		// 			type: "error",
-		// 			isLoading: false,
-		// 			autoClose: 3000,
-		// 		});
-		// 		return;
-		// 	}
-		// } else {
-		// 	logoURL = logo ? logo : "";
-		// }
-		// const dataToSave = {
-		// 	id,
-		// 	color,
-		// 	pattern,
-		// 	customName,
-		// 	customNumber,
-		// 	notes,
-		// 	selectedSize,
-		// 	product,
-		// };
-		// try {
-		// 	const blob = new Blob([JSON.stringify(dataToSave, null, 2)], {
-		// 		type: "application/json",
-		// 	});
-		// 	saveAs(blob, `customization-${id || "unknown"}.json`);
-		// 	toast.update(toastId, {
-		// 		render: "Customization saved successfully!",
-		// 		type: "success",
-		// 		isLoading: false,
-		// 		autoClose: 3000,
-		// 	});
-		// } catch (error) {
-		// 	console.error("Error saving the file:", error);
-		// 	toast.update(toastId, {
-		// 		render: "Failed to save customization.",
-		// 		type: "error",
-		// 		isLoading: false,
-		// 		autoClose: 3000,
-		// 	});
-		// }
-	};
+	const saveData = async () => {};
 
 	const loadData = async (file: File) => {
 		// try {
@@ -432,17 +404,68 @@ const CustomizationPage: React.FC = () => {
 	const handleColorChange = (value: string) => setColor(value);
 	const handlePatternChange = (value: string) => setPattern(value);
 
-	const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+	const handleImageUpload = async (
+		event: React.ChangeEvent<HTMLInputElement>
+	) => {
 		if (event.target.files && event.target.files[0]) {
 			const file = event.target.files[0];
+
+			const id = product?.id;
+			const toastId = toast.loading("Uploading image...", {
+				position: "top-left",
+			});
+
+			let imageUrl = "";
+			const formData = new FormData();
+			formData.append("file", file);
+			try {
+				const data = await RequestHandler.handleRequest(
+					"post",
+					"file/upload-image",
+					formData,
+					{
+						headers: {
+							"Content-Type": "multipart/form-data",
+						},
+					}
+				);
+				if (data.success) {
+					imageUrl = data.uploadedDocument;
+				} else {
+					toast.update(toastId, {
+						render: data.message,
+						type: "error",
+						isLoading: false,
+						autoClose: 3000,
+						position: "top-left",
+					});
+				}
+			} catch (error) {
+				console.error("Error uploading image:", error);
+				toast.update(toastId, {
+					render: "Error submitting the document",
+					type: "error",
+					isLoading: false,
+					autoClose: 3000,
+					position: "top-left",
+				});
+			}
+			toast.update(toastId, {
+				render: "Image uploaded successfully!",
+				type: "success",
+				isLoading: false,
+				autoClose: 3000,
+				position: "top-left",
+			});
+
 			setImageComponents((prevComponents) => {
 				const newImageId = `image-${Date.now()}-${Math.random()}`;
 				return [
 					...prevComponents,
 					{
 						uniqueId: newImageId,
-						img: file,
-						imgFileUrl: URL.createObjectURL(file),
+						img: imageUrl,
+						imgFileUrl: imageUrl,
 						width: 50,
 						height: 50,
 						widthPercent: 0.1,
@@ -466,6 +489,7 @@ const CustomizationPage: React.FC = () => {
 				{
 					uniqueId: newImageId,
 					img: image,
+					imgFileUrl: "",
 					width: 50,
 					height: 50,
 					widthPercent: 0.1,
@@ -497,6 +521,10 @@ const CustomizationPage: React.FC = () => {
 					pixely: 0,
 					isActive: true,
 					text: "TEXT",
+					isBold: false,
+					skewX: 0,
+					skewY: 0,
+					rotation: 0,
 				},
 			];
 		});
@@ -521,8 +549,39 @@ const CustomizationPage: React.FC = () => {
 
 		fileInput.value = "";
 	};
-
 	const containerRef = useRef<HTMLImageElement | null>(null);
+	const cardRef = useRef<HTMLDivElement>(null);
+	// const reactToPrintFn = useReactToPrint({ cardRef });
+	const reactToPrintFn = useReactToPrint({
+		content: () => cardRef.current,
+	});
+
+	const handlePrint = async () => {
+		if (cardRef?.current) {
+			const canvas = await html2canvas(cardRef.current, {
+				scale: 2,
+				useCORS: true,
+			});
+
+			const image = canvas.toDataURL("image/png");
+
+			const link = document.createElement("a");
+			link.href = image;
+			link.download = "div-image.png";
+			link.click();
+		}
+	};
+
+	const handleDownloadPng = async () => {
+		if (cardRef?.current) {
+			const canvas = await html2canvas(cardRef.current);
+			const image = canvas.toDataURL("image/png");
+			const link = document.createElement("a");
+			link.href = image;
+			link.download = "card.png";
+			link.click();
+		}
+	};
 
 	return (
 		<div className="bg-gray-50 flex justify-center items-center py-8 px-4">
@@ -539,10 +598,14 @@ const CustomizationPage: React.FC = () => {
 			) : (
 				<div className="bg-white rounded-lg shadow-xl p-8 w-full max-w-7xl grid grid-cols-1 lg:grid-cols-2 gap-12">
 					{/* Left Side: Product Image */}
-					<div className="flex flex-col justify-between h-[60vh] overflow-y-hidden px-4 scrollbar-thin border border-gray-300 z-100">
+					<div
+						ref={cardRef}
+						className="flex flex-col justify-between h-[60vh] overflow-y-hidden px-4 scrollbar-thin border border-gray-300 z-100"
+					>
 						<div className="relative flex">
 							<div
 								className="w-full h-full max-h-[60vh]"
+								style={{ backgroundColor: backgroundColor }}
 								ref={containerRef}
 							>
 								<ProductImageWithLogo
@@ -588,7 +651,10 @@ const CustomizationPage: React.FC = () => {
 
 					<div className="flex flex-col justify-between h-[70vh] overflow-y-auto px-4 scrollbar-thin border border-gray-300">
 						<div className="space-y-6">
-							<div className="fixed top-1/2 left-0 transform -translate-y-1/2 flex flex-col space-y-4 bg-white shadow-[0_20px_40px_rgba(0,0,0,0.5)] rounded-lg p-2">
+							<div
+								className="fixed top-1/2 left-0 transform -translate-y-1/2 flex flex-col space-y-4 bg-white shadow-[0_20px_40px_rgba(0,0,0,0.5)] rounded-lg p-2"
+								style={{ backgroundColor: "#aaa" }}
+							>
 								{product.productImages &&
 									product.productImages.map(
 										(image, index) => (
@@ -620,6 +686,8 @@ const CustomizationPage: React.FC = () => {
 								setSelectedPattern={handlePatternChange}
 								setActiveImage={setActiveImage}
 								updateImagePattern={updateImagePattern}
+								backgroundColor={backgroundColor}
+								setBackgroundColor={setBackgroundColor}
 							/>
 
 							<div className="mb-8">
@@ -703,6 +771,36 @@ const CustomizationPage: React.FC = () => {
 								className="p-3 border border-gray-300 rounded-lg resize-none w-full"
 								rows={3}
 							/>
+
+							<button
+								className="w-16 h-16 me-3 bg-red-500 rounded-full shadow hover:bg-red-600"
+								onClick={reactToPrintFn}
+							>
+								<svg
+									xmlns="http://www.w3.org/2000/svg"
+									className="h-16 w-16 text-white"
+									fill="none"
+									viewBox="0 0 24 24"
+									stroke="currentColor"
+								>
+									<path
+										strokeLinecap="round"
+										strokeLinejoin="round"
+										strokeWidth="2"
+										d="M6 9V3h12v6m-3 6h3a2 2 0 012 2v4H4v-4a2 2 0 012-2h3m0 0v4h6v-4m-6 0h6"
+									/>
+								</svg>
+							</button>
+							<button
+								className="w-16 h-16 bg-red-500 rounded-full shadow hover:bg-red-600"
+								onClick={handleDownloadPng}
+							>
+								<img
+									src="https://static.vecteezy.com/system/resources/thumbnails/014/440/983/small_2x/image-icon-design-in-blue-circle-png.png"
+									alt="Save Icon"
+									className="w-16 h-16"
+								/>
+							</button>
 						</div>
 
 						{/* Action Buttons */}

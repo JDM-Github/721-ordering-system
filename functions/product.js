@@ -185,7 +185,9 @@ router.post("/create", async (req, res) => {
 router.get("/get-all-product", async (req, res) => {
 	try {
 		const { status } = req.query;
-		const whereClause = status ? { status } : { status: "Available" };
+		const whereClause = status
+			? { status, isCustomizable: false }
+			: { status: "Available", isCustomizable: false };
 		const products = await Product.findAll({ where: whereClause });
 		res.status(200).json({ success: true, products });
 	} catch (error) {
@@ -205,7 +207,7 @@ router.post("/get-all-order", async (req, res) => {
 	try {
 		const whereClause = {};
 		if (userId !== undefined) whereClause["userId"] = userId;
-		whereClause["status"] = "FINISHED";
+		// whereClause["status"] = "FINISHED";
 		const products = await OrderProduct.findAll({
 			where: whereClause,
 			include: [
@@ -229,7 +231,9 @@ router.post("/get-all-order", async (req, res) => {
 router.get("/get-all-product-customizable", async (req, res) => {
 	try {
 		const { status } = req.query;
-		const whereClause = status ? { status } : { status: "Available" };
+		const whereClause = status
+			? { status, isCustomizable: true }
+			: { status: "Available", isCustomizable: true };
 		const products = await Product.findAll({ where: whereClause });
 		res.status(200).json({ success: true, products });
 	} catch (error) {

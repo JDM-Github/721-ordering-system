@@ -12,6 +12,7 @@ const ImageComponent = ({
 	isreloaded,
 	setisreloaded,
 }) => {
+	const [doesMove, setDoesMove] = useState(false);
 	const [isMoving, setIsMoving] = useState(false);
 	const [isDragging, setIsDragging] = useState(false);
 	const [startDrag, setStartDrag] = useState({ x: 0, y: 0 });
@@ -22,6 +23,21 @@ const ImageComponent = ({
 		if (isDragging) {
 			const handleMouseMove = (event) => {
 				if (!isResizing) {
+					if (!doesMove) {
+						const containerRect =
+							containerRef.current.getBoundingClientRect();
+						updateImageComponent(imageComp.uniqueId, {
+							pixelx:
+								imageComp.pixelx -
+								containerRect.left -
+								imageComp.width / 2,
+							pixely:
+								imageComp.pixely -
+								containerRect.top -
+								imageComp.height / 2,
+						});
+					}
+					setDoesMove(true);
 					updateImageComponent(imageComp.uniqueId, {
 						pixelx:
 							event.clientX + imageComp.width / 2 - startDrag.x,
@@ -43,11 +59,11 @@ const ImageComponent = ({
 	const handleMouseDown = (event) => {
 		if (disabled) return;
 		if (containerRef.current) {
+			setDoesMove(false);
 			const target = event.currentTarget;
 			const rect = target.getBoundingClientRect();
 			const absoluteX = rect.left + window.scrollX;
 			const absoluteY = rect.top + window.scrollY;
-			const containerRect = containerRef.current.getBoundingClientRect();
 
 			setStartDrag({
 				x: event.clientX - absoluteX,
@@ -79,17 +95,25 @@ const ImageComponent = ({
 
 			let width = imageComp.width / containerRect.width;
 			let height = imageComp.height / containerRect.height;
-
+			if (doesMove) {
+				updateImageComponent(imageComp.uniqueId, {
+					x: x,
+					y: y,
+					pixelx:
+						imageComp.pixelx -
+						containerRect.left -
+						imageComp.width / 2,
+					pixely:
+						imageComp.pixely -
+						containerRect.top -
+						imageComp.height / 2,
+				});
+			}
 			updateImageComponent(imageComp.uniqueId, {
-				x: x,
-				y: y,
-				pixelx:
-					imageComp.pixelx - containerRect.left - imageComp.width / 2,
-				pixely:
-					imageComp.pixely - containerRect.top - imageComp.height / 2,
 				widthPercent: width,
 				heightPercent: height,
 			});
+			setDoesMove(false);
 		}
 	};
 

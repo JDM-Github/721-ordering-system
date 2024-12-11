@@ -117,6 +117,7 @@ const ProductView: React.FC = () => {
 					type: "success",
 					isLoading: false,
 					autoClose: 3000,
+					position: "top-center",
 				});
 			} else {
 				toast.update(toastId, {
@@ -154,7 +155,7 @@ const ProductView: React.FC = () => {
 				</div>
 			) : (
 				<div className="bg-white rounded-lg shadow-xl p-8 w-full max-w-7xl grid grid-cols-1 lg:grid-cols-2 gap-12">
-					<div className="flex justify-center items-center w-full h-[60vh]">
+					<div className="bg-gray-200 flex justify-center items-center w-full h-[60vh]">
 						<img
 							src={product?.productImages[0]}
 							alt={product?.productName}

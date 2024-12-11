@@ -32,7 +32,6 @@ function CustomizeSection() {
 				alert(JSON.stringify(data));
 			} else {
 				setProducts(data.products);
-				// getChatHistory();
 			}
 		} catch (error) {
 			toast.error(`An error occurred while archiving data. ${error}`, {
@@ -73,7 +72,7 @@ function CustomizeSection() {
 							<img
 								src={product.productImages[0]}
 								alt={product.productName}
-								className="w-full h-64 object-cover"
+								className="w-full h-64 object-fit bg-gray-200"
 							/>
 
 							<div className="p-4">

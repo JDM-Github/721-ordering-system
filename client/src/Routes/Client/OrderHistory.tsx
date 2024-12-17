@@ -1,25 +1,58 @@
 import React, { useEffect, useState } from "react";
-import "react-tabulator/lib/styles.css";
-import "react-tabulator/lib/css/bootstrap/tabulator_bootstrap.min.css";
 import RequestHandler from "../../Functions/RequestHandler";
+import { DataGrid } from "@mui/x-data-grid";
+import {
+	Button,
+	Dialog,
+	DialogActions,
+	DialogContent,
+	DialogTitle,
+	List,
+	ListItem,
+	ListItemText,
+} from "@mui/material";
+import { createTheme, ThemeProvider } from "@mui/material/styles";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
-import { DataGrid } from "@mui/x-data-grid";
-import { Button } from "@mui/material";
-import { createTheme, ThemeProvider } from "@mui/material/styles";
 
 const OrderHistory = () => {
 	const [orders, setOrders] = useState([]);
+	const [openModal, setOpenModal] = useState(false);
+	const [selectedOrder, setSelectedOrder] = useState<any>(null);
 	const navigate = useNavigate();
 
 	const handleViewOrder = (order) => {
-		alert(JSON.stringify(order));
-		navigate("/view-design", {
-			state: {
-				order: order.productData,
-				orders: null,
-			},
-		});
+		setSelectedOrder(order);
+		setOpenModal(true);
+	};
+
+	const handleCloseModal = () => {
+		setOpenModal(false);
+		setSelectedOrder(null);
+	};
+
+	const handleViewProduct = (productId) => {
+		navigate(`/product/${productId}`);
+	};
+
+	const updateStatus = async (id) => {
+		try {
+			const data = await RequestHandler.handleRequest(
+				"post",
+				"product/order-update-status",
+				{ id }
+			);
+			if (data.success) {
+				toast.success("Order status updated successfully");
+				loadRequest();
+			} else {
+				toast.error(data.message || "Order status has error");
+				return;
+			}
+		} catch (error) {
+			toast.error(error.message || "Order status has error");
+			return;
+		}
 	};
 
 	const loadRequest = async () => {
@@ -30,17 +63,22 @@ const OrderHistory = () => {
 				{}
 			);
 			if (data.success) {
-				const ord = data.products.map((product) => ({
-					id: product.id,
-					productName: product.Product.productName,
-					price: product.Product.price,
-					quantity: product.quantity,
-					color: product.customization.color,
-					size: product.customization.selectedSize,
-					pattern: product.customization.pattern,
-					createdAt: new Date(product.createdAt).toLocaleDateString(),
-					productData: product,
+				const ord = data.orderSummaries.map((order) => ({
+					id: order.id,
+					referenceNumber: order.referenceNumber,
+					status: order.status,
+					isCompleted: order.isCompleted,
+					createdAt: new Date(order.createdAt).toLocaleDateString(),
+					products: order.products.map((product) => ({
+						productId: product.productId,
+						productName: product.productName,
+						price: product.price,
+						quantity: product.quantity,
+						customization: product.customization,
+						productImages: product.productImages,
+					})),
 				}));
+				console.log(data.orderSummaries);
 				setOrders(ord);
 			} else {
 				toast.error(data.message || "Unable to load order history");
@@ -57,14 +95,13 @@ const OrderHistory = () => {
 	}, []);
 
 	const columns = [
-		{ field: "id", headerName: "Order ID" },
-		{ field: "productName", headerName: "Product Name" },
-		{ field: "price", headerName: "Price" },
-		{ field: "quantity", headerName: "Quantity" },
-		{ field: "color", headerName: "Color" },
-		{ field: "size", headerName: "Size" },
-		{ field: "pattern", headerName: "Pattern" },
-		{ field: "createdAt", headerName: "Order Date" },
+		{ field: "id", headerName: "Order ID", width: 200 },
+		{
+			field: "referenceNumber",
+			headerName: "Reference Number",
+			width: 200,
+		},
+		{ field: "createdAt", headerName: "Order Date", width: 150 },
 		{
 			field: "actions",
 			headerName: "Actions",
@@ -74,20 +111,37 @@ const OrderHistory = () => {
 						variant="contained"
 						color="primary"
 						onClick={() => handleViewOrder(params.row)}
-						style={{ backgroundColor: "#FFA500" }}
+						style={{
+							backgroundColor: "#FFA500",
+							marginRight: "10px",
+						}}
 					>
 						View Order
 					</Button>
-					<Button
-						variant="contained"
-						color="secondary"
-						onClick={() => handleFinishOrder(params.row)}
-						style={{ backgroundColor: "#4CAF50" }}
-					>
-						Finish
-					</Button>
+					{!params.row.isCompleted && (
+						<Button
+							variant="contained"
+							color="primary"
+							onClick={() => updateStatus(params.row.id)}
+							style={{ backgroundColor: "#FF2600FF" }}
+						>
+							{params.row.status}
+						</Button>
+					)}
+					{params.row.isCompleted && (
+						<Button
+							variant="contained"
+							color="primary"
+							onClick={() => handleViewOrder(params.row)}
+							style={{ backgroundColor: "#FFFB00FF" }}
+							disabled={true}
+						>
+							Completed
+						</Button>
+					)}
 				</>
 			),
+			width: 300,
 		},
 	];
 
@@ -107,17 +161,13 @@ const OrderHistory = () => {
 
 	return (
 		<ThemeProvider theme={theme}>
-			<div className="w-5/6 p-4" style={{ height: 600 }}>
-				<div className="bg-white shadow-lg rounded-lg p-4 mb-3">
-					<h1 className="border-l-4 ps-4 border-orange-500 text-2xl font-semibold text-gray-700">
-						ORDER HISTORY
-					</h1>
-				</div>
+			<div className="flex justify-center w-full min-h-[80vh] p-4">
 				<div className="bg-white shadow-lg rounded-lg p-4">
 					<DataGrid
 						rows={orders}
 						columns={columns}
-						checkboxSelection
+						disableColumnSelector
+						disableRowSelectionOnClick
 						style={{ borderRadius: "8px" }}
 						sx={{
 							"& .MuiDataGrid-root": {
@@ -138,11 +188,80 @@ const OrderHistory = () => {
 					/>
 				</div>
 			</div>
+
+			<Dialog open={openModal} onClose={handleCloseModal}>
+				<DialogTitle>Order Details</DialogTitle>
+				<DialogContent>
+					{selectedOrder && (
+						<div>
+							<h3>
+								Reference Number:{" "}
+								{selectedOrder.referenceNumber}
+							</h3>
+							<List>
+								{selectedOrder.products &&
+								selectedOrder.products.length > 0 ? (
+									selectedOrder.products.map(
+										(product, index) => (
+											<ListItem key={index}>
+												{product.productImages &&
+													product
+														.productImages[0] && (
+														<img
+															src={
+																product
+																	.productImages[0]
+															}
+															alt={
+																product.productName
+															}
+															style={{
+																width: "100px",
+																height: "100px",
+																objectFit:
+																	"cover",
+																marginRight:
+																	"10px",
+															}}
+														/>
+													)}
+												<ListItemText
+													primary={`Product Name: ${product.productName}`}
+													secondary={`Price: $${product.price} | Quantity: ${product.quantity}`}
+												/>
+
+												<Button
+													variant="outlined"
+													color="primary"
+													onClick={() =>
+														handleViewProduct(
+															product.productId
+														)
+													}
+													style={{ marginLeft: 10 }}
+												>
+													View Product
+												</Button>
+											</ListItem>
+										)
+									)
+								) : (
+									<ListItem>
+										No products in this order.
+									</ListItem>
+								)}
+							</List>
+						</div>
+					)}
+				</DialogContent>
+				<DialogActions>
+					<Button onClick={handleCloseModal} color="primary">
+						Close
+					</Button>
+				</DialogActions>
+			</Dialog>
 		</ThemeProvider>
 	);
 };
 
 export default OrderHistory;
-function handleFinishOrder(row: any): void {
-	throw new Error("Function not implemented.");
-}

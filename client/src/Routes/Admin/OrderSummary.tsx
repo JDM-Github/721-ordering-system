@@ -29,6 +29,7 @@ interface CartItem {
 		status: string;
 		patterns: [string];
 		availableColors: [string];
+		isCustomizable: boolean;
 	};
 }
 
@@ -66,14 +67,12 @@ function OrderSummary() {
 				{
 					amount: calculateSubtotal(),
 					userId: user?.id,
-					body: {
-						userId: user?.id,
-						orders,
-					},
+					orders,
 				}
 			);
 			if (response.redirectUrl) {
-				window.location.href = response.redirectUrl;
+				window.open(response.redirectUrl, "_blank");
+				navigate("/");
 			} else {
 				console.error("Payment URL not found.");
 				toast.error("Failed	to get the payment link.");
@@ -158,14 +157,15 @@ function OrderSummary() {
 						>
 							{/* Product Image */}
 							<img
-								src={item.Product.productImage}
+								src={item.Product.productImages[0]}
 								alt={item.Product.productName}
 								className="w-24 h-24 object-cover rounded-lg"
 							/>
 							{/* Product Details */}
 							<div className="flex-1 ml-0 md:ml-4 mt-4 md:mt-0">
 								<h3 className="text-lg font-semibold">
-									{item.Product.productName}
+									{item.Product.productName.slice(0, 25) +
+										"..."}
 								</h3>
 								<p className="text-gray-500">
 									Size: {item.customization.selectedSize}
@@ -198,15 +198,17 @@ function OrderSummary() {
 								</div>
 
 								{/* View Design Button */}
-								<Link
-									to={{
-										pathname: `/view-design`,
-									}}
-									state={{ order: item, orders }}
-									className="mt-3 bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 transition duration-200"
-								>
-									View Design
-								</Link>
+								{item.Product.isCustomizable && (
+									<Link
+										to={{
+											pathname: `/view-design`,
+										}}
+										state={{ order: item, orders }}
+										className="mt-3 bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 transition duration-200"
+									>
+										View Design
+									</Link>
+								)}
 							</div>
 							{/* Product Price */}
 							<p className="text-lg font-medium mt-4 md:mt-0">

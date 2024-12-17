@@ -1,301 +1,325 @@
 import React, { useState } from "react";
-import {
-	Modal,
-	TextField,
-	Button,
-	Checkbox,
-	FormControlLabel,
-	MenuItem,
-	Select,
-	InputLabel,
-	FormControl,
-	ToggleButton,
-	ToggleButtonGroup,
-} from "@mui/material";
 import RequestHandler from "../Functions/RequestHandler";
 import { toast } from "react-toastify";
 
-export default function AddProductModal({
-	showModal,
-	setShowModal,
-	isAddModal,
-	currentProduct,
-	handleInputChange,
-	handleSave,
-	loadAllProducts,
-}) {
-	const [currentFile, setCurrentFile] = useState<File | null>(null);
-	const [newProduct, setNewProduct] = useState(currentProduct || {});
-	const [selectedSize, setSelectedSize] = useState(newProduct.size || []);
-	const [imagePreview, setImagePreview] = useState(
-		newProduct.productImage || ""
+const AddProductModal = ({ original = null, isOpen, onClose, onSave }) => {
+	const [id, setId] = useState(original?.id || null);
+	const [productName, setProductName] = useState(original?.productName || "");
+	const [productImages, setProductImages] = useState(
+		original?.productImages || [""]
+	);
+	const [productAllNames, setProductAllNames] = useState(
+		original?.productAllNames || [""]
+	);
+	const [price, setPrice] = useState(original?.price || 0);
+	const [size, setSize] = useState(original?.size || ["S", "M", "L", "XL"]);
+	const [stocks, setStocks] = useState(original?.stocks || 0);
+	const [description, setDescription] = useState(original?.description || "");
+	const [isCustomizable, setIsCustomizable] = useState(
+		original?.isCustomizable || false
 	);
 
-	const handleClose = () => {
-		setShowModal(false);
+	const handleAddToList = (setter, list) => setter([...list, ""]);
+	const handleRemoveFromList = (setter, list, index) => {
+		const updatedList = list.filter((_, i) => i !== index);
+		setter(updatedList);
+	};
+	const handleListChange = (setter, list, index, value) => {
+		const updatedList = [...list];
+		updatedList[index] = value;
+		setter(updatedList);
 	};
 
-	const handleSaveProduct = async () => {
-		// handleSave(newProduct);
-		await createProduct();
-		setShowModal(false);
-	};
-
-	const handleSizeChange = (event, newSize) => {
-		setSelectedSize(newSize);
-		setNewProduct({ ...newProduct, size: newSize });
-	};
-
-	const handleImageChange = (e) => {
-		const file = e.target.files[0];
-		setCurrentFile(file);
-		if (file) {
-			const reader = new FileReader();
-			reader.onloadend = () => {
-				setImagePreview(reader.result);
-				setNewProduct({ ...newProduct, productImage: reader.result });
-			};
-			reader.readAsDataURL(file);
-		}
-	};
-
-	const createProduct = async () => {
-		const toastId = toast.loading("Adding product...", {
-			position: "top-center",
-		});
-		let imageUrl = "";
+	const handleSave = async () => {
+		const newProduct = {
+			id,
+			productName,
+			productImages,
+			productAllNames,
+			price,
+			size,
+			stocks,
+			description,
+			isCustomizable,
+		};
 		try {
-			if (currentFile && currentFile instanceof File) {
-				const formData = new FormData();
-				formData.append("file", currentFile);
-				try {
-					const data = await RequestHandler.handleRequest(
-						"post",
-						"file/upload-image",
-						formData,
-						{
-							headers: {
-								"Content-Type": "multipart/form-data",
-							},
-						}
-					);
-					if (data.success) {
-						imageUrl = data.uploadedDocument;
-					} else {
-						toast.update(toastId, {
-							render: data.message,
-							type: "error",
-							isLoading: false,
-							autoClose: 3000,
-							position: "top-center",
-						});
-						return;
-					}
-				} catch (error) {
-					console.error("Error submitting the document:", error);
-					toast.update(toastId, {
-						render: "Error submitting the document",
-						type: "error",
-						isLoading: false,
-						autoClose: 3000,
-						position: "top-left",
-					});
-				}
-			}
-
 			const data = await RequestHandler.handleRequest(
 				"post",
-				"product/create",
-				{
-					productImage: imageUrl,
-					productName: newProduct.productName,
-					price: newProduct.price,
-					size: newProduct.size,
-					stocks: newProduct.stocks,
-					description: newProduct.description,
-					isCustomizable: newProduct.isCustomizable,
-				}
+				"product/add-product",
+				newProduct
 			);
-
-			if (data.success) {
-				toast.update(toastId, {
-					render: "Product added successfully!",
-					type: "success",
-					isLoading: false,
-					autoClose: 3000,
-					position: "top-center",
-				});
-				loadAllProducts();
+			if (!data.success) {
+				alert(JSON.stringify(data));
 			} else {
-				toast.update(toastId, {
-					render: data.message,
-					type: "error",
-					isLoading: false,
-					autoClose: 3000,
-					position: "top-center",
-				});
-				return;
+				onSave();
+				toast.success("Product saved successfully!");
 			}
-		} catch (e) {
-			toast.update(toastId, {
-				render: `${e}`,
-				type: "error",
-				isLoading: false,
-				autoClose: 3000,
-				position: "top-center",
-			});
+		} catch (error) {
+			toast.error(`An error occurred while saving the product. ${error}`);
 		}
+		onClose();
 	};
 
+	if (!isOpen) return null;
+
 	return (
-		<Modal open={showModal} onClose={handleClose}>
-			<div
-				style={{
-					backgroundColor: "white",
-					padding: "20px",
-					maxWidth: "500px",
-					margin: "50px auto",
-					borderRadius: "8px",
-					overflowY: "auto",
-					maxHeight: "80vh",
-				}}
-			>
-				<h2>{!isAddModal ? "Edit Product" : "Add Product"}</h2>
-
-				{/* Product Name */}
-				<TextField
-					label="Product Name"
-					value={newProduct.productName || ""}
-					onChange={(e) =>
-						setNewProduct({
-							...newProduct,
-							productName: e.target.value,
-						})
-					}
-					fullWidth
-					margin="normal"
-				/>
-
-				{/* Price */}
-				<TextField
-					label="Price"
-					value={newProduct.price || ""}
-					onChange={(e) =>
-						setNewProduct({ ...newProduct, price: e.target.value })
-					}
-					fullWidth
-					margin="normal"
-					type="number"
-				/>
-
-				{/* Stocks */}
-				<TextField
-					label="Stocks"
-					value={newProduct.stocks || ""}
-					onChange={(e) =>
-						setNewProduct({ ...newProduct, stocks: e.target.value })
-					}
-					fullWidth
-					margin="normal"
-					type="number"
-				/>
-
-				{/* Size (Toggle Buttons) */}
-				<div style={{ margin: "20px 0" }}>
-					<InputLabel>Size</InputLabel>
-					<ToggleButtonGroup
-						value={selectedSize}
-						onChange={handleSizeChange}
-						aria-label="size selection"
-						fullWidth
-						style={{
-							display: "flex",
-							justifyContent: "space-evenly",
-						}}
-					>
-						{["S", "M", "L", "XL"].map((size) => (
-							<ToggleButton
-								key={size}
-								value={size}
-								aria-label={size}
-							>
-								{size}
-							</ToggleButton>
-						))}
-					</ToggleButtonGroup>
-				</div>
-
-				{/* Description */}
-				<TextField
-					label="Description"
-					value={newProduct.description || ""}
-					onChange={(e) =>
-						setNewProduct({
-							...newProduct,
-							description: e.target.value,
-						})
-					}
-					fullWidth
-					margin="normal"
-					multiline
-					rows={4}
-				/>
-
-				{/* Is Customizable */}
-				<FormControlLabel
-					control={
-						<Checkbox
-							checked={newProduct.isCustomizable || false}
-							onChange={(e) =>
-								setNewProduct({
-									...newProduct,
-									isCustomizable: e.target.checked,
-								})
-							}
-							color="primary"
-						/>
-					}
-					label="Customizable"
-				/>
-
-				{/* Image Upload (File Input) */}
-				<input
-					type="file"
-					accept="image/*"
-					onChange={handleImageChange}
-					style={{ display: "block", marginTop: "20px" }}
-				/>
-				{imagePreview && (
-					<div
-						style={{
-							marginTop: "20px",
-							textAlign: "center",
-						}}
-					>
-						<img
-							src={imagePreview}
-							alt="Product Preview"
-							style={{
-								maxWidth: "100%",
-								maxHeight: "300px",
-								objectFit: "contain",
-								margin: "10px 0",
-							}}
+		<div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+			<div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-lg max-h-[90vh] overflow-y-auto">
+				<h2 className="text-2xl font-semibold mb-4">
+					{id ? "Edit Product" : "Add New Product"}
+				</h2>
+				<div className="space-y-4">
+					{/* Product Name */}
+					<div>
+						<label
+							htmlFor="productName"
+							className="block text-sm font-medium text-gray-700"
+						>
+							Product Name
+						</label>
+						<input
+							type="text"
+							id="productName"
+							value={productName}
+							onChange={(e) => setProductName(e.target.value)}
+							className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+							placeholder="Enter product name"
 						/>
 					</div>
-				)}
 
-				{/* Save Button */}
-				<Button
-					variant="contained"
-					color="primary"
-					onClick={handleSaveProduct}
-					fullWidth
-					style={{ marginTop: "20px" }}
-				>
-					Save
-				</Button>
+					{/* Product Images */}
+					<div>
+						<label className="block text-sm font-medium text-gray-700">
+							Product Images
+						</label>
+						{productImages.map((image, index) => (
+							<div
+								key={index}
+								className="flex items-center space-x-2 mt-1"
+							>
+								<input
+									type="file"
+									accept="image/*"
+									onChange={(e) =>
+										handleListChange(
+											setProductImages,
+											productImages,
+											index,
+											e.target.files[0]
+										)
+									}
+									className="block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+								/>
+								<button
+									onClick={() =>
+										handleRemoveFromList(
+											setProductImages,
+											productImages,
+											index
+										)
+									}
+									className="text-red-600 hover:text-red-800"
+								>
+									Remove
+								</button>
+							</div>
+						))}
+						<button
+							onClick={() =>
+								handleAddToList(setProductImages, productImages)
+							}
+							className="mt-2 text-indigo-600 hover:text-indigo-800"
+						>
+							Add Image
+						</button>
+					</div>
+
+					{/* Product Names */}
+					<div>
+						<label className="block text-sm font-medium text-gray-700">
+							All Names
+						</label>
+						{productAllNames.map((name, index) => (
+							<div
+								key={index}
+								className="flex items-center space-x-2 mt-1"
+							>
+								<input
+									type="text"
+									value={name}
+									onChange={(e) =>
+										handleListChange(
+											setProductAllNames,
+											productAllNames,
+											index,
+											e.target.value
+										)
+									}
+									className="block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+									placeholder="Enter alternative name"
+								/>
+								<button
+									onClick={() =>
+										handleRemoveFromList(
+											setProductAllNames,
+											productAllNames,
+											index
+										)
+									}
+									className="text-red-600 hover:text-red-800"
+								>
+									Remove
+								</button>
+							</div>
+						))}
+						<button
+							onClick={() =>
+								handleAddToList(
+									setProductAllNames,
+									productAllNames
+								)
+							}
+							className="mt-2 text-indigo-600 hover:text-indigo-800"
+						>
+							Add Name
+						</button>
+					</div>
+
+					{/* Price */}
+					<div>
+						<label
+							htmlFor="price"
+							className="block text-sm font-medium text-gray-700"
+						>
+							Price
+						</label>
+						<input
+							type="number"
+							id="price"
+							value={price}
+							onChange={(e) => setPrice(e.target.value)}
+							className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+							placeholder="Enter product price"
+						/>
+					</div>
+
+					{/* Size */}
+					<div>
+						<label className="block text-sm font-medium text-gray-700">
+							Available Sizes
+						</label>
+						{size.map((s, index) => (
+							<div
+								key={index}
+								className="flex items-center space-x-2 mt-1"
+							>
+								<input
+									type="text"
+									value={s}
+									onChange={(e) =>
+										handleListChange(
+											setSize,
+											size,
+											index,
+											e.target.value
+										)
+									}
+									className="block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+									placeholder="Enter size"
+								/>
+								<button
+									onClick={() =>
+										handleRemoveFromList(
+											setSize,
+											size,
+											index
+										)
+									}
+									className="text-red-600 hover:text-red-800"
+								>
+									Remove
+								</button>
+							</div>
+						))}
+						<button
+							onClick={() => handleAddToList(setSize, size)}
+							className="mt-2 text-indigo-600 hover:text-indigo-800"
+						>
+							Add Size
+						</button>
+					</div>
+
+					{/* Stocks */}
+					<div>
+						<label
+							htmlFor="stocks"
+							className="block text-sm font-medium text-gray-700"
+						>
+							Stocks
+						</label>
+						<input
+							type="number"
+							id="stocks"
+							value={stocks}
+							onChange={(e) => setStocks(e.target.value)}
+							className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+							placeholder="Enter stock quantity"
+						/>
+					</div>
+
+					{/* Description */}
+					<div>
+						<label
+							htmlFor="description"
+							className="block text-sm font-medium text-gray-700"
+						>
+							Description
+						</label>
+						<textarea
+							id="description"
+							value={description}
+							onChange={(e) => setDescription(e.target.value)}
+							className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+							placeholder="Enter product description"
+						/>
+					</div>
+
+					{/* Customizable */}
+					<div className="flex items-center">
+						<input
+							type="checkbox"
+							id="isCustomizable"
+							checked={isCustomizable}
+							onChange={() => setIsCustomizable(!isCustomizable)}
+							className="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
+						/>
+						<label
+							htmlFor="isCustomizable"
+							className="ml-2 text-sm text-gray-700"
+						>
+							Customizable
+						</label>
+					</div>
+
+					{/* Buttons */}
+					<div className="flex justify-end space-x-4 mt-4">
+						<button
+							onClick={onClose}
+							className="px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600"
+						>
+							Cancel
+						</button>
+						<button
+							onClick={handleSave}
+							className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700"
+						>
+							Save
+						</button>
+					</div>
+				</div>
 			</div>
-		</Modal>
+		</div>
 	);
-}
+};
+
+export default AddProductModal;

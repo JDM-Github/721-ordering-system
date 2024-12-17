@@ -26,6 +26,8 @@
 		"netlify-cli": "^17.26.2",
 		"netlify-lambda": "^2.0.16",
 		"nodemailer": "^6.9.14",
+		"paymongo": "^1.3.2",
+		"paymongo-node": "^10.17.0",
 		"pg": "^8.12.0",
 		"react-chartjs-2": "^5.2.0",
 		"react-to-print": "^3.0.2",

@@ -69,7 +69,6 @@ const CustomizationPage: React.FC = () => {
 		const userDetails = JSON.parse(localStorage.getItem("user") ?? "{}");
 		setUser(userDetails);
 	}, []);
-
 	const navigate = useNavigate();
 	const location = useLocation();
 	const [color, setColor] = useState<string>("#ffffff");
@@ -81,7 +80,6 @@ const CustomizationPage: React.FC = () => {
 	const [selectedSize, setSelectedSize] = useState<string | null>(null);
 	const [product, setProduct] = useState<Product | null>(null);
 	const [activeImage, setActiveImage] = useState(null);
-
 	const [imagePattern, setImagePattern] = useState<ImageComp | null>({
 		uniqueId: "pattern-image",
 		img: "",
@@ -100,7 +98,6 @@ const CustomizationPage: React.FC = () => {
 	const [isreloaded, setisreloaded] = useState(true);
 	const [imageComponents, setImageComponents] = useState<ImageComp[]>([]);
 	const [labelComponents, setLabelComponents] = useState<LabelComp[]>([]);
-
 	const [backgroundColor, setBackgroundColor] = useState("#eee");
 	const [index, setIndex] = useState(0);
 	const updateImagePattern = (uniqueId, updatedProperties) => {
@@ -108,7 +105,6 @@ const CustomizationPage: React.FC = () => {
 			prev ? { ...prev, ...updatedProperties } : null
 		);
 	};
-
 	const updateImageComponent = (uniqueId, updatedProperties) => {
 		setImageComponents((prevComponents) =>
 			prevComponents.map((comp) =>
@@ -127,8 +123,6 @@ const CustomizationPage: React.FC = () => {
 			)
 		);
 	};
-	const [customization, setCustomization] = useState({});
-
 	const saveToLocalStorage = (key, value) => {
 		localStorage.setItem(key, JSON.stringify(value));
 	};
@@ -168,32 +162,6 @@ const CustomizationPage: React.FC = () => {
 		}
 	};
 
-	// const setTargetIndex = (newIndex) => {
-	// 	setActiveImage(null);
-	// 	setisreloaded(true);
-
-	// 	const customize = {
-	// 		image: imageComponents,
-	// 		label: labelComponents,
-	// 	};
-
-	// 	setCustomization((prevCustomization) => ({
-	// 		...prevCustomization,
-	// 		[index]: customize,
-	// 	}));
-
-	// 	setIndex(newIndex);
-
-	// 	if (customization.hasOwnProperty(newIndex)) {
-	// 		const oldCustomization = customization[newIndex];
-	// 		setImageComponents(oldCustomization.image);
-	// 		setLabelComponents(oldCustomization.label);
-	// 	} else {
-	// 		setImageComponents([]);
-	// 		setLabelComponents([]);
-	// 	}
-	// };
-
 	useEffect(() => {
 		const handleKeyDown = (event: KeyboardEvent) => {
 			if (event.key === "Delete" && activeImage) {
@@ -217,34 +185,7 @@ const CustomizationPage: React.FC = () => {
 	}, [activeImage, setImageComponents, setLabelComponents, setActiveImage]);
 
 	const saveData = async () => {};
-
-	const loadData = async (file: File) => {
-		// try {
-		// 	const fileText = await file.text();
-		// 	const loadedData = JSON.parse(fileText);
-		// 	if (!loadedData.product) {
-		// 		toast.error("Invalid Design and Product");
-		// 		return;
-		// 	}
-		// 	if (loadedData.product.id !== product?.id) {
-		// 		toast.error(
-		// 			"Invalid Design for this Product. Please use the same product"
-		// 		);
-		// 		return;
-		// 	}
-		// 	setLoadedData(null);
-		// 	setColor(loadedData.color || "");
-		// 	setPattern(loadedData.pattern || "");
-		// 	setCustomName(loadedData.customName || "");
-		// 	setCustomNumber(loadedData.customNumber || "");
-		// 	setNotes(loadedData.notes || "");
-		// 	setSelectedSize(loadedData.selectedSize || null);
-		// 	toast.success("Successfully loaded design");
-		// } catch (error) {
-		// 	console.error("Error loading file:", error);
-		// 	toast.error("Failed to load data from file.");
-		// }
-	};
+	const loadData = async (file: File) => {};
 
 	const addToCart = async () => {
 		if (!user || Object.keys(user).length === 0) {
@@ -551,7 +492,6 @@ const CustomizationPage: React.FC = () => {
 	};
 	const containerRef = useRef<HTMLImageElement | null>(null);
 	const cardRef = useRef<HTMLDivElement>(null);
-	// const reactToPrintFn = useReactToPrint({ cardRef });
 	const reactToPrintFn = useReactToPrint({
 		content: () => cardRef.current,
 	});
@@ -612,12 +552,7 @@ const CustomizationPage: React.FC = () => {
 									index={index}
 									color={color}
 									product={product}
-									selectedPattern={pattern}
 									imagePattern={imagePattern}
-									containerRef={containerRef}
-									activeImage={activeImage}
-									setActiveImage={setActiveImage}
-									updateImageComponent={updateImagePattern}
 								/>
 							</div>
 							{labelComponents.map((labelComp, index) => (

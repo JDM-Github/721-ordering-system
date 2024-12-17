@@ -166,7 +166,7 @@ const ProductView: React.FC = () => {
 					<div className="flex flex-col justify-between">
 						<div>
 							<h1 className="text-4xl font-bold text-orange-500 mb-6">
-								{product?.productName}
+								{product?.productName.slice(0, 20) + "..."}
 							</h1>
 							<hr className="my-5" />
 

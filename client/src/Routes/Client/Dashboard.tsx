@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Pie, Bar } from "react-chartjs-2";
 import {
 	Chart as ChartJS,
@@ -9,8 +9,9 @@ import {
 	CategoryScale,
 	LinearScale,
 } from "chart.js";
+import RequestHandler from "../../Functions/RequestHandler";
+import { toast } from "react-toastify";
 
-// Register Chart.js components
 ChartJS.register(
 	ArcElement,
 	Tooltip,
@@ -21,25 +22,34 @@ ChartJS.register(
 );
 
 export default function Dashboard() {
-	// Fake data for the Pie chart
+	// totalOrders,
+	// 			totalItemsLeft,
+	// 			totalUsers,
+	// 			statusCounts,
+	// 			completedOrdersByWeek,
+	const [totalOrders, setTotalOrders] = useState<any>(0);
+	const [totalItemsLeft, setTotalItemsLeft] = useState<any>(0);
+	const [totalUsers, setTotalUsers] = useState<any>(0);
+	const [statusCounts, setStatusCounts] = useState<any>([]);
+	const [completedOrdersByWeek, setCompletedOrdersByWeek] = useState<any>([]);
+
 	const pieData = {
-		labels: ["Completed", "Pending", "Canceled"],
+		labels: [],
 		datasets: [
 			{
-				data: [50, 30, 20],
-				backgroundColor: ["#FF9800", "#FFEB3B", "#f44336"], // Orange shades for theme
+				data: [],
+				backgroundColor: ["#FF9800", "#FFEB3B", "#f44336"],
 				hoverBackgroundColor: ["#FB8C00", "#FBC02D", "#D32F2F"],
 			},
 		],
 	};
 
-	// Fake data for the Bar chart
 	const barData = {
-		labels: ["Week 1", "Week 2", "Week 3", "Week 4"],
+		labels: [],
 		datasets: [
 			{
 				label: "Orders Processed",
-				data: [30, 45, 25, 60],
+				data: [],
 				backgroundColor: "#FF9800",
 				borderRadius: 5,
 				borderColor: "#FB8C00",
@@ -47,6 +57,63 @@ export default function Dashboard() {
 			},
 		],
 	};
+
+	const loadRequest = async () => {
+		try {
+			const data = await RequestHandler.handleRequest(
+				"post",
+				"product/get-dashboard"
+			);
+			if (data.success) {
+				setTotalOrders(data.data.totalOrders);
+				setTotalItemsLeft(data.data.totalItemsLeft);
+				setTotalUsers(data.data.totalUsers);
+				setStatusCounts(data.data.statusCounts);
+				setCompletedOrdersByWeek(data.data.completedOrdersByWeek);
+				barData.labels = data.data.completedOrdersByWeek.map(
+					(item) => item.week
+				);
+				barData.datasets[0].data = data.data.completedOrdersByWeek.map(
+					(item) => item.count
+				);
+				// alert(JSON.stringify(data.data));
+			} else {
+				toast.error(data.message || "Unable to load order history");
+				return;
+			}
+		} catch (error) {
+			toast.error(error.message || "Unable to load order history");
+			return;
+		}
+	};
+	useEffect(() => {
+		loadRequest();
+	}, []);
+
+	// const pieData = {
+	// 	labels: ["Completed", "Pending", "Canceled"],
+	// 	datasets: [
+	// 		{
+	// 			data: [50, 30, 20],
+	// 			backgroundColor: ["#FF9800", "#FFEB3B", "#f44336"], // Orange shades for theme
+	// 			hoverBackgroundColor: ["#FB8C00", "#FBC02D", "#D32F2F"],
+	// 		},
+	// 	],
+	// };
+
+	// const barData = {
+	// 	labels: ["Week 1", "Week 2", "Week 3", "Week 4"],
+	// 	datasets: [
+	// 		{
+	// 			label: "Orders Processed",
+	// 			data: [30, 45, 25, 60],
+	// 			backgroundColor: "#FF9800",
+	// 			borderRadius: 5,
+	// 			borderColor: "#FB8C00",
+	// 			borderWidth: 1,
+	// 		},
+	// 	],
+	// };
 
 	const options = {
 		responsive: true,
@@ -78,7 +145,7 @@ export default function Dashboard() {
 							Total Orders
 						</h3>
 						<p className="text-3xl font-bold text-white mt-2">
-							256
+							{totalOrders}
 						</p>
 						<p className="text-sm text-white mt-2">This month</p>
 					</div>
@@ -89,7 +156,7 @@ export default function Dashboard() {
 							Inventory
 						</h3>
 						<p className="text-3xl font-bold text-white mt-2">
-							1,245 Items
+							{totalItemsLeft} Items
 						</p>
 						<p className="text-sm text-white mt-2">In Stock</p>
 					</div>
@@ -97,9 +164,11 @@ export default function Dashboard() {
 					{/* New Orders Card */}
 					<div className="bg-gradient-to-r from-green-500 to-lime-400 p-6 rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-200">
 						<h3 className="text-lg font-semibold text-white">
-							New Orders
+							Total Users
 						</h3>
-						<p className="text-3xl font-bold text-white mt-2">45</p>
+						<p className="text-3xl font-bold text-white mt-2">
+							{totalUsers}
+						</p>
 						<p className="text-sm text-white mt-2">
 							Waiting to be processed
 						</p>

@@ -21,6 +21,7 @@ interface Product {
 
 interface ImageComp {
 	uniqueId: string;
+	imgFileUrl: string;
 	img: string | File;
 	x: number;
 	y: number;
@@ -31,6 +32,7 @@ interface ImageComp {
 	widthPercent: number;
 	heightPercent: number;
 	isActive: boolean;
+	isPattern: boolean;
 }
 
 interface LabelComp {
@@ -74,6 +76,25 @@ export default function ViewDesign() {
 	const [loading, setLoading] = useState(false);
 	const containerRef = useRef<HTMLImageElement | null>(null);
 
+	const [index, setIndex] = useState(0);
+	const [activeImage, setActiveImage] = useState(null);
+	const [imagePattern, setImagePattern] = useState<ImageComp | null>({
+		uniqueId: "pattern-image",
+		img: "",
+		imgFileUrl: "",
+		width: 500,
+		height: 500,
+		widthPercent: 1,
+		heightPercent: 1,
+		x: 0,
+		y: 0,
+		pixelx: 0,
+		pixely: 0,
+		isActive: true,
+		isPattern: false,
+	});
+	const [isreloaded, setisreloaded] = useState(true);
+
 	return (
 		<div className="bg-gray-50 flex justify-center items-center py-8 px-4">
 			{loading ? (
@@ -96,9 +117,10 @@ export default function ViewDesign() {
 								ref={containerRef}
 							>
 								<ProductImageWithLogo
+									index={index}
 									color={color}
 									product={product}
-									selectedPattern={pattern}
+									imagePattern={imagePattern}
 								/>
 							</div>
 							{labelComponents.map((labelComp, index) => (
@@ -107,9 +129,11 @@ export default function ViewDesign() {
 									containerRef={containerRef}
 									labelComp={labelComp}
 									uniqueId={labelComp.uniqueId}
-									activeImage={null}
-									setActiveImage={null}
+									activeImage={activeImage}
+									setActiveImage={setActiveImage}
 									updateLabelComponent={null}
+									isreloaded={isreloaded}
+									setisreloaded={setisreloaded}
 									disabled={true}
 								/>
 							))}
@@ -119,16 +143,17 @@ export default function ViewDesign() {
 									containerRef={containerRef}
 									imageComp={imageComp}
 									uniqueId={imageComp.uniqueId}
-									activeImage={null}
-									setActiveImage={null}
+									activeImage={activeImage}
+									setActiveImage={setActiveImage}
 									updateImageComponent={null}
+									isreloaded={isreloaded}
+									setisreloaded={setisreloaded}
 									disabled={true}
 								/>
 							))}
 						</div>
 					</div>
 
-					{/* Right Side: Editing Section */}
 					<div className="flex flex-col justify-between h-[70vh] overflow-y-auto px-4 scrollbar-thin border border-gray-300">
 						<div className="space-y-6">
 							<div className="mb-8">

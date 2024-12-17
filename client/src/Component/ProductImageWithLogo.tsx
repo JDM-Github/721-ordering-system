@@ -253,12 +253,7 @@ export default function ProductImageWithLogo({
 	color,
 	product,
 	index,
-	selectedPattern,
 	imagePattern,
-	containerRef,
-	activeImage,
-	setActiveImage,
-	updateImageComponent,
 }) {
 	const [colorRGB, setColorRGB] = useState({ r: 0, g: 0, b: 0 });
 	const [showFront, setShowFront] = useState(true); // State to toggle between front and back

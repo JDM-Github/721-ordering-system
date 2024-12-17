@@ -21,6 +21,7 @@ interface CartItem {
 	};
 	Product: {
 		productImage: string;
+		productImages: [string];
 		productName: string;
 		price: number;
 		size: [string];
@@ -57,13 +58,7 @@ const ShoppingCart: React.FC = () => {
 			);
 			if (data.success) {
 				setOrders(data.orders);
-				toast.update(toastId, {
-					render: "Successfully load all cart products.",
-					type: "success",
-					isLoading: false,
-					autoClose: 3000,
-					position: "top-center",
-				});
+				toast.dismiss(toastId);
 			} else {
 				toast.update(toastId, {
 					render: data.message,
@@ -190,7 +185,7 @@ const ShoppingCart: React.FC = () => {
 								{/* Product Image */}
 								<div className="flex-shrink-0 w-16 h-16 bg-gray-200 rounded-md overflow-hidden mb-4 sm:mb-0">
 									<img
-										src={item.Product.productImage}
+										src={item.Product.productImages[0]}
 										alt={item.Product.productName}
 										className="w-full h-full object-cover"
 									/>

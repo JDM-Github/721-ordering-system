@@ -19,10 +19,6 @@ const sequelize = new Sequelize(
 const Product = sequelize.define(
 	"Product",
 	{
-		// productImage: {
-		// 	type: DataTypes.STRING,
-		// 	defaultValue: "",
-		// },
 		productImages: {
 			type: DataTypes.ARRAY(DataTypes.STRING),
 			defaultValue: [""],
@@ -54,23 +50,38 @@ const Product = sequelize.define(
 			type: DataTypes.STRING,
 			defaultValue: "Available",
 		},
+		isArchive: {
+			type: DataTypes.BOOLEAN,
+			defaultValue: false,
+		},
 		isCustomizable: {
 			type: DataTypes.BOOLEAN,
 			defaultValue: true,
 		},
-		// patterns: {
-		// 	type: DataTypes.ARRAY(DataTypes.STRING),
-		// 	defaultValue: ["Plain", "Striped", "Graphic"],
-		// },
-		// availableColors: {
-		// 	type: DataTypes.ARRAY(DataTypes.STRING),
-		// 	defaultValue: ["White", "Black", "Red", "Blue", "Green"],
-		// },
 	},
 	{
 		timestamps: true,
 	}
 );
+
+const Materials = sequelize.define("Material", {
+	name: {
+		type: DataTypes.STRING,
+		defaultValue: "",
+	},
+	quantity: {
+		type: DataTypes.INTEGER,
+		defaultValue: 0,
+	},
+	price: {
+		type: DataTypes.DECIMAL,
+		defaultValue: 0.0,
+	},
+	archived: {
+		type: DataTypes.BOOLEAN,
+		defaultValue: false,
+	},
+});
 
 const User = sequelize.define("User", {
 	profileImage: {
@@ -122,6 +133,10 @@ const OrderProduct = sequelize.define(
 			},
 			onDelete: "CASCADE",
 		},
+		status: {
+			type: DataTypes.STRING,
+			defaultValue: "Pending",
+		},
 		productId: {
 			type: DataTypes.INTEGER,
 			references: {
@@ -129,6 +144,14 @@ const OrderProduct = sequelize.define(
 				key: "id",
 			},
 			onDelete: "CASCADE",
+		},
+		isOrdered: {
+			type: DataTypes.BOOLEAN,
+			defaultValue: false,
+		},
+		completedAt: {
+			type: DataTypes.DATE,
+			defaultValue: null,
 		},
 		quantity: {
 			type: DataTypes.INTEGER,
@@ -159,10 +182,29 @@ const OrderSummary = sequelize.define("OrderSummary", {
 		},
 		onDelete: "CASCADE",
 	},
+	referenceNumber: {
+		type: DataTypes.STRING,
+		defaultValue: "",
+	},
 	products: {
 		type: DataTypes.ARRAY(DataTypes.INTEGER),
 		defaultValue: [],
 	},
+	isCompleted: {
+		type: DataTypes.BOOLEAN,
+		defaultValue: false,
+	},
+	status: {
+		type: DataTypes.STRING,
+		defaultValue: "Pending",
+	},
+
+	// Pending
+	// Sewing
+	// Painting
+	// Packing
+	// Ready to Pick
+	// Completed
 });
 
 User.hasMany(OrderSummary, {
@@ -230,8 +272,12 @@ OrderProduct.belongsTo(User, {
 	foreignKey: "productOrderId",
 });
 
+OrderSummary.belongsToMany(Product, { through: "OrderSummaryProducts" });
+Product.belongsToMany(OrderSummary, { through: "OrderSummaryProducts" });
+
 module.exports = {
 	sequelize,
+	Materials,
 	Product,
 	User,
 	OrderProduct,

@@ -1,19 +1,43 @@
 import React, { useEffect, useState } from "react";
 import RequestHandler from "../../Functions/RequestHandler";
 import { DataGrid } from "@mui/x-data-grid";
-import { Button } from "@mui/material";
+import {
+	Button,
+	Dialog,
+	DialogActions,
+	DialogContent,
+	DialogTitle,
+	List,
+	ListItem,
+	ListItemText,
+} from "@mui/material";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
-import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
+import { useNavigate } from "react-router-dom";
 
 const OrderHistory = ({ user }) => {
 	const [orders, setOrders] = useState([]);
+	const [openModal, setOpenModal] = useState(false);
+	const [selectedOrder, setSelectedOrder] = useState<any>(null);
 	const navigate = useNavigate();
 
 	const handleViewOrder = (order) => {
+		setSelectedOrder(order);
+		setOpenModal(true);
+	};
+
+	// Close the modal
+	const handleCloseModal = () => {
+		setOpenModal(false);
+		setSelectedOrder(null);
+	};
+
+	const handleViewProduct = (order) => {
+		// navigate(`/product/${productId}`);
+		alert(JSON.stringify(order));
 		navigate("/view-design", {
 			state: {
-				order: order.productData,
+				order: order,
 				orders: null,
 			},
 		});
@@ -27,17 +51,20 @@ const OrderHistory = ({ user }) => {
 				{ userId: user?.id }
 			);
 			if (data.success) {
-				const ord = data.products.map((product) => ({
-					id: product.id,
-					productName: product.Product.productName,
-					price: product.Product.price,
-					quantity: product.quantity,
-					color: product.customization.color,
-					size: product.customization.selectedSize,
-					pattern: product.customization.pattern,
-					createdAt: new Date(product.createdAt).toLocaleDateString(),
-					productData: product,
+				const ord = data.orderSummaries.map((order) => ({
+					id: order.id,
+					referenceNumber: order.referenceNumber,
+					createdAt: new Date(order.createdAt).toLocaleDateString(),
+					products: order.products.map((product) => ({
+						productId: product.productId,
+						productName: product.productName,
+						price: product.price,
+						quantity: product.quantity,
+						customization: product.customization,
+						productImages: product.productImages,
+					})),
 				}));
+				console.log(data.orderSummaries);
 				setOrders(ord);
 			} else {
 				toast.error(data.message || "Unable to load order history");
@@ -48,19 +75,19 @@ const OrderHistory = ({ user }) => {
 			return;
 		}
 	};
+
 	useEffect(() => {
 		loadRequest();
 	}, []);
 
 	const columns = [
-		{ field: "id", headerName: "Order ID" },
-		{ field: "productName", headerName: "Product Name" },
-		{ field: "price", headerName: "Price" },
-		{ field: "quantity", headerName: "Quantity" },
-		{ field: "color", headerName: "Color" },
-		{ field: "size", headerName: "Size" },
-		{ field: "pattern", headerName: "Pattern" },
-		{ field: "createdAt", headerName: "Order Date" },
+		{ field: "id", headerName: "Order ID", width: 200 },
+		{
+			field: "referenceNumber",
+			headerName: "Reference Number",
+			width: 200,
+		},
+		{ field: "createdAt", headerName: "Order Date", width: 150 },
 		{
 			field: "actions",
 			headerName: "Actions",
@@ -68,12 +95,13 @@ const OrderHistory = ({ user }) => {
 				<Button
 					variant="contained"
 					color="primary"
-					onClick={() => handleViewOrder(params.row)}
+					onClick={() => handleViewOrder(params.row)} // Open modal on click
 					style={{ backgroundColor: "#FFA500" }}
 				>
 					View Order
 				</Button>
 			),
+			width: 150,
 		},
 	];
 
@@ -93,12 +121,13 @@ const OrderHistory = ({ user }) => {
 
 	return (
 		<ThemeProvider theme={theme}>
-			<div className="flex justify-center  w-full min-h-[80vh] p-4">
+			<div className="flex justify-center w-full min-h-[80vh] p-4">
 				<div className="bg-white shadow-lg rounded-lg p-4">
 					<DataGrid
+						disableColumnSelector
+						disableRowSelectionOnClick
 						rows={orders}
 						columns={columns}
-						checkboxSelection
 						style={{ borderRadius: "8px" }}
 						sx={{
 							"& .MuiDataGrid-root": {
@@ -119,6 +148,78 @@ const OrderHistory = ({ user }) => {
 					/>
 				</div>
 			</div>
+
+			<Dialog open={openModal} onClose={handleCloseModal}>
+				<DialogTitle>Order Details</DialogTitle>
+				<DialogContent>
+					{selectedOrder && (
+						<div>
+							<h3>
+								Reference Number:{" "}
+								{selectedOrder.referenceNumber}
+							</h3>
+							<List>
+								{selectedOrder.products &&
+								selectedOrder.products.length > 0 ? (
+									selectedOrder.products.map(
+										(product, index) => (
+											<ListItem key={index}>
+												{product.productImages &&
+													product
+														.productImages[0] && (
+														<img
+															src={
+																product
+																	.productImages[0]
+															}
+															alt={
+																product.productName
+															}
+															style={{
+																width: "100px",
+																height: "100px",
+																objectFit:
+																	"cover",
+																marginRight:
+																	"10px",
+															}}
+														/>
+													)}
+												<ListItemText
+													primary={`Product Name: ${product.productName}`}
+													secondary={`Price: $${product.price} | Quantity: ${product.quantity}`}
+												/>
+
+												<Button
+													variant="outlined"
+													color="primary"
+													onClick={() =>
+														handleViewProduct(
+															product
+														)
+													}
+													style={{ marginLeft: 10 }}
+												>
+													View Product
+												</Button>
+											</ListItem>
+										)
+									)
+								) : (
+									<ListItem>
+										No products in this order.
+									</ListItem>
+								)}
+							</List>
+						</div>
+					)}
+				</DialogContent>
+				<DialogActions>
+					<Button onClick={handleCloseModal} color="primary">
+						Close
+					</Button>
+				</DialogActions>
+			</Dialog>
 		</ThemeProvider>
 	);
 };

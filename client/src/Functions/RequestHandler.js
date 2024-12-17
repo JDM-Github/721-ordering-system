@@ -2,7 +2,7 @@ import axios from "axios";
 
 class RequestHandler {
 	static async handleRequest(method, link, requestData = {}, headers = {}) {
-		const development = false;
+		const development = true;
 		const baseURL = development
 			? "http://localhost:8888"
 			: "https://721ordering.netlify.app/";

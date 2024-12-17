@@ -8,7 +8,12 @@ const bodyParser = require("body-parser");
 const app = express();
 const router = express.Router();
 
-const { sequelize } = require("./models");
+const {
+	sequelize,
+	CartSummary,
+	OrderProduct,
+	OrderSummary,
+} = require("./models");
 const { imageRouter } = require("./routers");
 
 DEVELOPMENT = false;
@@ -36,25 +41,34 @@ router.get("/reset", async (req, res) => {
 	res.send("RESETED");
 });
 
+// paymongo.auth("sk_test_PoK58FtMrQaHHc2EyguAKYwj");
+// paymongo
+// 	.createALink({
+// 		data: {
+// 			attributes: {
+// 				amount: 100,
+// 				description: "Order Product",
+// 				remarks: "Order a product",
+// 			},
+// 		},
+// 	})
+// 	.then(({ data }) => console.log(data))
+// 	.catch((err) => console.error(err));
 const PAYMONGO_API_KEY = "sk_test_PoK58FtMrQaHHc2EyguAKYwj";
 router.post("/create-payment", async (req, res) => {
-	const { amount, userId, body } = req.body;
+	const { amount, userId, orders } = req.body;
+	const orderIds = orders.map((order) => order.id);
+
 	try {
-		const sourceResponse = await axios.post(
-			"https://api.paymongo.com/v1/sources",
+		const response = await axios.post(
+			"https://api.paymongo.com/v1/links",
 			{
 				data: {
 					attributes: {
-						amount: 1000 * 100,
+						amount: Math.max(amount, 100) * 100,
 						currency: "PHP",
-						type: "gcash",
-						redirect: {
-							success: `http://localhost:3000/payment-success/?user=${userId}&body=${encodeURIComponent(
-								JSON.stringify(body)
-							)}`,
-							expired: `http://localhost:3000/payment-failed/`,
-							failed: `http://localhost:3000/payment-failed/`,
-						},
+						description: "Order Product",
+						remarks: "Order a product",
 					},
 				},
 			},
@@ -67,14 +81,35 @@ router.post("/create-payment", async (req, res) => {
 				},
 			}
 		);
-		const gcashSource = sourceResponse.data.data;
-		res.json({
-			redirectUrl: gcashSource.attributes.redirect.checkout_url,
+
+		const checkoutUrl = response.data.data.attributes.checkout_url;
+		const referenceNumber = response.data.data.attributes.reference_number;
+
+		const cart = await CartSummary.findOne({ where: { userId } });
+		if (cart) {
+			const updatedProducts = cart.products.filter(
+				(productId) => !orderIds.includes(productId)
+			);
+			await cart.update({ products: updatedProducts });
+			console.log("Cart updated after removing ordered products.");
+		}
+
+		await OrderSummary.create({
+			userId: userId,
+			referenceNumber: referenceNumber,
+			products: orderIds,
+		});
+
+		res.send({
+			success: true,
+			redirectUrl: checkoutUrl,
+			referenceNumber: referenceNumber,
 		});
 	} catch (error) {
 		console.error("Error creating payment:", error);
 		res.status(500).json({
-			error: "Failed to create GCash payment",
+			success: false,
+			error: "Failed to create payment link",
 		});
 	}
 });

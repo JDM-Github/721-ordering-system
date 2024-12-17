@@ -16,30 +16,56 @@ import { createTheme, ThemeProvider } from "@mui/material/styles";
 import RequestHandler from "../../Functions/RequestHandler";
 import { DataGrid } from "@mui/x-data-grid";
 import AddProductModal from "../../Component/AddProductModal.tsx";
+import MaterialsModal from "../../Component/AddMaterialModal.tsx";
+import { toast } from "react-toastify";
 
 const Inventory = () => {
-	const [activeTab, setActiveTab] = useState("rawMaterials");
+	const [materials, setMaterials] = useState<any>([]);
+	const [isModalOpen, setIsModalOpen] = useState(false);
+	const [selectedMaterial, setSelectedMaterial] = useState<any>(null);
+
+	const openModal = (material = null) => {
+		setSelectedMaterial(material);
+		setIsModalOpen(true);
+	};
+
+	const closeModal = () => {
+		setIsModalOpen(false);
+		setSelectedMaterial(null);
+	};
+
+	const saveMaterial = (material) => {
+		if (selectedMaterial) {
+			setMaterials((prev) =>
+				prev.map((mat) =>
+					mat.id === selectedMaterial.id
+						? { ...mat, ...material }
+						: mat
+				)
+			);
+		} else {
+			setMaterials((prev) => [...prev, { id: Date.now(), ...material }]);
+		}
+	};
+
+	const [isModalOpenMaterial, setIsModalOpenMaterial] = useState(false);
+
+	const openModalMaterial = () => {
+		setIsModalOpenMaterial(true);
+	};
+
+	const closeModalMaterial = () => {
+		setIsModalOpenMaterial(false);
+	};
+
+	// Handle saving a new product
+	// const saveProduct = (newProduct) => {
+	// 	setProducts([...products, { id: Date.now(), ...newProduct }]); // Add new product to state
+	// };
+
+	const [activeTab, setActiveTab] = useState("finishedProducts");
 	const [showArchived, setShowArchived] = useState(false);
-	const [rawMaterials, setRawMaterials] = useState([
-		{
-			id: 1,
-			name: "Wood",
-			quantity: 120,
-			price: 10,
-			status: "In Stock",
-			archived: false,
-			imageUrl: "https://via.placeholder.com/100",
-		},
-		{
-			id: 2,
-			name: "Metal",
-			quantity: 50,
-			price: 25,
-			status: "Out of Stock",
-			archived: false,
-			imageUrl: "https://via.placeholder.com/100",
-		},
-	]);
+	const [rawMaterials, setRawMaterials] = useState<any>([]);
 
 	const [loading, setLoading] = useState(false);
 	const [finishedProducts, setProducts] = useState([]);
@@ -55,6 +81,8 @@ const Inventory = () => {
 			if (data.success === false) {
 				alert(JSON.stringify(data));
 			} else {
+				// alert(JSON.stringify(data.products));
+				setRawMaterials(data.materials);
 				setProducts(data.products);
 			}
 		} catch (error) {
@@ -65,14 +93,6 @@ const Inventory = () => {
 		loadAllProducts();
 	}, []);
 
-	const [showModal, setShowModal] = useState(false);
-	const [showModalProduct, setShowModalProduct] = useState(false);
-	const [isAddModal, setIsAddModal] = useState(false);
-
-	const [currentProduct, setCurrentProduct] = useState();
-	const [image, setImage] = useState();
-	const [imageShowcase, setImageShowcase] = useState(null);
-
 	const handleTabClick = (tab) => {
 		setActiveTab(tab);
 	};
@@ -81,7 +101,7 @@ const Inventory = () => {
 		setShowArchived(!showArchived);
 	};
 
-	const archiveProduct = (id) => {
+	const archiveProduct = async (id) => {
 		if (activeTab === "rawMaterials") {
 			setRawMaterials(
 				rawMaterials.map((item) =>
@@ -89,44 +109,55 @@ const Inventory = () => {
 				)
 			);
 		} else {
-			// setProducts();
-			// finishedProducts.map((item) =>
-			// 	item.id === id
-			// 		? { ...item, archived: !item.archived }
-			// 		: item
-			// )
+			try {
+				const data = await RequestHandler.handleRequest(
+					"post",
+					"product/archive-unarchived-product",
+					{ id }
+				);
+				setLoading(false);
+				if (data.success === false) {
+					toast.error("Unable to archive/unarchived the product.");
+				} else {
+					toast.success(`Product successfully archived/unarchived,`);
+					loadAllProducts();
+				}
+			} catch (error) {
+				toast.error(`An error occurred while archiving data. ${error}`);
+			}
 		}
 	};
 
 	const filterProducts = (products) => {
 		return products.filter((item) =>
-			showArchived ? item.archived : !item.archived
+			showArchived ? item.isArchive : !item.isArchive
 		);
 	};
 
 	const openModalForAdd = () => {
-		setShowModalProduct(true);
+		// setSelectedMaterial(null);
 		if (activeTab === "rawMaterials") {
+			openModalMaterial();
 		} else {
-			setIsAddModal(true);
+			openModal();
 		}
 	};
 
-	const openModalForEdit = (product) => {
-		setCurrentProduct(product);
-		setImageShowcase(product.productImage);
-		setIsAddModal(false);
-		setShowModal(true);
-	};
+	// const openModalForEdit = (product) => {
+	// 	setCurrentProduct(product);
+	// 	setImageShowcase(product.productImage);
+	// 	setIsAddModal(false);
+	// 	setShowModal(true);
+	// };
 
-	const handleImageChange = (e) => {
-		const file = e.target.files[0];
-		if (file) {
-			setImage(file);
-		}
-	};
+	// const handleImageChange = (e) => {
+	// 	const file = e.target.files[0];
+	// 	if (file) {
+	// 		setImage(file);
+	// 	}
+	// };
 
-	const handleInputChange = (e) => {};
+	// const handleInputChange = (e) => {};
 
 	const theme = createTheme({
 		palette: {
@@ -204,6 +235,18 @@ const Inventory = () => {
 				<div className="mt-4" style={{ height: 400, width: "100%" }}>
 					<div className="bg-white shadow-lg rounded-lg p-4">
 						<DataGrid
+							disableColumnSelector
+							disableRowSelectionOnClick
+							// paginationModel={{
+							// 	pageSize: 5,
+							// 	page: 0,
+							// }}
+							initialState={{
+								pagination: {
+									paginationModel: { pageSize: 5 },
+								},
+							}}
+							pageSizeOptions={[5, 10, 25]}
 							rows={
 								activeTab === "rawMaterials"
 									? filterProducts(rawMaterials)
@@ -211,7 +254,8 @@ const Inventory = () => {
 							}
 							columns={
 								activeTab === "rawMaterials"
-									? [
+									? // false
+									  [
 											{
 												field: "id",
 												headerName: "ID",
@@ -221,21 +265,6 @@ const Inventory = () => {
 												field: "name",
 												headerName: "Name",
 												width: 180,
-											},
-											{
-												field: "imageUrl",
-												headerName: "Image",
-												width: 150,
-												renderCell: (params) => (
-													<img
-														src={params.value}
-														alt={params.row.name}
-														style={{
-															width: 50,
-															height: 50,
-														}}
-													/>
-												),
 											},
 											{
 												field: "quantity",
@@ -248,11 +277,6 @@ const Inventory = () => {
 												width: 130,
 											},
 											{
-												field: "status",
-												headerName: "Status",
-												width: 130,
-											},
-											{
 												field: "actions",
 												headerName: "Actions",
 												width: 200,
@@ -261,11 +285,11 @@ const Inventory = () => {
 														<Button
 															variant="contained"
 															color="primary"
-															onClick={() =>
-																openModalForEdit(
-																	params.row
-																)
-															}
+															// onClick={() =>
+															// 	openModalForEdit(
+															// 		params.row
+															// 	)
+															// }
 															style={{
 																marginRight: 10,
 															}}
@@ -300,12 +324,12 @@ const Inventory = () => {
 												width: 180,
 											},
 											{
-												field: "productImage",
+												field: "productImages",
 												headerName: "Image",
 												width: 150,
 												renderCell: (params) => (
 													<img
-														src={params.value}
+														src={params.value[0]}
 														alt={params.row.name}
 														style={{
 															width: 50,
@@ -351,7 +375,7 @@ const Inventory = () => {
 															variant="contained"
 															color="primary"
 															onClick={() =>
-																openModalForEdit(
+																openModal(
 																	params.row
 																)
 															}
@@ -382,15 +406,19 @@ const Inventory = () => {
 						/>
 					</div>
 				</div>
-
-				<AddProductModal
-					showModal={showModalProduct}
-					setShowModal={setShowModalProduct}
-					isAddModal={isAddModal}
-					currentProduct={currentProduct}
-					handleInputChange={handleInputChange}
-					handleSave={null}
-					loadAllProducts={loadAllProducts}
+				{isModalOpen && (
+					<AddProductModal
+						original={selectedMaterial}
+						isOpen={isModalOpen}
+						onClose={closeModal}
+						onSave={loadAllProducts}
+					/>
+				)}
+				<MaterialsModal
+					isOpen={isModalOpenMaterial}
+					onClose={closeModalMaterial}
+					material={selectedMaterial}
+					onSave={saveMaterial}
 				/>
 				{
 					// <Modal open={showModal} onClose={() => setShowModal(false)}>

@@ -75,18 +75,9 @@ router.post("/get-all-cart", async (req, res) => {
 router.post("/get-dashboard", async (req, res) => {
 	try {
 		const totalOrders = await OrderProduct.count();
-
 		const totalItemsLeft = await Product.sum("stocks");
-
 		const totalUsers = await User.count();
 
-		// const orderStatusCounts = await OrderProduct.findAll({
-		// 	attributes: [
-		// 		"status",
-		// 		[sequelize.fn("COUNT", sequelize.col("status")), "count"],
-		// 	],
-		// 	group: ["status"],
-		// });
 		const defaultStatuses = ["Completed", "Pending", "Rejected"];
 		const statusCounts = defaultStatuses.reduce((acc, status) => {
 			acc[status] = 0;
@@ -105,33 +96,6 @@ router.post("/get-dashboard", async (req, res) => {
 				statusCounts[status] = parseInt(dataValues.count, 10);
 			}
 		});
-
-		// const statusCounts = orderStatusCounts.reduce(
-		// 	(acc, { status, dataValues }) => {
-		// 		acc[status] = parseInt(dataValues.count, 10);
-		// 		return acc;
-		// 	},
-		// 	{}
-		// );
-
-		// const completedOrders = await OrderProduct.findAll({
-		// 	attributes: [
-		// 		[sequelize.literal(`EXTRACT(WEEK FROM "completedAt")`), "week"],
-		// 		[sequelize.fn("COUNT", sequelize.col("id")), "count"],
-		// 	],
-		// 	where: {
-		// 		status: "Completed",
-		// 		completedAt: {
-		// 			[Op.ne]: null,
-		// 		},
-		// 		completedAt: {
-		// 			[Op.gte]: sequelize.literal("NOW() - INTERVAL '4 weeks'"),
-		// 		},
-		// 	},
-		// 	group: [sequelize.literal(`EXTRACT(WEEK FROM "completedAt")`)],
-		// 	order: [[sequelize.literal("week"), "ASC"]],
-		// });
-
 		const defaultWeeks = {
 			"Week 1": 0,
 			"Week 2": 0,
@@ -411,6 +375,7 @@ router.post("/add-product", async (req, res) => {
 			});
 		}
 
+		console.log(size);
 		let product;
 		if (id) {
 			product = await Product.findByPk(id);
@@ -420,6 +385,7 @@ router.post("/add-product", async (req, res) => {
 					productImages,
 					productAllNames,
 					price,
+					size,
 					stocks,
 					description,
 					isCustomizable,
@@ -438,6 +404,7 @@ router.post("/add-product", async (req, res) => {
 			productAllNames,
 			price,
 			stocks,
+			size,
 			description,
 			isCustomizable,
 		});
@@ -461,8 +428,12 @@ router.get("/get-all-product", async (req, res) => {
 	try {
 		const { status } = req.query;
 		const whereClause = status
-			? { status, isCustomizable: false }
-			: { status: "Available", isCustomizable: false };
+			? { status, isCustomizable: false, stocks: { [Op.gt]: 0 } }
+			: {
+					status: "Available",
+					isCustomizable: false,
+					stocks: { [Op.gt]: 0 },
+			  };
 		const products = await Product.findAll({ where: whereClause });
 		const materials = await Materials.findAll();
 		res.status(200).json({ success: true, products, materials });
@@ -642,8 +613,12 @@ router.get("/get-all-product-customizable", async (req, res) => {
 	try {
 		const { status } = req.query;
 		const whereClause = status
-			? { status, isCustomizable: true }
-			: { status: "Available", isCustomizable: true };
+			? { status, isCustomizable: true, stocks: { [Op.gt]: 0 } }
+			: {
+					status: "Available",
+					isCustomizable: true,
+					stocks: { [Op.gt]: 0 },
+			  };
 		const products = await Product.findAll({ where: whereClause });
 		const materials = await Materials.findAll();
 		res.status(200).json({ success: true, products, materials });
@@ -661,6 +636,21 @@ router.get("/get-product", async (req, res) => {
 	try {
 		const { id } = req.query;
 		const product = await Product.findByPk(id);
+		res.status(200).json({ success: true, product });
+	} catch (error) {
+		console.error(error);
+		res.status(500).json({
+			success: false,
+			message: "Failed to fetch product",
+			error,
+		});
+	}
+});
+
+router.post("/delete-product", async (req, res) => {
+	try {
+		const { id } = req.body;
+		const product = await Product.destroy({ where: { id } });
 		res.status(200).json({ success: true, product });
 	} catch (error) {
 		console.error(error);

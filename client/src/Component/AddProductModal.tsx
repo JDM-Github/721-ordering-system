@@ -18,6 +18,7 @@ const AddProductModal = ({ original = null, isOpen, onClose, onSave }) => {
 	const [isCustomizable, setIsCustomizable] = useState(
 		original?.isCustomizable || false
 	);
+	// alert(JSON.stringify(size));
 
 	const handleAddToList = (setter, list) => setter([...list, ""]);
 	const handleRemoveFromList = (setter, list, index) => {
@@ -31,18 +32,52 @@ const AddProductModal = ({ original = null, isOpen, onClose, onSave }) => {
 	};
 
 	const handleSave = async () => {
-		const newProduct = {
-			id,
-			productName,
-			productImages,
-			productAllNames,
-			price,
-			size,
-			stocks,
-			description,
-			isCustomizable,
-		};
+		let imageUrls = [];
+
+		const uploadImagePromises = productImages.map(async (image) => {
+			const formData = new FormData();
+			formData.append("file", image);
+
+			try {
+				const imageUploadData = await RequestHandler.handleRequest(
+					"post",
+					"file/upload-image",
+					formData,
+					{
+						headers: {
+							"Content-Type": "multipart/form-data",
+						},
+					}
+				);
+				if (imageUploadData.success) {
+					imageUrls.push(imageUploadData.uploadedDocument);
+				} else {
+					toast.error(
+						imageUploadData.message || "Image upload failed"
+					);
+					throw new Error("Image upload failed"); // Stop if any image fails to upload
+				}
+			} catch (error) {
+				console.error("Error uploading the image:", error);
+				toast.error("Error uploading one or more images.");
+				throw error;
+			}
+		});
+
 		try {
+			await Promise.all(uploadImagePromises);
+			const newProduct = {
+				id,
+				productName,
+				productImages: imageUrls,
+				productAllNames,
+				price,
+				size,
+				stocks,
+				description,
+				isCustomizable,
+			};
+
 			const data = await RequestHandler.handleRequest(
 				"post",
 				"product/add-product",
@@ -55,8 +90,9 @@ const AddProductModal = ({ original = null, isOpen, onClose, onSave }) => {
 				toast.success("Product saved successfully!");
 			}
 		} catch (error) {
-			toast.error(`An error occurred while saving the product. ${error}`);
+			toast.error("An error occurred while saving the product.");
 		}
+
 		onClose();
 	};
 

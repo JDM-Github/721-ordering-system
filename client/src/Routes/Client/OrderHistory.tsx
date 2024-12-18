@@ -36,6 +36,12 @@ const OrderHistory = () => {
 	};
 
 	const updateStatus = async (id) => {
+		const isConfirmed = window.confirm(
+			"Are you sure you want to update the order status?"
+		);
+		if (!isConfirmed) {
+			return;
+		}
 		try {
 			const data = await RequestHandler.handleRequest(
 				"post",
@@ -227,7 +233,7 @@ const OrderHistory = () => {
 													)}
 												<ListItemText
 													primary={`Product Name: ${product.productName}`}
-													secondary={`Price: $${product.price} | Quantity: ${product.quantity}`}
+													secondary={`Price: ₱${product.price} | Quantity: ${product.quantity}`}
 												/>
 
 												<Button
@@ -251,6 +257,16 @@ const OrderHistory = () => {
 									</ListItem>
 								)}
 							</List>
+							<Button
+								variant="outlined"
+								color="primary"
+								// onClick={() =>
+								// 	// handleViewProduct(product.productId)
+								// }
+								style={{ marginLeft: 10 }}
+							>
+								View Receipt
+							</Button>
 						</div>
 					)}
 				</DialogContent>

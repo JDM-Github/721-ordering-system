@@ -129,6 +129,7 @@ const ShoppingCart: React.FC = () => {
 	};
 
 	const deleteAllSelected = () => {
+		
 		// setCartItems(
 		// 	cartItems.filter((item) => !selectedItems.includes(item.id))
 		// );

@@ -128,6 +128,33 @@ const Inventory = () => {
 		}
 	};
 
+	const deleteProduct = async (id) => {
+		if (activeTab === "rawMaterials") {
+			setRawMaterials(
+				rawMaterials.map((item) =>
+					item.id === id ? { ...item, archived: true } : item
+				)
+			);
+		} else {
+			try {
+				const data = await RequestHandler.handleRequest(
+					"post",
+					"product/delete-product",
+					{ id }
+				);
+				setLoading(false);
+				if (data.success === false) {
+					toast.error("Unable to delete the product.");
+				} else {
+					toast.success(`Product successfully deleted the product`);
+					loadAllProducts();
+				}
+			} catch (error) {
+				toast.error(`An error occurred while archiving data. ${error}`);
+			}
+		}
+	};
+
 	const filterProducts = (products) => {
 		return products.filter((item) =>
 			showArchived ? item.isArchive : !item.isArchive
@@ -308,6 +335,18 @@ const Inventory = () => {
 														>
 															Archive
 														</Button>
+														<Button
+															variant="contained"
+															color="secondary"
+															onClick={() =>
+																archiveProduct(
+																	params.row
+																		.id
+																)
+															}
+														>
+															Delete
+														</Button>
 													</>
 												),
 											},
@@ -368,7 +407,7 @@ const Inventory = () => {
 											{
 												field: "actions",
 												headerName: "Actions",
-												width: 200,
+												width: 300,
 												renderCell: (params) => (
 													<>
 														<Button
@@ -394,8 +433,23 @@ const Inventory = () => {
 																		.id
 																)
 															}
+															style={{
+																marginRight: 10,
+															}}
 														>
 															Archive
+														</Button>
+														<Button
+															variant="contained"
+															color="error"
+															onClick={() =>
+																deleteProduct(
+																	params.row
+																		.id
+																)
+															}
+														>
+															Delete
 														</Button>
 													</>
 												),

@@ -54,6 +54,8 @@ const OrderHistory = ({ user }) => {
 				const ord = data.orderSummaries.map((order) => ({
 					id: order.id,
 					referenceNumber: order.referenceNumber,
+					status: order.status,
+					orderStatus: order.orderStatus,
 					createdAt: new Date(order.createdAt).toLocaleDateString(),
 					products: order.products.map((product) => ({
 						productId: product.productId,
@@ -85,23 +87,35 @@ const OrderHistory = ({ user }) => {
 		{
 			field: "referenceNumber",
 			headerName: "Reference Number",
-			width: 200,
+			width: 100,
+		},
+		{
+			field: "status",
+			headerName: "Status",
+			width: 100,
+		},
+		{
+			field: "orderStatus",
+			headerName: "Order Status",
+			width: 100,
 		},
 		{ field: "createdAt", headerName: "Order Date", width: 150 },
 		{
 			field: "actions",
 			headerName: "Actions",
 			renderCell: (params) => (
-				<Button
-					variant="contained"
-					color="primary"
-					onClick={() => handleViewOrder(params.row)} // Open modal on click
-					style={{ backgroundColor: "#FFA500" }}
-				>
-					View Order
-				</Button>
+				<>
+					<Button
+						variant="contained"
+						color="primary"
+						onClick={() => handleViewOrder(params.row)}
+						style={{ backgroundColor: "#FFA500" }}
+					>
+						View Order
+					</Button>
+				</>
 			),
-			width: 150,
+			width: 300,
 		},
 	];
 

@@ -2,7 +2,7 @@ import axios from "axios";
 
 class RequestHandler {
 	static async handleRequest(method, link, requestData = {}, headers = {}) {
-		const development = true;
+		const development = false;
 		const baseURL = development
 			? "http://localhost:8888"
 			: "https://721ordering.netlify.app/";
@@ -27,7 +27,6 @@ class RequestHandler {
 				throw error;
 			});
 	}
-
 	static handleFormSubmit = (e, route) => {
 		e.preventDefault();
 		const formData = new FormData(e.target);

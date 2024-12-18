@@ -74,6 +74,10 @@ const OrderHistory = () => {
 					referenceNumber: order.referenceNumber,
 					status: order.status,
 					isCompleted: order.isCompleted,
+					orderStatus: order.orderStatus,
+					// user: order.user,
+					email: order.user.email,
+					fullname: order.user.firstName + " " + order.user.lastName,
 					createdAt: new Date(order.createdAt).toLocaleDateString(),
 					products: order.products.map((product) => ({
 						productId: product.productId,
@@ -103,9 +107,24 @@ const OrderHistory = () => {
 	const columns = [
 		{ field: "id", headerName: "Order ID", width: 200 },
 		{
+			field: "email",
+			headerName: "Email",
+			width: 150,
+		},
+		{
+			field: "fullname",
+			headerName: "Full Name",
+			width: 150,
+		},
+		{
 			field: "referenceNumber",
 			headerName: "Reference Number",
-			width: 200,
+			width: 100,
+		},
+		{
+			field: "orderStatus",
+			headerName: "Order Status",
+			width: 100,
 		},
 		{ field: "createdAt", headerName: "Order Date", width: 150 },
 		{
@@ -147,7 +166,7 @@ const OrderHistory = () => {
 					)}
 				</>
 			),
-			width: 300,
+			width: 200,
 		},
 	];
 
@@ -167,7 +186,7 @@ const OrderHistory = () => {
 
 	return (
 		<ThemeProvider theme={theme}>
-			<div className="flex justify-center w-full min-h-[80vh] p-4">
+			<div className="flex justify-center w-full min-h-[80vh] p-4 max-h-[80vh]">
 				<div className="bg-white shadow-lg rounded-lg p-4">
 					<DataGrid
 						rows={orders}
@@ -257,16 +276,6 @@ const OrderHistory = () => {
 									</ListItem>
 								)}
 							</List>
-							<Button
-								variant="outlined"
-								color="primary"
-								// onClick={() =>
-								// 	// handleViewProduct(product.productId)
-								// }
-								style={{ marginLeft: 10 }}
-							>
-								View Receipt
-							</Button>
 						</div>
 					)}
 				</DialogContent>

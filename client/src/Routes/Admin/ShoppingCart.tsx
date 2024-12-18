@@ -93,31 +93,9 @@ const ShoppingCart: React.FC = () => {
 	const [currentPage, setCurrentPage] = useState<number>(1);
 	const itemsPerPage = 3; // Number of items per page
 
-	const removeItem = (id: number) => {
-		// setCartItems(cartItems.filter((item) => item.id !== id));
-	};
-
-	const updateQuantity = (id, quantity: number) => {
-		// setCartItems(
-		// 	cartItems.map((item) =>
-		// 		item.id === id ? { ...item, quantity } : item
-		// 	)
-		// );
-	};
-
-	const updateSize = (id, size: string) => {
-		// setCartItems(
-		// 	cartItems.map((item) => (item.id === id ? { ...item, size } : item))
-		// );
-	};
-
-	const updateNotes = (id, notes: string) => {
-		// setCartItems(
-		// 	cartItems.map((item) =>
-		// 		item.id === id ? { ...item, notes } : item
-		// 	)
-		// );
-	};
+	const updateQuantity = (id, quantity: number) => {};
+	const updateSize = (id, size: string) => {};
+	const updateNotes = (id, notes: string) => {};
 
 	const calculateTotal = () => {
 		return orders
@@ -128,18 +106,33 @@ const ShoppingCart: React.FC = () => {
 			);
 	};
 
-	const deleteAllSelected = () => {
-		
-		// setCartItems(
-		// 	cartItems.filter((item) => !selectedItems.includes(item.id))
-		// );
-		// setSelectedItems([]);
+	const deleteAllSelected = async () => {
+		const orderIds = orders
+			.filter((item) => selectedItems.includes(item.id))
+			.map((item) => item.id);
+		try {
+			const response = await RequestHandler.handleRequest(
+				"post",
+				"product/delete-cart",
+				{
+					userId: user?.id,
+					orders: orderIds,
+				}
+			);
+			if (response["success"]) {
+				toast.success("Orders has been deleted.");
+				loadAllCartProduct();
+			} else {
+				toast.error("Failed	to delete cart items.");
+			}
+		} catch (error) {
+			console.error("Error deleting card items:", error);
+			toast.error("Error deleting card items.");
+		}
 	};
 
 	const checkoutAllSelected = () => {
-		// Placeholder for checkout logic
 		alert("Proceeding to checkout with all selected items.");
-		// OrderSummary()
 	};
 
 	const toggleSelectItem = (id) => {

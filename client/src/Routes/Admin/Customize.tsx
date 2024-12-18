@@ -64,6 +64,7 @@ const CustomizationPage: React.FC = () => {
 	interface User {
 		id: string;
 	}
+
 	const [user, setUser] = useState<User | null>(null);
 	useEffect(() => {
 		const userDetails = JSON.parse(localStorage.getItem("user") ?? "{}");
@@ -100,11 +101,13 @@ const CustomizationPage: React.FC = () => {
 	const [labelComponents, setLabelComponents] = useState<LabelComp[]>([]);
 	const [backgroundColor, setBackgroundColor] = useState("#eee");
 	const [index, setIndex] = useState(0);
+
 	const updateImagePattern = (uniqueId, updatedProperties) => {
 		setImagePattern((prev) =>
 			prev ? { ...prev, ...updatedProperties } : null
 		);
 	};
+
 	const updateImageComponent = (uniqueId, updatedProperties) => {
 		setImageComponents((prevComponents) =>
 			prevComponents.map((comp) =>
@@ -199,73 +202,98 @@ const CustomizationPage: React.FC = () => {
 		const toastId = toast.loading("Adding customize product to cart...", {
 			position: "top-left",
 		});
+		if (product == null) {
+			return;
+		}
 
-		const processedImage = await Promise.all(
-			imageComponents.map(async (component) => {
-				if (component.img && component.img instanceof File) {
-					let imageUrl = "";
-					const formData = new FormData();
-					formData.append("file", component.img);
-					try {
-						const data = await RequestHandler.handleRequest(
-							"post",
-							"file/upload-image",
-							formData,
-							{
-								headers: {
-									"Content-Type": "multipart/form-data",
-								},
+		const customize_list: any = [];
+		for (var i = 0; i < product?.productImages.length; i++) {
+			const newCustomization = loadFromLocalStorage(`customization-${i}`);
+			if (newCustomization === null) break;
+
+			const image = newCustomization.image;
+			const label = newCustomization.label;
+			const background = newCustomization.background;
+			const color = newCustomization.color;
+			const pattern = newCustomization.pattern;
+
+			const processedImage = await Promise.all(
+				image.map(async (component) => {
+					if (component.img && component.img instanceof File) {
+						let imageUrl = "";
+						const formData = new FormData();
+						formData.append("file", component.img);
+						try {
+							const data = await RequestHandler.handleRequest(
+								"post",
+								"file/upload-image",
+								formData,
+								{
+									headers: {
+										"Content-Type": "multipart/form-data",
+									},
+								}
+							);
+							if (data.success) {
+								imageUrl = data.uploadedDocument;
+							} else {
+								toast.update(toastId, {
+									render: data.message,
+									type: "error",
+									isLoading: false,
+									autoClose: 3000,
+									position: "top-left",
+								});
+								return null;
 							}
-						);
-						if (data.success) {
-							imageUrl = data.uploadedDocument;
-						} else {
+						} catch (error) {
+							console.error(
+								"Error submitting the document:",
+								error
+							);
 							toast.update(toastId, {
-								render: data.message,
+								render: "Error submitting the document",
 								type: "error",
 								isLoading: false,
 								autoClose: 3000,
 								position: "top-left",
 							});
-							return null;
 						}
-					} catch (error) {
-						console.error("Error submitting the document:", error);
-						toast.update(toastId, {
-							render: "Error submitting the document",
-							type: "error",
-							isLoading: false,
-							autoClose: 3000,
-							position: "top-left",
-						});
+						return {
+							...component,
+							imgFileUrl: imageUrl,
+							img: imageUrl,
+						};
 					}
-					return {
-						...component,
-						imgFileUrl: imageUrl,
-						img: imageUrl,
-					};
-				}
-				return component;
-			})
-		);
-		const validImageComponents = processedImage.filter(
-			(component) => component !== null
-		);
-		const validLabelComponents = labelComponents.filter(
-			(component) => component.text !== ""
-		);
+					return component;
+				})
+			);
+			const validImageComponents = processedImage.filter(
+				(component) => component !== null
+			);
+			const validLabelComponents = label.filter(
+				(component) => component.text !== ""
+			);
+
+			const customize = {
+				color,
+				pattern,
+				product,
+				backgroundColor: background,
+				image: validImageComponents,
+				label: validLabelComponents,
+			};
+			customize_list.push(customize);
+		}
 
 		const customization = {
 			id,
-			color,
-			pattern,
 			customName,
 			customNumber,
 			notes,
 			selectedSize,
-			product,
-			image: validImageComponents,
-			label: validLabelComponents,
+			imagePattern,
+			customize_list,
 		};
 
 		try {
@@ -321,7 +349,7 @@ const CustomizationPage: React.FC = () => {
 	const loadAllProducts = async () => {
 		setLoading(true);
 		try {
-			const data = await RequestHandler.handleRequest(
+			const data: any = await RequestHandler.handleRequest(
 				"get",
 				`product/get-product?id=${productId}`,
 				{}
@@ -332,6 +360,20 @@ const CustomizationPage: React.FC = () => {
 			} else {
 				setProduct(data.product);
 				setSelectedSize(data.product.size[0] || null);
+				const storedData = localStorage.getItem("targetId");
+				if (storedData !== `${data.product.id}`) {
+					localStorage.removeItem(`${data.product.id}`);
+				} else {
+					const newCustomization = loadFromLocalStorage(
+						`customization-${0}`
+					);
+					setImageComponents(newCustomization.image);
+					setLabelComponents(newCustomization.label);
+					setBackgroundColor(newCustomization.background);
+					setColor(newCustomization.color);
+					setPattern(newCustomization.pattern);
+				}
+				localStorage.setItem("targetId", `${data.product.id}`);
 			}
 		} catch (error) {
 			alert(JSON.stringify(error));
@@ -495,22 +537,6 @@ const CustomizationPage: React.FC = () => {
 	const reactToPrintFn = useReactToPrint({
 		content: () => cardRef.current,
 	});
-
-	const handlePrint = async () => {
-		if (cardRef?.current) {
-			const canvas = await html2canvas(cardRef.current, {
-				scale: 2,
-				useCORS: true,
-			});
-
-			const image = canvas.toDataURL("image/png");
-
-			const link = document.createElement("a");
-			link.href = image;
-			link.download = "div-image.png";
-			link.click();
-		}
-	};
 
 	const handleDownloadPng = async () => {
 		if (cardRef?.current) {

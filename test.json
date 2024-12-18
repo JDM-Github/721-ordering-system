@@ -1,0 +1,205 @@
+{
+	"id": "1030425955280453633",
+	"userId": "1030380098796421121",
+	"status": "Pending",
+	"productId": "1030380099677257729",
+	"isOrdered": false,
+	"completedAt": null,
+	"quantity": "1",
+	"customization": {
+		"customName": "",
+		"customNumber": "",
+		"customize_list": [
+			{
+				"backgroundColor": "#eee",
+				"color": "#ffffff",
+				"image": [
+					{
+						"height": 213,
+						"heightPercent": 0.5182481751824818,
+						"img": "https://res.cloudinary.com/djheiqm47/image/upload/v1733352515/earth_rdnnyv.png",
+						"imgFileUrl": "",
+						"isActive": true,
+						"isPattern": false,
+						"pixelx": 93.390625,
+						"pixely": 129.4375,
+						"uniqueId": "image-1734531195687-0.5796782798832585",
+						"width": 200,
+						"widthPercent": 0.4854368932038835,
+						"x": 0.22667627427184467,
+						"y": 0.3149330900243309
+					}
+				],
+				"label": [],
+				"pattern": "none",
+				"product": {
+					"createdAt": "2024-12-18T10:24:13.458Z",
+					"description": "A fully customizable Jacket.",
+					"id": "1030380099677257729",
+					"isArchive": false,
+					"isCustomizable": true,
+					"price": "19",
+					"productAllNames": [
+						"Front",
+						"Back",
+						"Hood",
+						"Left Sleeve",
+						"Pocket",
+						"Right Sleeve"
+					],
+					"productImages": [
+						"https://res.cloudinary.com/djheiqm47/image/upload/v1733819801/whxiqxjg9iz9jomo5pad.png",
+						"https://res.cloudinary.com/djheiqm47/image/upload/v1733819800/z6ciqgmrfbthtqdswcdw.png",
+						"https://res.cloudinary.com/djheiqm47/image/upload/v1733819802/r95oxynwwzo3acmzwkdw.png",
+						"https://res.cloudinary.com/djheiqm47/image/upload/v1733819803/puhiiobphrrknqppflhb.png",
+						"https://res.cloudinary.com/djheiqm47/image/upload/v1733819804/ap5usjib4r6h1zgcxpht.png",
+						"https://res.cloudinary.com/djheiqm47/image/upload/v1733819804/jlunmhlosuzgpbytbbko.png"
+					],
+					"productName": "Jacket",
+					"size": ["S", "M", "L", "XL"],
+					"status": "Available",
+					"stocks": "95",
+					"updatedAt": "2024-12-18T11:28:30.229Z"
+				}
+			},
+			{
+				"backgroundColor": "#eee",
+				"color": "#fff",
+				"image": [
+					{
+						"height": 200,
+						"heightPercent": 0.48661800486618007,
+						"img": "https://res.cloudinary.com/djheiqm47/image/upload/v1733352514/ape_oqibfa.png",
+						"imgFileUrl": "",
+						"isActive": true,
+						"isPattern": false,
+						"pixelx": 118.390625,
+						"pixely": 134.4375,
+						"uniqueId": "image-1734531024434-0.9473144780187324",
+						"width": 179,
+						"widthPercent": 0.4344660194174757,
+						"x": 0.2873558859223301,
+						"y": 0.3270985401459854
+					}
+				],
+				"label": [],
+				"pattern": "none",
+				"product": {
+					"createdAt": "2024-12-18T10:24:13.458Z",
+					"description": "A fully customizable Jacket.",
+					"id": "1030380099677257729",
+					"isArchive": false,
+					"isCustomizable": true,
+					"price": "19",
+					"productAllNames": [
+						"Front",
+						"Back",
+						"Hood",
+						"Left Sleeve",
+						"Pocket",
+						"Right Sleeve"
+					],
+					"productImages": [
+						"https://res.cloudinary.com/djheiqm47/image/upload/v1733819801/whxiqxjg9iz9jomo5pad.png",
+						"https://res.cloudinary.com/djheiqm47/image/upload/v1733819800/z6ciqgmrfbthtqdswcdw.png",
+						"https://res.cloudinary.com/djheiqm47/image/upload/v1733819802/r95oxynwwzo3acmzwkdw.png",
+						"https://res.cloudinary.com/djheiqm47/image/upload/v1733819803/puhiiobphrrknqppflhb.png",
+						"https://res.cloudinary.com/djheiqm47/image/upload/v1733819804/ap5usjib4r6h1zgcxpht.png",
+						"https://res.cloudinary.com/djheiqm47/image/upload/v1733819804/jlunmhlosuzgpbytbbko.png"
+					],
+					"productName": "Jacket",
+					"size": ["S", "M", "L", "XL"],
+					"status": "Available",
+					"stocks": "95",
+					"updatedAt": "2024-12-18T11:28:30.229Z"
+				}
+			},
+			{
+				"backgroundColor": "#eee",
+				"color": "#fff",
+				"image": [],
+				"label": [],
+				"pattern": "none",
+				"product": {
+					"createdAt": "2024-12-18T10:24:13.458Z",
+					"description": "A fully customizable Jacket.",
+					"id": "1030380099677257729",
+					"isArchive": false,
+					"isCustomizable": true,
+					"price": "19",
+					"productAllNames": [
+						"Front",
+						"Back",
+						"Hood",
+						"Left Sleeve",
+						"Pocket",
+						"Right Sleeve"
+					],
+					"productImages": [
+						"https://res.cloudinary.com/djheiqm47/image/upload/v1733819801/whxiqxjg9iz9jomo5pad.png",
+						"https://res.cloudinary.com/djheiqm47/image/upload/v1733819800/z6ciqgmrfbthtqdswcdw.png",
+						"https://res.cloudinary.com/djheiqm47/image/upload/v1733819802/r95oxynwwzo3acmzwkdw.png",
+						"https://res.cloudinary.com/djheiqm47/image/upload/v1733819803/puhiiobphrrknqppflhb.png",
+						"https://res.cloudinary.com/djheiqm47/image/upload/v1733819804/ap5usjib4r6h1zgcxpht.png",
+						"https://res.cloudinary.com/djheiqm47/image/upload/v1733819804/jlunmhlosuzgpbytbbko.png"
+					],
+					"productName": "Jacket",
+					"size": ["S", "M", "L", "XL"],
+					"status": "Available",
+					"stocks": "95",
+					"updatedAt": "2024-12-18T11:28:30.229Z"
+				}
+			}
+		],
+		"id": "1030380099677257729",
+		"imagePattern": {
+			"height": 500,
+			"heightPercent": 1,
+			"img": "",
+			"imgFileUrl": "",
+			"isActive": true,
+			"isPattern": false,
+			"pixelx": 0,
+			"pixely": 0,
+			"uniqueId": "pattern-image",
+			"width": 500,
+			"widthPercent": 1,
+			"x": 0,
+			"y": 0
+		},
+		"notes": "",
+		"selectedSize": "S"
+	},
+	"createdAt": "2024-12-18T14:17:27.823Z",
+	"updatedAt": "2024-12-18T14:17:27.823Z",
+	"productOrderId": null,
+	"Product": {
+		"id": "1030380099677257729",
+		"productImages": [
+			"https://res.cloudinary.com/djheiqm47/image/upload/v1733819801/whxiqxjg9iz9jomo5pad.png",
+			"https://res.cloudinary.com/djheiqm47/image/upload/v1733819800/z6ciqgmrfbthtqdswcdw.png",
+			"https://res.cloudinary.com/djheiqm47/image/upload/v1733819802/r95oxynwwzo3acmzwkdw.png",
+			"https://res.cloudinary.com/djheiqm47/image/upload/v1733819803/puhiiobphrrknqppflhb.png",
+			"https://res.cloudinary.com/djheiqm47/image/upload/v1733819804/ap5usjib4r6h1zgcxpht.png",
+			"https://res.cloudinary.com/djheiqm47/image/upload/v1733819804/jlunmhlosuzgpbytbbko.png"
+		],
+		"productAllNames": [
+			"Front",
+			"Back",
+			"Hood",
+			"Left Sleeve",
+			"Pocket",
+			"Right Sleeve"
+		],
+		"productName": "Jacket",
+		"price": "19",
+		"size": ["S", "M", "L", "XL"],
+		"stocks": "94",
+		"description": "A fully customizable Jacket.",
+		"status": "Available",
+		"isArchive": false,
+		"isCustomizable": true,
+		"createdAt": "2024-12-18T10:24:13.458Z",
+		"updatedAt": "2024-12-18T14:17:28.378Z"
+	}
+}

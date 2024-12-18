@@ -12,6 +12,55 @@ const {
 const { Op } = require("sequelize");
 const router = express.Router();
 
+const PAYMONGO_API_KEY = "sk_test_HMD8fpUnNtVh5bTG35TQXmXC";
+const retrieveLink = async (id) => {
+	const url = `https://api.paymongo.com/v1/links/${id}`;
+	try {
+		const response = await fetch(url, {
+			method: "GET",
+			headers: {
+				Authorization: `Basic ${Buffer.from(PAYMONGO_API_KEY).toString(
+					"base64"
+				)}`,
+				"Content-Type": "application/json",
+			},
+		});
+		if (!response.ok) {
+			throw new Error(`Error: ${response.statusText}`);
+		}
+		const data = await response.json();
+		console.log(data);
+	} catch (err) {
+		console.error("Error fetching the link:", err);
+	}
+};
+
+const getOrderPaymentStatus = async (referenceNumber) => {
+	const url = `https://api.paymongo.com/v1/links/${referenceNumber}`;
+
+	try {
+		const response = await fetch(url, {
+			method: "GET",
+			headers: {
+				Authorization: `Basic ${Buffer.from(PAYMONGO_API_KEY).toString(
+					"base64"
+				)}`,
+				"Content-Type": "application/json",
+			},
+		});
+
+		if (!response.ok) {
+			throw new Error(`Error: ${response.statusText}`);
+		}
+
+		const data = await response.json();
+		return data.data.attributes.status;
+	} catch (err) {
+		console.error("Error fetching payment status:", err);
+		return "error";
+	}
+};
+
 router.post("/add-to-cart", async (req, res) => {
 	try {
 		const { userId, productId, customization, quantity } = req.body;
@@ -354,6 +403,42 @@ router.post("/archive-unarchived-product", async (req, res) => {
 	}
 });
 
+router.post("/archive-unarchived-material", async (req, res) => {
+	try {
+		const { id } = req.body;
+
+		if (id) {
+			product = await Materials.findByPk(id);
+			if (product) {
+				await product.update({
+					isArchive: !product.isArchive,
+				});
+				return res.status(200).json({
+					success: true,
+					message: "Product updated successfully!",
+					data: product,
+				});
+			}
+		} else {
+			return res.send({
+				success: false,
+				message: "Product does not exists",
+			});
+		}
+		return res.send({
+			success: false,
+			message: "Product does not exists",
+		});
+	} catch (error) {
+		console.error(error);
+		return res.status(500).json({
+			success: false,
+			message: "Failed to process product request.",
+			error: error.message,
+		});
+	}
+});
+
 router.post("/add-product", async (req, res) => {
 	try {
 		const {
@@ -419,6 +504,58 @@ router.post("/add-product", async (req, res) => {
 		return res.status(500).json({
 			success: false,
 			message: "Failed to process product request.",
+			error: error.message,
+		});
+	}
+});
+
+router.post("/add-material", async (req, res) => {
+	try {
+		const { id, name, quantity, price, unitType } = req.body;
+
+		if (!name || !price || !quantity || !unitType) {
+			return res.status(400).json({
+				success: false,
+				message:
+					"Material name, price, and quantity are required fields.",
+			});
+		}
+
+		let product;
+		if (id) {
+			product = await Materials.findByPk(id);
+			if (product) {
+				await product.update({
+					name,
+					quantity,
+					price,
+					unitType,
+				});
+				return res.status(200).json({
+					success: true,
+					message: "Material updated successfully!",
+					data: product,
+				});
+			}
+		}
+
+		const newProduct = await Materials.create({
+			name,
+			quantity,
+			price,
+			unitType,
+		});
+
+		return res.status(201).json({
+			success: true,
+			message: "Material added successfully!",
+			data: newProduct,
+		});
+	} catch (error) {
+		console.error(error);
+		return res.status(500).json({
+			success: false,
+			message: "Failed to process material request.",
 			error: error.message,
 		});
 	}
@@ -516,6 +653,25 @@ router.get("/get-all-product", async (req, res) => {
 // 	}
 // });
 
+router.post("/delete-cart", async (req, res) => {
+	try {
+		const { orders } = req.body;
+		await OrderProduct.destroy({
+			where: {
+				id: { [Op.in]: orders },
+			},
+		});
+		res.status(200).json({ success: true });
+	} catch (error) {
+		console.error(error);
+		res.status(500).json({
+			success: false,
+			message: "Failed to delete products",
+			error,
+		});
+	}
+});
+
 router.post("/get-all-order", async (req, res) => {
 	const { userId } = req.body;
 	try {
@@ -527,7 +683,19 @@ router.post("/get-all-order", async (req, res) => {
 
 		const orderSummaries = await OrderSummary.findAll({
 			where: whereClause,
+			include: [
+				{
+					model: User,
+					attributes: [
+						"firstName",
+						"lastName",
+						"email",
+						"contactNumber",
+					],
+				},
+			],
 		});
+
 		console.log(orderSummaries);
 
 		const ordersWithProducts = [];
@@ -539,6 +707,21 @@ router.post("/get-all-order", async (req, res) => {
 					orderSummary.products
 				)}`
 			);
+
+			if (orderSummary.isPaid || orderSummary.isFailed) {
+				console.log(
+					`Skipping Order Summary ID: ${orderSummary.id} because it is either paid or failed`
+				);
+			} else {
+				const orderStatus = await getOrderPaymentStatus(
+					orderSummary.referenceNumber
+				);
+				if (orderStatus === "paid") {
+					await orderSummary.update({ isPaid: true });
+				} else if (orderStatus === "failed") {
+					await orderSummary.update({ isFailed: true });
+				}
+			}
 
 			if (orderSummary.products.length > 0) {
 				const orderProducts = await OrderProduct.findAll({
@@ -579,21 +762,34 @@ router.post("/get-all-order", async (req, res) => {
 					id: orderSummary.id,
 					referenceNumber: orderSummary.referenceNumber,
 					createdAt: orderSummary.createdAt,
+					orderStatus: orderSummary.isPaid
+						? "PAID"
+						: orderSummary.isFailed
+						? "FAILED"
+						: "PENDING",
 					products: products,
 					status: orderSummary.status,
 					isCompleted: orderSummary.isCompleted,
+					user: orderSummary.User,
 				});
 			} else {
 				ordersWithProducts.push({
 					id: orderSummary.id,
+					orderStatus: orderSummary.isPaid
+						? "PAID"
+						: orderSummary.isFailed
+						? "FAILED"
+						: "PENDING",
 					referenceNumber: orderSummary.referenceNumber,
 					createdAt: orderSummary.createdAt,
 					status: orderSummary.status,
 					isCompleted: orderSummary.isCompleted,
 					products: [],
+					user: orderSummary.User,
 				});
 			}
 		}
+
 		console.log(ordersWithProducts);
 		res.status(200).json({
 			success: true,
@@ -656,7 +852,22 @@ router.post("/delete-product", async (req, res) => {
 		console.error(error);
 		res.status(500).json({
 			success: false,
-			message: "Failed to fetch product",
+			message: "Failed to delete product",
+			error,
+		});
+	}
+});
+
+router.post("/delete-material", async (req, res) => {
+	try {
+		const { id } = req.body;
+		const product = await Materials.destroy({ where: { id } });
+		res.status(200).json({ success: true, product });
+	} catch (error) {
+		console.error(error);
+		res.status(500).json({
+			success: false,
+			message: "Failed to delete material",
 			error,
 		});
 	}

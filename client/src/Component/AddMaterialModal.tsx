@@ -1,25 +1,42 @@
 import React, { useState } from "react";
+import RequestHandler from "../Functions/RequestHandler";
+import { toast } from "react-toastify";
 
-const MaterialsModal = ({ isOpen, onClose, material, onSave }) => {
-	const [name, setName] = useState(material ? material.name : "");
-	const [quantity, setQuantity] = useState(material ? material.quantity : 0);
-	const [price, setPrice] = useState(material ? material.price : 0.0);
-	const [archived, setArchived] = useState(
-		material ? material.archived : false
-	);
+const MaterialsModal = ({ onClose, material, onSave }) => {
+	const [id, setId] = useState<any>(material?.id || null);
+	const [name, setName] = useState(material?.name || "");
+	const [unitType, setUnitType] = useState(material?.unitType || "");
+	const [quantity, setQuantity] = useState(material?.quantity || 0);
+	const [price, setPrice] = useState(material?.price || 0.0);
 
-	const handleSave = () => {
-		const updatedMaterial = {
-			name,
-			quantity,
-			price,
-			archived,
-		};
-		onSave(updatedMaterial);
+	const handleSave = async () => {
+		try {
+			const updatedMaterial = {
+				id,
+				name,
+				quantity,
+				unitType,
+				price,
+			};
+			const data = await RequestHandler.handleRequest(
+				"post",
+				"product/add-material",
+				updatedMaterial
+			);
+			if (!data.success) {
+				alert(JSON.stringify(data));
+				toast.success("Material did not saved successfully!");
+			} else {
+				onSave();
+				toast.success("Material saved successfully!");
+			}
+		} catch (error) {
+			toast.error("An error occurred while saving the material.");
+		}
+		onSave();
 		onClose();
 	};
 
-	if (!isOpen) return null;
 	return (
 		<div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
 			<div className="bg-white p-6 rounded-lg shadow-lg w-96">
@@ -77,7 +94,34 @@ const MaterialsModal = ({ isOpen, onClose, material, onSave }) => {
 							placeholder="Enter price"
 						/>
 					</div>
-        
+
+					<div>
+						<label
+							htmlFor="unit"
+							className="block text-sm font-medium text-gray-700"
+						>
+							Unit Type
+						</label>
+						<select
+							id="unit"
+							value={unitType}
+							onChange={(e) => setUnitType(e.target.value)}
+							className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+						>
+							<option value="" disabled>
+								Select a unit
+							</option>
+							<option value="kg">Kilogram (kg)</option>
+							<option value="g">Gram (g)</option>
+							<option value="l">Liter (l)</option>
+							<option value="ml">Milliliter (ml)</option>
+							<option value="pcs">Pieces (pcs)</option>
+							<option value="cm">Centimeter (cm)</option>
+							<option value="inches">Inches (in)</option>
+							<option value="m">Meter (m)</option>
+						</select>
+					</div>
+
 					<div className="flex justify-end space-x-4 mt-4">
 						<button
 							onClick={onClose}

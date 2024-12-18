@@ -2,7 +2,30 @@ import React, { useState } from "react";
 import RequestHandler from "../Functions/RequestHandler";
 import { toast } from "react-toastify";
 
-const AddProductModal = ({ original = null, isOpen, onClose, onSave }) => {
+type OriginalType = {
+	id?: number | string;
+	productName?: string;
+	productImages?: string[];
+	productAllNames?: string[];
+	price?: number;
+	size?: string[];
+	stocks?: number;
+	description?: string;
+	isCustomizable?: boolean;
+};
+type AddProductModalProps = {
+	original?: OriginalType | null;
+	isOpen: boolean;
+	onClose: () => void;
+	onSave: () => void;
+};
+
+const AddProductModal = ({
+	original = null,
+	isOpen,
+	onClose,
+	onSave,
+}: AddProductModalProps) => {
 	const [id, setId] = useState(original?.id || null);
 	const [productName, setProductName] = useState(original?.productName || "");
 	const [productImages, setProductImages] = useState(
@@ -18,7 +41,6 @@ const AddProductModal = ({ original = null, isOpen, onClose, onSave }) => {
 	const [isCustomizable, setIsCustomizable] = useState(
 		original?.isCustomizable || false
 	);
-	// alert(JSON.stringify(size));
 
 	const handleAddToList = (setter, list) => setter([...list, ""]);
 	const handleRemoveFromList = (setter, list, index) => {
@@ -32,14 +54,14 @@ const AddProductModal = ({ original = null, isOpen, onClose, onSave }) => {
 	};
 
 	const handleSave = async () => {
-		let imageUrls = [];
+		let imageUrls: any = [];
 
 		const uploadImagePromises = productImages.map(async (image) => {
 			const formData = new FormData();
 			formData.append("file", image);
 
 			try {
-				const imageUploadData = await RequestHandler.handleRequest(
+				const imageUploadData: any = await RequestHandler.handleRequest(
 					"post",
 					"file/upload-image",
 					formData,
@@ -55,7 +77,7 @@ const AddProductModal = ({ original = null, isOpen, onClose, onSave }) => {
 					toast.error(
 						imageUploadData.message || "Image upload failed"
 					);
-					throw new Error("Image upload failed"); // Stop if any image fails to upload
+					throw new Error("Image upload failed");
 				}
 			} catch (error) {
 				console.error("Error uploading the image:", error);
@@ -92,7 +114,6 @@ const AddProductModal = ({ original = null, isOpen, onClose, onSave }) => {
 		} catch (error) {
 			toast.error("An error occurred while saving the product.");
 		}
-
 		onClose();
 	};
 

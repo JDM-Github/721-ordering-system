@@ -84,44 +84,7 @@ function OrderSummary() {
 	};
 
 	const handleCheckout = async () => {
-		// create-payment
 		await createPaymentSession();
-		// const toastId = toast.loading("Checking out all products.");
-		// try {
-		// 	const data = await RequestHandler.handleRequest(
-		// 		"post",
-		// 		"product/checkout-orders",
-		// 		{
-		// 			orders,
-		// 			userId: user?.id,
-		// 		}
-		// 	);
-		// 	if (data.success) {
-		// 		navigate("/cart");
-		// 		toast.update(toastId, {
-		// 			render: "Orders successfully checked out.",
-		// 			type: "success",
-		// 			isLoading: false,
-		// 			autoClose: 3000,
-		// 		});
-		// 	} else {
-		// 		toast.update(toastId, {
-		// 			render: data.message,
-		// 			type: "error",
-		// 			isLoading: false,
-		// 			autoClose: 3000,
-		// 		});
-		// 		return;
-		// 	}
-		// } catch (error) {
-		// 	toast.update(toastId, {
-		// 		render: "Error loading all cart products.",
-		// 		type: "error",
-		// 		isLoading: false,
-		// 		autoClose: 3000,
-		// 	});
-		// 	return;
-		// }
 	};
 
 	const handleNoteChange = (id: string, value: string) => {

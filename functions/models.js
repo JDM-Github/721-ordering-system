@@ -77,7 +77,11 @@ const Materials = sequelize.define("Material", {
 		type: DataTypes.DECIMAL,
 		defaultValue: 0.0,
 	},
-	archived: {
+	unitType: {
+		type: DataTypes.STRING,
+		defaultValue: "",
+	},
+	isArchive: {
 		type: DataTypes.BOOLEAN,
 		defaultValue: false,
 	},
@@ -186,6 +190,14 @@ const OrderSummary = sequelize.define("OrderSummary", {
 		type: DataTypes.STRING,
 		defaultValue: "",
 	},
+	isPaid: {
+		type: DataTypes.BOOLEAN,
+		defaultValue: false,
+	},
+	isFailed: {
+		type: DataTypes.BOOLEAN,
+		defaultValue: false,
+	},
 	products: {
 		type: DataTypes.ARRAY(DataTypes.INTEGER),
 		defaultValue: [],
@@ -198,13 +210,6 @@ const OrderSummary = sequelize.define("OrderSummary", {
 		type: DataTypes.STRING,
 		defaultValue: "Pending",
 	},
-
-	// Pending
-	// Sewing
-	// Painting
-	// Packing
-	// Ready to Pick
-	// Completed
 });
 
 User.hasMany(OrderSummary, {

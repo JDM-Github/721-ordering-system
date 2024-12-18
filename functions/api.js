@@ -41,20 +41,7 @@ router.get("/reset", async (req, res) => {
 	res.send("RESETED");
 });
 
-// paymongo.auth("sk_test_PoK58FtMrQaHHc2EyguAKYwj");
-// paymongo
-// 	.createALink({
-// 		data: {
-// 			attributes: {
-// 				amount: 100,
-// 				description: "Order Product",
-// 				remarks: "Order a product",
-// 			},
-// 		},
-// 	})
-// 	.then(({ data }) => console.log(data))
-// 	.catch((err) => console.error(err));
-const PAYMONGO_API_KEY = "sk_test_PoK58FtMrQaHHc2EyguAKYwj";
+const PAYMONGO_API_KEY = "sk_test_HMD8fpUnNtVh5bTG35TQXmXC";
 router.post("/create-payment", async (req, res) => {
 	const { amount, userId, orders } = req.body;
 	const orderIds = orders.map((order) => order.id);

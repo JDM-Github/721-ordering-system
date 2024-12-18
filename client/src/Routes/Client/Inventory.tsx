@@ -50,18 +50,14 @@ const Inventory = () => {
 
 	const [isModalOpenMaterial, setIsModalOpenMaterial] = useState(false);
 
-	const openModalMaterial = () => {
+	const openModalMaterial = (material = null) => {
+		setSelectedMaterial(material);
 		setIsModalOpenMaterial(true);
 	};
 
 	const closeModalMaterial = () => {
 		setIsModalOpenMaterial(false);
 	};
-
-	// Handle saving a new product
-	// const saveProduct = (newProduct) => {
-	// 	setProducts([...products, { id: Date.now(), ...newProduct }]); // Add new product to state
-	// };
 
 	const [activeTab, setActiveTab] = useState("finishedProducts");
 	const [showArchived, setShowArchived] = useState(false);
@@ -81,7 +77,6 @@ const Inventory = () => {
 			if (data.success === false) {
 				alert(JSON.stringify(data));
 			} else {
-				// alert(JSON.stringify(data.products));
 				setRawMaterials(data.materials);
 				setProducts(data.products);
 			}
@@ -103,11 +98,23 @@ const Inventory = () => {
 
 	const archiveProduct = async (id) => {
 		if (activeTab === "rawMaterials") {
-			setRawMaterials(
-				rawMaterials.map((item) =>
-					item.id === id ? { ...item, archived: true } : item
-				)
-			);
+			alert("FUCK");
+			try {
+				const data = await RequestHandler.handleRequest(
+					"post",
+					"product/archive-unarchived-material",
+					{ id }
+				);
+				setLoading(false);
+				if (data.success === false) {
+					toast.error("Unable to archive/unarchived the material.");
+				} else {
+					toast.success(`Material successfully archived/unarchived,`);
+					loadAllProducts();
+				}
+			} catch (error) {
+				toast.error(`An error occurred while archiving data. ${error}`);
+			}
 		} else {
 			try {
 				const data = await RequestHandler.handleRequest(
@@ -130,11 +137,22 @@ const Inventory = () => {
 
 	const deleteProduct = async (id) => {
 		if (activeTab === "rawMaterials") {
-			setRawMaterials(
-				rawMaterials.map((item) =>
-					item.id === id ? { ...item, archived: true } : item
-				)
-			);
+			try {
+				const data = await RequestHandler.handleRequest(
+					"post",
+					"product/delete-material",
+					{ id }
+				);
+				setLoading(false);
+				if (data.success === false) {
+					toast.error("Unable to delete the material.");
+				} else {
+					toast.success(`Material successfully deleted the material`);
+					loadAllProducts();
+				}
+			} catch (error) {
+				toast.error(`An error occurred while archiving data. ${error}`);
+			}
 		} else {
 			try {
 				const data = await RequestHandler.handleRequest(
@@ -169,22 +187,6 @@ const Inventory = () => {
 			openModal();
 		}
 	};
-
-	// const openModalForEdit = (product) => {
-	// 	setCurrentProduct(product);
-	// 	setImageShowcase(product.productImage);
-	// 	setIsAddModal(false);
-	// 	setShowModal(true);
-	// };
-
-	// const handleImageChange = (e) => {
-	// 	const file = e.target.files[0];
-	// 	if (file) {
-	// 		setImage(file);
-	// 	}
-	// };
-
-	// const handleInputChange = (e) => {};
 
 	const theme = createTheme({
 		palette: {
@@ -264,10 +266,6 @@ const Inventory = () => {
 						<DataGrid
 							disableColumnSelector
 							disableRowSelectionOnClick
-							// paginationModel={{
-							// 	pageSize: 5,
-							// 	page: 0,
-							// }}
 							initialState={{
 								pagination: {
 									paginationModel: { pageSize: 5 },
@@ -281,8 +279,7 @@ const Inventory = () => {
 							}
 							columns={
 								activeTab === "rawMaterials"
-									? // false
-									  [
+									? [
 											{
 												field: "id",
 												headerName: "ID",
@@ -304,19 +301,24 @@ const Inventory = () => {
 												width: 130,
 											},
 											{
+												field: "unitType",
+												headerName: "Unit Type",
+												width: 130,
+											},
+											{
 												field: "actions",
 												headerName: "Actions",
-												width: 200,
+												width: 300,
 												renderCell: (params) => (
 													<>
 														<Button
 															variant="contained"
 															color="primary"
-															// onClick={() =>
-															// 	openModalForEdit(
-															// 		params.row
-															// 	)
-															// }
+															onClick={() =>
+																openModalMaterial(
+																	params.row
+																)
+															}
 															style={{
 																marginRight: 10,
 															}}
@@ -332,14 +334,20 @@ const Inventory = () => {
 																		.id
 																)
 															}
+															style={{
+																marginRight: 10,
+															}}
 														>
-															Archive
+															{params.row
+																.isArchive
+																? `Unarchived`
+																: `Archive`}
 														</Button>
 														<Button
 															variant="contained"
-															color="secondary"
+															color="error"
 															onClick={() =>
-																archiveProduct(
+																deleteProduct(
 																	params.row
 																		.id
 																)
@@ -437,7 +445,10 @@ const Inventory = () => {
 																marginRight: 10,
 															}}
 														>
-															Archive
+															{params.row
+																.isArchive
+																? `Unarchived`
+																: `Archive`}
 														</Button>
 														<Button
 															variant="contained"
@@ -468,61 +479,13 @@ const Inventory = () => {
 						onSave={loadAllProducts}
 					/>
 				)}
-				<MaterialsModal
-					isOpen={isModalOpenMaterial}
-					onClose={closeModalMaterial}
-					material={selectedMaterial}
-					onSave={saveMaterial}
-				/>
-				{
-					// <Modal open={showModal} onClose={() => setShowModal(false)}>
-					// 	<div
-					// 		style={{
-					// 			backgroundColor: "white",
-					// 			padding: "20px",
-					// 			maxWidth: "400px",
-					// 			margin: "50px auto",
-					// 			borderRadius: "8px",
-					// 		}}
-					// 	>
-					// 		<h2>
-					// 			{!isAddModal ? "Edit Product" : "Add Product"}
-					// 		</h2>
-					// 		<TextField
-					// 			label="Name"
-					// 			value={currentProduct?.name}
-					// 			onChange={handleInputChange}
-					// 			fullWidth
-					// 			margin="normal"
-					// 		/>
-					// 		<TextField
-					// 			label="Quantity"
-					// 			value={currentProduct?.quantity}
-					// 			onChange={handleInputChange}
-					// 			fullWidth
-					// 			margin="normal"
-					// 			type="number"
-					// 		/>
-					// 		<TextField
-					// 			label="Price"
-					// 			value={currentProduct?.price}
-					// 			onChange={handleInputChange}
-					// 			fullWidth
-					// 			margin="normal"
-					// 			type="number"
-					// 		/>
-					// 		<Button
-					// 			variant="contained"
-					// 			color="primary"
-					// 			onClick={() => {}}
-					// 			fullWidth
-					// 			style={{ marginTop: "20px" }}
-					// 		>
-					// 			Save
-					// 		</Button>
-					// 	</div>
-					// </Modal>
-				}
+				{isModalOpenMaterial && (
+					<MaterialsModal
+						onClose={closeModalMaterial}
+						material={selectedMaterial}
+						onSave={loadAllProducts}
+					/>
+				)}
 			</div>
 		</ThemeProvider>
 	);

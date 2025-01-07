@@ -263,7 +263,6 @@ export default function ProductImageWithLogo({
 		setColorRGB({ r, g, b });
 	}, [color]);
 
-	// Function to handle image toggle (front/back)
 	const handleImageToggle = () => {
 		setShowFront((prev) => !prev);
 	};
@@ -333,6 +332,7 @@ export default function ProductImageWithLogo({
 										? product.productImages[index]
 										: "https://placehold.co/600x400"
 								}
+								className="w-full h-full absolute top-0 left-0"
 								opacity="1"
 								width="100%"
 								height="100%"
@@ -340,17 +340,7 @@ export default function ProductImageWithLogo({
 						</g>
 					</g>
 				</svg>
-				{/* Base Image */}
-				{/* <img
-					src={
-						showFront && product.productImages[index]
-							? product.productImages[index]
-							: "https://placehold.co/600x400"
-					}
-					alt={product?.productName}
-					className="w-full h-full object-fill rounded-lg"
-				/> */}
-				{/* Tinted Image */}
+
 				<img
 					src={
 						showFront && product.productImages[index]

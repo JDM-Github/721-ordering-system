@@ -4,6 +4,7 @@ import { ToastContainer } from "react-toastify";
 import Dashboard from "./Dashboard.tsx";
 import Inventory from "./Inventory.tsx";
 import OrderHistory from "./OrderHistory.tsx";
+import AllFeedback from "./AllFeedback.tsx";
 
 export default function ClientRoute() {
 	return (
@@ -15,7 +16,7 @@ export default function ClientRoute() {
 					<div className="flex items-center mb-8">
 						<div className="w-14 h-14 bg-white rounded-full flex justify-center items-center shadow-lg">
 							<span className="text-2xl font-semibold text-orange-600">
-								A
+								ADMIN
 							</span>
 						</div>
 						<div className="ml-4">
@@ -61,7 +62,6 @@ export default function ClientRoute() {
 								</NavLink>
 							</li>
 
-							{/* Inventory Link */}
 							<li>
 								<NavLink
 									to="/admin/inventory"
@@ -91,7 +91,6 @@ export default function ClientRoute() {
 								</NavLink>
 							</li>
 
-							{/* Orders Link */}
 							<li>
 								<NavLink
 									to="/admin/history"
@@ -118,6 +117,35 @@ export default function ClientRoute() {
 										/>
 									</svg>
 									Orders
+								</NavLink>
+							</li>
+
+							<li>
+								<NavLink
+									to="/admin/feedback"
+									className={({ isActive }) =>
+										`flex items-center py-3 px-5 rounded-lg transition duration-300 ${
+											isActive
+												? "bg-orange-800 text-white font-semibold"
+												: "hover:bg-orange-700 hover:text-white"
+										}`
+									}
+								>
+									<svg
+										xmlns="http://www.w3.org/2000/svg"
+										className="w-5 h-5 mr-3"
+										fill="none"
+										viewBox="0 0 24 24"
+										stroke="currentColor"
+									>
+										<path
+											stroke-linecap="round"
+											stroke-linejoin="round"
+											stroke-width="2"
+											d="M3 3h18M3 12h18M3 21h18"
+										/>
+									</svg>
+									Feedback
 								</NavLink>
 							</li>
 
@@ -158,6 +186,7 @@ export default function ClientRoute() {
 					<Route index path="/dashboard" element={<Dashboard />} />
 					<Route path="/inventory" element={<Inventory />} />
 					<Route path="/history" element={<OrderHistory />} />
+					<Route path="/feedback" element={<AllFeedback />} />
 				</Routes>
 			</div>
 

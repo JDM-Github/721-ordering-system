@@ -7,9 +7,13 @@ import {
 	DialogActions,
 	DialogContent,
 	DialogTitle,
+	FormControl,
+	InputLabel,
 	List,
 	ListItem,
 	ListItemText,
+	MenuItem,
+	Select,
 } from "@mui/material";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 import { toast } from "react-toastify";
@@ -22,6 +26,7 @@ const OrderHistory = () => {
 	const navigate = useNavigate();
 
 	const handleViewOrder = (order) => {
+		alert(JSON.stringify(order));
 		setSelectedOrder(order);
 		setOpenModal(true);
 	};
@@ -31,13 +36,18 @@ const OrderHistory = () => {
 		setSelectedOrder(null);
 	};
 
-	const handleViewProduct = (productId) => {
-		navigate(`/product/${productId}`);
+	const handleViewProduct = (order) => {
+		navigate("/view-design", {
+			state: {
+				order: order,
+				orders: null,
+			},
+		});
 	};
 
-	const updateStatus = async (id) => {
+	const updateStatus = async (id, newStatus, userId, email) => {
 		const isConfirmed = window.confirm(
-			"Are you sure you want to update the order status?"
+			`Are you sure you want to update the order status to "${newStatus}"?`
 		);
 		if (!isConfirmed) {
 			return;
@@ -46,19 +56,53 @@ const OrderHistory = () => {
 			const data = await RequestHandler.handleRequest(
 				"post",
 				"product/order-update-status",
-				{ id }
+				{ id, newStatus, userId, email }
 			);
 			if (data.success) {
 				toast.success("Order status updated successfully");
 				loadRequest();
 			} else {
-				toast.error(data.message || "Order status has error");
-				return;
+				toast.error(data.message || "Order status update failed");
 			}
 		} catch (error) {
-			toast.error(error.message || "Order status has error");
-			return;
+			toast.error(error.message || "Order status update failed");
 		}
+	};
+
+	const allStatuses = [
+		"Pending",
+		"Sewing",
+		"Printing",
+		"Packing",
+		"Ready to pickup",
+		"Completed",
+	];
+
+	const StatusColumn = ({ status, id, userId, email }) => {
+		const [selectedStatus, setSelectedStatus] = React.useState(status);
+
+		const handleStatusChange = (event) => {
+			const newStatus = event.target.value;
+			setSelectedStatus(newStatus);
+			updateStatus(id, newStatus, userId, email);
+		};
+
+		return (
+			<FormControl fullWidth size="small">
+				<Select
+					labelId={`status-select-label-${id}`}
+					value={selectedStatus}
+					onChange={handleStatusChange}
+					style={{ width: "100px" }}
+				>
+					{allStatuses.map((statusOption) => (
+						<MenuItem key={statusOption} value={statusOption}>
+							{statusOption}
+						</MenuItem>
+					))}
+				</Select>
+			</FormControl>
+		);
 	};
 
 	const loadRequest = async () => {
@@ -66,12 +110,15 @@ const OrderHistory = () => {
 			const data = await RequestHandler.handleRequest(
 				"post",
 				"product/get-all-order",
-				{}
+				{ paid: true }
 			);
 			if (data.success) {
 				const ord = data.orderSummaries.map((order) => ({
 					id: order.id,
+					userId: order.user.id,
 					referenceNumber: order.referenceNumber,
+					address: order.user.address,
+					contactNumber: order.user.contactNumber,
 					status: order.status,
 					isCompleted: order.isCompleted,
 					orderStatus: order.orderStatus,
@@ -80,6 +127,7 @@ const OrderHistory = () => {
 					fullname: order.user.firstName + " " + order.user.lastName,
 					createdAt: new Date(order.createdAt).toLocaleDateString(),
 					products: order.products.map((product) => ({
+						product: product,
 						productId: product.productId,
 						productName: product.productName,
 						price: product.price,
@@ -121,52 +169,52 @@ const OrderHistory = () => {
 			headerName: "Reference Number",
 			width: 100,
 		},
-		{
-			field: "orderStatus",
-			headerName: "Order Status",
-			width: 100,
-		},
-		{ field: "createdAt", headerName: "Order Date", width: 150 },
+		// {
+		// 	field: "orderStatus",
+		// 	headerName: "Order Status",
+		// 	width: 100,
+		// },
+		{ field: "createdAt", headerName: "Order Date", width: 100 },
 		{
 			field: "actions",
 			headerName: "Actions",
-			renderCell: (params) => (
-				<>
-					<Button
-						variant="contained"
-						color="primary"
-						onClick={() => handleViewOrder(params.row)}
-						style={{
-							backgroundColor: "#FFA500",
-							marginRight: "10px",
-						}}
-					>
-						View Order
-					</Button>
-					{!params.row.isCompleted && (
-						<Button
-							variant="contained"
-							color="primary"
-							onClick={() => updateStatus(params.row.id)}
-							style={{ backgroundColor: "#FF2600FF" }}
-						>
-							{params.row.status}
-						</Button>
-					)}
-					{params.row.isCompleted && (
+			renderCell: (params) => {
+				return (
+					<div className="flex align-items-center justify-center h-100 mt-3">
 						<Button
 							variant="contained"
 							color="primary"
 							onClick={() => handleViewOrder(params.row)}
-							style={{ backgroundColor: "#FFFB00FF" }}
-							disabled={true}
+							style={{
+								backgroundColor: "#FFA500",
+								marginRight: "10px",
+							}}
 						>
-							Completed
+							View Order
 						</Button>
-					)}
-				</>
-			),
-			width: 200,
+						{!params.row.isCompleted && (
+							<StatusColumn
+								status={params.row.status}
+								id={params.row.id}
+								userId={params.row.userId}
+								email={params.row.email}
+							/>
+						)}
+						{params.row.isCompleted && (
+							<Button
+								variant="contained"
+								color="primary"
+								onClick={() => handleViewOrder(params.row)}
+								style={{ backgroundColor: "#FFFB00FF" }}
+								disabled={true}
+							>
+								Completed
+							</Button>
+						)}
+					</div>
+				);
+			},
+			width: 250,
 		},
 	];
 
@@ -214,7 +262,17 @@ const OrderHistory = () => {
 				</div>
 			</div>
 
-			<Dialog open={openModal} onClose={handleCloseModal}>
+			<Dialog
+				open={openModal}
+				onClose={handleCloseModal}
+				fullWidth
+				maxWidth="lg"
+				PaperProps={{
+					style: {
+						minWidth: "60vw",
+					},
+				}}
+			>
 				<DialogTitle>Order Details</DialogTitle>
 				<DialogContent>
 					{selectedOrder && (
@@ -223,59 +281,141 @@ const OrderHistory = () => {
 								Reference Number:{" "}
 								{selectedOrder.referenceNumber}
 							</h3>
-							<List>
-								{selectedOrder.products &&
-								selectedOrder.products.length > 0 ? (
-									selectedOrder.products.map(
-										(product, index) => (
-											<ListItem key={index}>
-												{product.productImages &&
-													product
-														.productImages[0] && (
-														<img
-															src={
-																product
-																	.productImages[0]
-															}
-															alt={
-																product.productName
-															}
-															style={{
-																width: "100px",
-																height: "100px",
-																objectFit:
-																	"cover",
-																marginRight:
-																	"10px",
-															}}
-														/>
-													)}
-												<ListItemText
-													primary={`Product Name: ${product.productName}`}
-													secondary={`Price: ₱${product.price} | Quantity: ${product.quantity}`}
-												/>
-
-												<Button
-													variant="outlined"
-													color="primary"
-													onClick={() =>
-														handleViewProduct(
-															product.productId
-														)
-													}
-													style={{ marginLeft: 10 }}
+							<h3>
+								Contact Number: {selectedOrder.contactNumber}
+							</h3>
+							<h3>Address: {selectedOrder.address}</h3>
+							<h3>Status: {selectedOrder.status}</h3>
+							<div
+								style={{
+									minHeight: "50vh",
+									overflowY: "auto",
+								}}
+							>
+								<List
+									style={{
+										borderRadius: "8px",
+										padding: "5px",
+									}}
+								>
+									{selectedOrder.products &&
+									selectedOrder.products.length > 0 ? (
+										selectedOrder.products.map(
+											(product, index) => (
+												<ListItem
+													key={index}
+													className="bg-gray-100"
+													style={{
+														display: "flex",
+														alignItems: "center",
+														justifyContent:
+															"space-between",
+														borderBottom:
+															index !==
+															selectedOrder
+																.products
+																.length -
+																1
+																? "1px solid #e0e0e0"
+																: "none",
+														padding: "10px 0",
+													}}
 												>
-													View Product
-												</Button>
-											</ListItem>
+													<div
+														style={{
+															marginLeft: "20px",
+															display: "flex",
+															alignItems:
+																"center",
+															flex: 1,
+														}}
+													>
+														{product.productImages &&
+															product
+																.productImages[0] && (
+																<img
+																	src={
+																		product
+																			.productImages[0]
+																	}
+																	alt={
+																		product.productName
+																	}
+																	style={{
+																		width: "80px",
+																		height: "80px",
+																		objectFit:
+																			"cover",
+																		borderRadius:
+																			"8px",
+																		marginRight:
+																			"15px",
+																	}}
+																/>
+															)}
+														<div
+															style={{ flex: 1 }}
+														>
+															<strong
+																style={{
+																	fontSize:
+																		"16px",
+																	color: "#333",
+																}}
+															>
+																{
+																	product.productName
+																}
+															</strong>
+															<p
+																style={{
+																	fontSize:
+																		"14px",
+																	color: "#555",
+																}}
+															>
+																Price: ₱
+																{product.price}{" "}
+																| Quantity:{" "}
+																{
+																	product.quantity
+																}
+															</p>
+														</div>
+													</div>
+													<Button
+														variant="outlined"
+														color="primary"
+														onClick={() =>
+															handleViewProduct(
+																product
+															)
+														}
+														style={{
+															marginRight: "20px",
+															fontSize: "14px",
+															padding: "5px 10px",
+															textTransform:
+																"none",
+														}}
+													>
+														View
+													</Button>
+												</ListItem>
+											)
 										)
-									)
-								) : (
-									<ListItem>
-										No products in this order.
-									</ListItem>
-								)}
-							</List>
+									) : (
+										<ListItem
+											style={{
+												textAlign: "center",
+												padding: "20px",
+											}}
+										>
+											No products in this order.
+										</ListItem>
+									)}
+								</List>
+							</div>
 						</div>
 					)}
 				</DialogContent>

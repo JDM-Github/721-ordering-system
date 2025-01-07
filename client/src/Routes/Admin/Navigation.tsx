@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { FaShoppingCart, FaUserCircle, FaTshirt } from "react-icons/fa";
+import { FaShoppingCart, FaUserCircle, FaTshirt, FaBell } from "react-icons/fa";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 const image = require("../../Assets/icon.jpeg");
@@ -34,8 +34,15 @@ function Navigation({ setUser, user }) {
 				<Link to="/cart" className="text-lg hover:text-gray-200">
 					<FaShoppingCart className="w-6 h-6 text-gray-800" />
 				</Link>
+				{Object.keys(user).length ? (
+					<Link
+						to="/notification"
+						className="text-lg hover:text-gray-200"
+					>
+						<FaBell className="w-6 h-6 text-gray-800" />
+					</Link>
+				) : null}
 
-				{/* Profile Icon with Hover Dropdown */}
 				<div
 					className="relative"
 					onMouseEnter={() => setProfileHovered(true)}
@@ -58,6 +65,12 @@ function Navigation({ setUser, user }) {
 										className="block px-4 py-2 hover:bg-gray-200"
 									>
 										Order History
+									</Link>
+									<Link
+										to="/completed-order"
+										className="block px-4 py-2 hover:bg-gray-200"
+									>
+										Completed Order
 									</Link>
 									<Link
 										to="/"
@@ -89,6 +102,19 @@ function Navigation({ setUser, user }) {
 									>
 										Register
 									</Link>
+									<Link
+										to="/verify"
+										className="block px-4 py-2 hover:bg-gray-200"
+									>
+										Verify
+									</Link>
+									<Link
+										to="/forgot-password"
+										className="block px-4 py-2 hover:bg-gray-200"
+									>
+										Forgot Password
+									</Link>
+									{/* forgot-password */}
 								</>
 							)}
 						</div>

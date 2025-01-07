@@ -3,54 +3,18 @@ import { useLocation, useNavigate, Link } from "react-router-dom";
 import { toast } from "react-toastify";
 import RequestHandler from "../../Functions/RequestHandler";
 
-interface CartItem {
-	id: string;
-	productId: string;
-	quantity: number;
-	customization: {
-		id: string;
-		color: string;
-		pattern: string;
-		customName: string;
-		customNumber: string;
-		notes: string;
-		selectedSize: string;
-		logoPosition: { x: number; y: number };
-		logoPositionPixel: { x: number; y: number };
-		logo: string;
-	};
-	Product: {
-		productImage: string;
-		productName: string;
-		price: number;
-		size: [string];
-		stocks: number;
-		description: string;
-		status: string;
-		patterns: [string];
-		availableColors: [string];
-		isCustomizable: boolean;
-	};
-}
-
 function OrderSummary() {
 	const navigate = useNavigate();
 	const location = useLocation();
 	const { orders } = location.state || {};
 
-	interface User {
-		id: string;
-		address: string;
-		contactNumber: string;
-		email: string;
-	}
-	const [user, setUser] = useState<User | null>(null);
+	const [user, setUser] = useState<any | null>(null);
 	useEffect(() => {
 		const userDetails = JSON.parse(localStorage.getItem("user") ?? "{}");
 		setUser(userDetails);
 	}, []);
 
-	const [items, setItems] = useState<CartItem[]>(orders);
+	const [items, setItems] = useState<any>(orders);
 	const calculateSubtotal = () =>
 		items.reduce(
 			(total, item) => total + item.Product.price * item.quantity,
@@ -59,7 +23,7 @@ function OrderSummary() {
 	const subtotal = calculateSubtotal();
 	const total = subtotal;
 
-	const createPaymentSession = async () => {
+	const createPaymentSession = async (isDown = false) => {
 		try {
 			const response = await RequestHandler.handleRequest(
 				"post",
@@ -68,6 +32,7 @@ function OrderSummary() {
 					amount: calculateSubtotal(),
 					userId: user?.id,
 					orders,
+					isDownpayment: isDown,
 				}
 			);
 			if (response.redirectUrl) {
@@ -84,7 +49,7 @@ function OrderSummary() {
 	};
 
 	const handleCheckout = async () => {
-		await createPaymentSession();
+		await createPaymentSession(false);
 	};
 
 	const handleNoteChange = (id: string, value: string) => {
@@ -92,6 +57,9 @@ function OrderSummary() {
 			item.id === id ? { ...item, note: value } : item
 		);
 		setItems(updatedItems);
+	};
+	const handleDownPayment = async () => {
+		await createPaymentSession(true);
 	};
 
 	const viewDesign = (id: string) => {
@@ -103,9 +71,7 @@ function OrderSummary() {
 			<h1 className="text-3xl font-bold mb-2 text-gray-800 lg:px-20 text-orange-500">
 				Order Summary
 			</h1>
-			{/* <hr /> */}
 
-			{/* Order Items Section */}
 			<div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:px-20">
 				{/* Order Details */}
 				<div className="bg-white rounded-lg shadow-lg p-6 w-full">
@@ -118,13 +84,11 @@ function OrderSummary() {
 							key={item.id}
 							className="flex flex-col md:flex-row justify-between items-start border-b pb-4 mb-4"
 						>
-							{/* Product Image */}
 							<img
 								src={item.Product.productImages[0]}
 								alt={item.Product.productName}
 								className="w-24 h-24 object-cover rounded-lg"
 							/>
-							{/* Product Details */}
 							<div className="flex-1 ml-0 md:ml-4 mt-4 md:mt-0">
 								<h3 className="text-lg font-semibold">
 									{item.Product.productName.slice(0, 25) +
@@ -137,7 +101,6 @@ function OrderSummary() {
 									Quantity: {item.quantity}
 								</p>
 
-								{/* Notes Section */}
 								<div className="mt-2">
 									<label
 										htmlFor={`note-${item.id}`}
@@ -160,7 +123,6 @@ function OrderSummary() {
 									/>
 								</div>
 
-								{/* View Design Button */}
 								{item.Product.isCustomizable && (
 									<Link
 										to={{
@@ -173,7 +135,6 @@ function OrderSummary() {
 									</Link>
 								)}
 							</div>
-							{/* Product Price */}
 							<p className="text-lg font-medium mt-4 md:mt-0">
 								₱
 								{(item.Product.price * item.quantity).toFixed(
@@ -183,16 +144,11 @@ function OrderSummary() {
 						</div>
 					))}
 
-					{/* Price Summary */}
 					<div className="border-t pt-4">
 						<div className="flex justify-between text-lg font-semibold mb-2">
 							<span>Subtotal:</span>
 							<span>₱{subtotal.toFixed(2)}</span>
 						</div>
-						{/* <div className="flex justify-between text-lg font-semibold mb-2">
-							<span>Shipping:</span>
-							<span>${shippingCost.toFixed(2)}</span>
-						</div> */}
 						<hr className="my-2" />
 						<div className="flex justify-between text-xl font-bold">
 							<span>Total:</span>
@@ -200,8 +156,6 @@ function OrderSummary() {
 						</div>
 					</div>
 				</div>
-
-				{/* Delivery & Action Section */}
 
 				{user && Object.keys(orders).length !== 0 && (
 					<>
@@ -239,6 +193,41 @@ function OrderSummary() {
 								>
 									Cancel Order
 								</button>
+								<button
+									onClick={handleDownPayment}
+									className="bg-green-500 text-white py-3 rounded-lg hover:bg-green-600 transition duration-200"
+								>
+									Pay 50% Downpayment
+								</button>
+							</div>
+
+							<div className="mt-6 bg-gray-100 p-4 rounded-lg text-gray-700 text-sm">
+								<h3 className="text-lg font-semibold text-gray-800 mb-2">
+									Terms and Conditions
+								</h3>
+								<p className="mb-2">
+									By proceeding with this order, you agree to
+									our{" "}
+									<strong>
+										No Refund or Cancellation Policy
+									</strong>
+									. All purchases are final, and we are unable
+									to process refunds or cancellations once the
+									order has been confirmed. Please ensure that
+									all details, including address and contact
+									information, are accurate before proceeding.
+								</p>
+								<p className="mb-2">
+									For any questions or concerns, please
+									contact our support team at{" "}
+									<a
+										href="mailto:support@721sportswear.com"
+										className="text-orange-500 underline"
+									>
+										support@721sportswear.com
+									</a>
+									.
+								</p>
 							</div>
 						</div>
 					</>

@@ -63,7 +63,7 @@ interface LabelComp {
 const EditPageRoute: React.FC = () => {
 	const location = useLocation();
 	const { order } = location.state || {};
-	console.log(order);
+	alert(JSON.stringify(order));
 
 	interface User {
 		id: string;

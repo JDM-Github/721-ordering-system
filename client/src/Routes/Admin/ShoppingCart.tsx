@@ -3,46 +3,45 @@ import RequestHandler from "../../Functions/RequestHandler";
 import { toast } from "react-toastify";
 import { Link } from "react-router-dom";
 
-interface CartItem {
-	id: string;
-	productId: string;
-	quantity: number;
-	customization: {
-		id: string;
-		color: string;
-		pattern: string;
-		customName: string;
-		customNumber: string;
-		notes: string;
-		selectedSize: string;
-		logoPosition: { x: number; y: number };
-		logoPositionPixel: { x: number; y: number };
-		logo: string;
-	};
-	Product: {
-		productImage: string;
-		productImages: [string];
-		productName: string;
-		price: number;
-		size: [string];
-		stocks: number;
-		description: string;
-		status: string;
-		patterns: [string];
-		availableColors: [string];
-	};
-}
+// interface CartItem {
+// 	id: string;
+// 	productId: string;
+// 	quantity: number;
+// 	customization: {
+// 		id: string;
+// 		color: string;
+// 		pattern: string;
+// 		customName: string;
+// 		customNumber: string;
+// 		notes: string;
+// 		selectedSize: string;
+// 		logoPosition: { x: number; y: number };
+// 		logoPositionPixel: { x: number; y: number };
+// 		logo: string;
+// 	};
+// 	Product: {
+// 		productImage: string;
+// 		productImages: [string];
+// 		productName: string;
+// 		price: number;
+// 		size: [string];
+// 		stocks: number;
+// 		description: string;
+// 		status: string;
+// 		patterns: [string];
+// 		availableColors: [string];
+// 	};
+// }
 
 const ShoppingCart: React.FC = () => {
 	interface User {
 		id: string;
 	}
-	const [orders, setOrders] = useState<CartItem[]>([]);
+	const [orders, setOrders] = useState<any>([]);
 	const [user, setUser] = useState<User | null>(null);
 
 	const loadAllCartProduct = async () => {
 		if (!user || Object.keys(user).length === 0) {
-			// toast.error("Please login to get cart products.");
 			return;
 		}
 		const toastId = toast.loading("Loading all cart products.", {
@@ -163,6 +162,7 @@ const ShoppingCart: React.FC = () => {
 								key={item.id}
 								className="flex flex-col sm:flex-row justify-between items-start sm:items-center py-4 border-b border-gray-200"
 							>
+								{/* <input value={item.id}></input> */}
 								<div className="flex items-center space-x-2 mb-4 sm:mb-0 me-0 sm:me-8">
 									<input
 										type="checkbox"
@@ -176,7 +176,6 @@ const ShoppingCart: React.FC = () => {
 									/>
 								</div>
 
-								{/* Product Image */}
 								<div className="flex-shrink-0 w-16 h-16 bg-gray-200 rounded-md overflow-hidden mb-4 sm:mb-0">
 									<img
 										src={item.Product.productImages[0]}
@@ -185,7 +184,6 @@ const ShoppingCart: React.FC = () => {
 									/>
 								</div>
 
-								{/* Product Details */}
 								<div className="flex-grow mb-4 sm:mb-0 sm:ml-4">
 									<h3 className="text-lg font-semibold">
 										{item.Product.productName +
@@ -233,7 +231,7 @@ const ShoppingCart: React.FC = () => {
 								</div>
 
 								{/* Notes */}
-								<div className="w-full sm:w-auto mb-4 sm:mb-0 sm:me-8">
+								{/* <div className="w-full sm:w-auto mb-4 sm:mb-0 sm:me-8">
 									<label
 										className="text-sm text-gray-600 block mb-1"
 										htmlFor={`notes-${item.id}`}
@@ -249,9 +247,7 @@ const ShoppingCart: React.FC = () => {
 										className="w-full p-2 border border-gray-300 rounded-md resize-none"
 										rows={3}
 									/>
-								</div>
-
-								{/* Quantity and Edit Button */}
+								</div> */}
 								<div className="flex items-center space-x-2">
 									<input
 										type="number"
@@ -268,14 +264,23 @@ const ShoppingCart: React.FC = () => {
 									{/* <button className="bg-orange-500 text-white px-4 py-2 rounded-md hover:bg-orange-600">
 										Edit
 									</button> */}
+									{item.Product.isCustomizable && (
+										<Link
+											to={{
+												pathname: `/edit`,
+											}}
+											state={{ order: item }}
+											className="bg-orange-500 text-white px-4 py-2 rounded-md hover:bg-orange-600"
+										>
+											Edit
+										</Link>
+									)}
+
 									<Link
-										to={{
-											pathname: `/edit`,
-										}}
-										state={{ order: item }}
+										to={`/view-design?id=${item.id}`}
 										className="bg-orange-500 text-white px-4 py-2 rounded-md hover:bg-orange-600"
 									>
-										Edit
+										View
 									</Link>
 								</div>
 							</div>

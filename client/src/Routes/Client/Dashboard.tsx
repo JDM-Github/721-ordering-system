@@ -30,33 +30,10 @@ export default function Dashboard() {
 	const [totalOrders, setTotalOrders] = useState<any>(0);
 	const [totalItemsLeft, setTotalItemsLeft] = useState<any>(0);
 	const [totalUsers, setTotalUsers] = useState<any>(0);
+	const [barLabels, setBarLabels] = useState<any>([]);
+	const [pieLabels, setPieLabels] = useState<any>([]);
 	const [statusCounts, setStatusCounts] = useState<any>([]);
 	const [completedOrdersByWeek, setCompletedOrdersByWeek] = useState<any>([]);
-
-	const pieData = {
-		labels: [],
-		datasets: [
-			{
-				data: [],
-				backgroundColor: ["#FF9800", "#FFEB3B", "#f44336"],
-				hoverBackgroundColor: ["#FB8C00", "#FBC02D", "#D32F2F"],
-			},
-		],
-	};
-
-	const barData = {
-		labels: [],
-		datasets: [
-			{
-				label: "Orders Processed",
-				data: [],
-				backgroundColor: "#FF9800",
-				borderRadius: 5,
-				borderColor: "#FB8C00",
-				borderWidth: 1,
-			},
-		],
-	};
 
 	const loadRequest = async () => {
 		try {
@@ -70,13 +47,12 @@ export default function Dashboard() {
 				setTotalUsers(data.data.totalUsers);
 				setStatusCounts(data.data.statusCounts);
 				setCompletedOrdersByWeek(data.data.completedOrdersByWeek);
-				barData.labels = data.data.completedOrdersByWeek.map(
-					(item) => item.week
+				setBarLabels(
+					data.data.completedOrdersByWeek.map((item) => item.count)
 				);
-				barData.datasets[0].data = data.data.completedOrdersByWeek.map(
-					(item) => item.count
+				setPieLabels(
+					data.data.completedOrdersByWeek.map((item) => item.week)
 				);
-				// alert(JSON.stringify(data.data));
 			} else {
 				toast.error(data.message || "Unable to load order history");
 				return;
@@ -89,31 +65,6 @@ export default function Dashboard() {
 	useEffect(() => {
 		loadRequest();
 	}, []);
-
-	// const pieData = {
-	// 	labels: ["Completed", "Pending", "Canceled"],
-	// 	datasets: [
-	// 		{
-	// 			data: [50, 30, 20],
-	// 			backgroundColor: ["#FF9800", "#FFEB3B", "#f44336"], // Orange shades for theme
-	// 			hoverBackgroundColor: ["#FB8C00", "#FBC02D", "#D32F2F"],
-	// 		},
-	// 	],
-	// };
-
-	// const barData = {
-	// 	labels: ["Week 1", "Week 2", "Week 3", "Week 4"],
-	// 	datasets: [
-	// 		{
-	// 			label: "Orders Processed",
-	// 			data: [30, 45, 25, 60],
-	// 			backgroundColor: "#FF9800",
-	// 			borderRadius: 5,
-	// 			borderColor: "#FB8C00",
-	// 			borderWidth: 1,
-	// 		},
-	// 	],
-	// };
 
 	const options = {
 		responsive: true,
@@ -187,7 +138,24 @@ export default function Dashboard() {
 								Order Status Analysis
 							</h3>
 							<Pie
-								data={pieData}
+								data={{
+									labels: pieLabels,
+									datasets: [
+										{
+											data: [],
+											backgroundColor: [
+												"#FF9800",
+												"#FFEB3B",
+												"#f44336",
+											],
+											hoverBackgroundColor: [
+												"#FB8C00",
+												"#FBC02D",
+												"#D32F2F",
+											],
+										},
+									],
+								}}
 								options={{
 									responsive: true,
 									maintainAspectRatio: false,
@@ -202,7 +170,22 @@ export default function Dashboard() {
 							<h3 className="text-xl font-semibold text-gray-800 mb-4">
 								Orders Processed Over Time
 							</h3>
-							<Bar data={barData} options={options} />
+							<Bar
+								data={{
+									labels: barLabels,
+									datasets: [
+										{
+											label: "Orders Processed",
+											data: [],
+											backgroundColor: "#FF9800",
+											borderRadius: 5,
+											borderColor: "#FB8C00",
+											borderWidth: 1,
+										},
+									],
+								}}
+								options={options}
+							/>
 						</div>
 					</div>
 				</div>

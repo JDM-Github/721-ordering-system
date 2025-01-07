@@ -10,9 +10,6 @@ cloudinary.config({
 	api_secret: "kT7k8hvxo-bqMWL0aHB2o3k90dA",
 });
 
-// bluebanana6789@gmail.com
-// uuhj gpjx hwqm lhaw
-
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 

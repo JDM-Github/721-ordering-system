@@ -8,35 +8,111 @@ const {
 	OrderSummary,
 	OrderItem,
 	Materials,
+	Notification,
+	Feedback,
 } = require("./models");
-const { Op } = require("sequelize");
+const { Op, where } = require("sequelize");
+const sendEmail = require("./emailSender");
+const { chromium } = require("playwright");
+const { writePsdBuffer } = require("ag-psd");
+const { createCanvas, loadImage } = require("canvas");
+const fs = require("fs");
+
 const router = express.Router();
 
 const PAYMONGO_API_KEY = "sk_test_HMD8fpUnNtVh5bTG35TQXmXC";
-const retrieveLink = async (id) => {
-	const url = `https://api.paymongo.com/v1/links/${id}`;
+
+// router.post("/screenshot", async (req, res) => {
+// 	const { url, delay = 5, wait_until = "load" } = req.body;
+
+// 	if (!url) {
+// 		return res.status(400).send("URL is required");
+// 	}
+
+// 	try {
+// 		const browser = await chromium.launch();
+// 		const page = await browser.newPage();
+
+// 		await page.goto(url, { waitUntil: wait_until });
+// 		if (delay) {
+// 			await page.waitForTimeout(delay * 1000);
+// 		}
+
+// 		const screenshotBuffer = await page.screenshot();
+// 		const screenshotBase64 = screenshotBuffer.toString("base64");
+// 		// res.set("Content-Type", "image/png");
+// 		res.send({ success: true, screenshot: screenshotBase64 });
+// 		await browser.close();
+// 	} catch (err) {
+// 		console.error("Error capturing screenshot:", err);
+// 		res.status(500).send("Internal Server Error");
+// 	}
+// });
+
+router.post("/screenshot", async (req, res) => {
+	const { url, delay = 10, wait_until = "load", hiddenData = {} } = req.body;
+
+	if (!url) {
+		return res
+			.status(400)
+			.send({ success: false, message: "URL is required" });
+	}
+
 	try {
-		const response = await fetch(url, {
-			method: "GET",
-			headers: {
-				Authorization: `Basic ${Buffer.from(PAYMONGO_API_KEY).toString(
-					"base64"
-				)}`,
-				"Content-Type": "application/json",
+		const browser = await chromium.launch();
+		const page = await browser.newPage();
+		await page.setViewportSize({ width: 1920, height: 1080 });
+		await page.goto(url, { waitUntil: wait_until });
+		if (delay) {
+			await page.waitForTimeout(delay * 1000);
+		}
+
+		const screenshotBuffer = await page.screenshot({
+			clip: {
+				x: 370,
+				y: 120,
+				width: 550,
+				height: 550,
 			},
 		});
-		if (!response.ok) {
-			throw new Error(`Error: ${response.statusText}`);
-		}
-		const data = await response.json();
-		console.log(data);
+
+		const canvas = createCanvas(1200, 800);
+		const ctx = canvas.getContext("2d");
+		const image = await loadImage(screenshotBuffer);
+		ctx.drawImage(image, 0, 0);
+
+		const psd = {
+			width: canvas.width,
+			height: canvas.height,
+			children: [
+				{
+					name: "Screenshot Layer",
+					canvas: canvas,
+					metadata: { hiddenData },
+				},
+			],
+		};
+		const psdBuffer = writePsdBuffer(psd);
+
+		await browser.close();
+
+		res.json({
+			success: true,
+			screenshot: screenshotBuffer.toString("base64"),
+			psd: psdBuffer.toString("base64"),
+		});
 	} catch (err) {
-		console.error("Error fetching the link:", err);
+		console.error("Error capturing screenshot:", err);
+		res.status(500).send({
+			success: false,
+			message: "Internal Server Error",
+		});
 	}
-};
+});
+
 
 const getOrderPaymentStatus = async (referenceNumber) => {
-	const url = `https://api.paymongo.com/v1/links/${referenceNumber}`;
+	const url = `https://api.paymongo.com/v1/checkout_sessions/${referenceNumber}`;
 
 	try {
 		const response = await fetch(url, {
@@ -52,9 +128,8 @@ const getOrderPaymentStatus = async (referenceNumber) => {
 		if (!response.ok) {
 			throw new Error(`Error: ${response.statusText}`);
 		}
-
 		const data = await response.json();
-		return data.data.attributes.status;
+		return data.data.attributes.paid_at;
 	} catch (err) {
 		console.error("Error fetching payment status:", err);
 		return "error";
@@ -116,6 +191,70 @@ router.post("/get-all-cart", async (req, res) => {
 		res.status(500).json({
 			success: false,
 			message: "Failed to fetch all cart product",
+			error,
+		});
+	}
+});
+
+router.post("/add-feedback", async (req, res) => {
+	try {
+		const { orderid, userId, rate, comment } = req.body;
+
+		let order = await OrderSummary.findByPk(orderid);
+		if (!order) {
+			return res.send({
+				success: false,
+				message: "Order does not exist.",
+			});
+		}
+
+		const feedback = await Feedback.create({
+			userId: userId,
+			orderId: orderid,
+			rate: rate,
+			comment: comment,
+		});
+
+		await order.update({ alreadyFeedback: true });
+
+		res.status(201).json({ success: true, feedback });
+	} catch (error) {
+		console.error(error);
+		res.status(500).json({
+			success: false,
+			message: "Failed to add feedback",
+			error,
+		});
+	}
+});
+
+router.post("/get-feedback", async (req, res) => {
+	try {
+		const feedback = await Feedback.findAll({
+			include: [
+				{
+					model: User,
+					attributes: ["id", "firstName", "lastName", "email"],
+				},
+			],
+		});
+
+		// if (!feedback || feedback.length === 0) {
+		// 	return res.send({
+		// 		success: false,
+		// 		message: "No feedback found.",
+		// 	});
+		// }
+
+		res.status(200).json({
+			success: true,
+			feedback,
+		});
+	} catch (error) {
+		console.error(error);
+		res.status(500).json({
+			success: false,
+			message: "Failed to fetch feedback.",
 			error,
 		});
 	}
@@ -209,37 +348,33 @@ router.post("/get-dashboard", async (req, res) => {
 
 router.post("/order-update-status", async (req, res) => {
 	try {
-		const { id } = req.body;
+		const { id, newStatus, userId, email } = req.body;
 		let order = await OrderSummary.findByPk(id);
+
 		if (!order) {
-			res.send({
+			return res.send({
 				success: false,
-				message: "OrderSummary does not exists.",
+				message: "OrderSummary does not exist.",
 			});
-			return;
 		}
-		let isCompleted = false;
-		let newStatus = "Pending";
-		if (order.status == "Pending") {
-			newStatus = "Sewing";
-		} else if (order.status == "Sewing") {
-			newStatus = "Printing";
-		} else if (order.status == "Printing") {
-			newStatus = "Packing";
-		} else if (order.status == "Packing") {
-			newStatus = "Ready to pickup";
-		} else {
-			newStatus = "Completed";
-			isCompleted = true;
-		}
-		await order.update({ status: newStatus, isCompleted });
-		console.log(order);
+		const subject = `Order ${id} Status Updated`;
+		const text = `Your order status has been updated to ${newStatus}.`;
+		const html = `<p>Your order status has been updated to <strong>${newStatus}</strong>.</p>`;
+		sendEmail(email, subject, text, html);
+
+		await Notification.create({
+			userId: userId,
+			title: `Order ${id} Status Updated`,
+			message: `Your order status has been updated to ${newStatus}.`,
+		});
+		const isCompleted = newStatus === "Completed";
+		await order.update({ status: newStatus, isCompleted, isPaid: true });
 		res.status(201).json({ success: true, order });
 	} catch (error) {
 		console.error(error);
 		res.status(500).json({
 			success: false,
-			message: "Failed to edit customized product",
+			message: "Failed to update order status",
 			error,
 		});
 	}
@@ -672,13 +807,36 @@ router.post("/delete-cart", async (req, res) => {
 	}
 });
 
+router.post("/delete-order", async (req, res) => {
+	const { id } = req.body;
+	try {
+		await OrderSummary.destroy({ where: { id } });
+		res.status(200).json({ success: true });
+	} catch (error) {
+		res.status(500).json({
+			success: false,
+			message: "Failed to delete order",
+			error: error.message,
+		});
+	}
+});
+
 router.post("/get-all-order", async (req, res) => {
-	const { userId } = req.body;
+	const { userId, status, paid } = req.body;
 	try {
 		const whereClause = {};
 
 		if (userId !== undefined) {
 			whereClause["userId"] = userId;
+		}
+		if (status !== undefined) {
+			whereClause["status"] = status;
+		}
+		if (paid !== undefined) {
+			whereClause[Op.or] = [
+				{ isDownpaymentPaid: paid, isExpired: false, isFailed: false },
+				{ isPaid: paid },
+			];
 		}
 
 		const orderSummaries = await OrderSummary.findAll({
@@ -687,39 +845,86 @@ router.post("/get-all-order", async (req, res) => {
 				{
 					model: User,
 					attributes: [
+						"id",
 						"firstName",
 						"lastName",
 						"email",
 						"contactNumber",
+						"address",
 					],
 				},
 			],
 		});
 
-		console.log(orderSummaries);
-
 		const ordersWithProducts = [];
 
 		for (const orderSummary of orderSummaries) {
-			console.log(`Order Summary ID: ${orderSummary.id}`);
-			console.log(
-				`Products in this summary: ${JSON.stringify(
-					orderSummary.products
-				)}`
-			);
-
-			if (orderSummary.isPaid || orderSummary.isFailed) {
-				console.log(
-					`Skipping Order Summary ID: ${orderSummary.id} because it is either paid or failed`
-				);
+			if (orderSummary.isDownpayment) {
+				if (orderSummary.isDownPaymentExpired) {
+				} else if (orderSummary.isDownpaymentPaid) {
+					if (
+						orderSummary.orderId !== "" &&
+						orderSummary.expiredAt !== null
+					) {
+						if (
+							orderSummary.isPaid ||
+							orderSummary.isFailed ||
+							orderSummary.isExpired
+						) {
+						} else {
+							const currentTime = new Date();
+							if (
+								new Date(orderSummary.expiredAt) <= currentTime
+							) {
+								await orderSummary.update({ isExpired: true });
+							} else {
+								const orderStatus = await getOrderPaymentStatus(
+									orderSummary.orderId
+								);
+								if (orderStatus > 0) {
+									await orderSummary.update({ isPaid: true });
+								}
+							}
+						}
+					}
+				} else {
+					const currentTime = new Date();
+					if (
+						new Date(orderSummary.downPaymentExpiredAt) <=
+						currentTime
+					) {
+						await orderSummary.update({
+							isDownPaymentExpired: true,
+						});
+					} else {
+						const orderStatus = await getOrderPaymentStatus(
+							orderSummary.downPaymentOrderId
+						);
+						if (orderStatus > 0) {
+							await orderSummary.update({
+								isDownpaymentPaid: true,
+							});
+						}
+					}
+				}
 			} else {
-				const orderStatus = await getOrderPaymentStatus(
-					orderSummary.referenceNumber
-				);
-				if (orderStatus === "paid") {
-					await orderSummary.update({ isPaid: true });
-				} else if (orderStatus === "failed") {
-					await orderSummary.update({ isFailed: true });
+				if (
+					orderSummary.isPaid ||
+					orderSummary.isFailed ||
+					orderSummary.isExpired
+				) {
+				} else {
+					const currentTime = new Date();
+					if (new Date(orderSummary.expiredAt) <= currentTime) {
+						await orderSummary.update({ isExpired: true });
+					} else {
+						const orderStatus = await getOrderPaymentStatus(
+							orderSummary.orderId
+						);
+						if (orderStatus > 0) {
+							await orderSummary.update({ isPaid: true });
+						}
+					}
 				}
 			}
 
@@ -737,6 +942,7 @@ router.post("/get-all-order", async (req, res) => {
 								"productName",
 								"price",
 								"productImages",
+								"size",
 							],
 						},
 					],
@@ -756,25 +962,46 @@ router.post("/get-all-order", async (req, res) => {
 					customization: orderProduct.customization,
 					status: orderProduct.status,
 					productImages: orderProduct.Product.productImages,
+					size: orderProduct.Product.size,
 				}));
 
 				ordersWithProducts.push({
 					id: orderSummary.id,
+					orderId: orderSummary.orderId,
 					referenceNumber: orderSummary.referenceNumber,
 					createdAt: orderSummary.createdAt,
-					orderStatus: orderSummary.isPaid
+
+					downPaymentStatus: !orderSummary.isDownpayment
+						? "------"
+						: orderSummary.isDownpaymentPaid
 						? "PAID"
-						: orderSummary.isFailed
-						? "FAILED"
+						: orderSummary.isDownPaymentExpired
+						? "EXPIRED"
 						: "PENDING",
+					orderStatus:
+						(orderSummary.isDownpayment &&
+							!orderSummary.isDownpaymentPaid) ||
+						orderSummary.isDownPaymentExpired
+							? "------"
+							: orderSummary.isPaid
+							? "PAID"
+							: orderSummary.isFailed
+							? "FAILED"
+							: orderSummary.isExpired
+							? "EXPIRED"
+							: "PENDING",
+
 					products: products,
 					status: orderSummary.status,
 					isCompleted: orderSummary.isCompleted,
 					user: orderSummary.User,
+					paymentLink: orderSummary.paymentLink,
+					alreadyFeedback: orderSummary.alreadyFeedback,
 				});
 			} else {
 				ordersWithProducts.push({
 					id: orderSummary.id,
+					orderId: orderSummary.orderId,
 					orderStatus: orderSummary.isPaid
 						? "PAID"
 						: orderSummary.isFailed
@@ -786,6 +1013,8 @@ router.post("/get-all-order", async (req, res) => {
 					isCompleted: orderSummary.isCompleted,
 					products: [],
 					user: orderSummary.User,
+					paymentLink: orderSummary.paymentLink,
+					alreadyFeedback: orderSummary.alreadyFeedback,
 				});
 			}
 		}
@@ -823,6 +1052,28 @@ router.get("/get-all-product-customizable", async (req, res) => {
 		res.status(500).json({
 			success: false,
 			message: "Failed to fetch products",
+			error,
+		});
+	}
+});
+
+
+router.post("/get-order-summary", async (req, res) => {
+	try {
+		const { id } = req.body;
+		const product = await OrderProduct.findByPk(id, {
+			include: {
+				model: Product,
+			},
+		});
+		const products = await OrderProduct.findAll();
+		console.log(products);
+		res.status(200).json({ success: true, product });
+	} catch (error) {
+		console.error(error);
+		res.status(500).json({
+			success: false,
+			message: "Failed to fetch product",
 			error,
 		});
 	}

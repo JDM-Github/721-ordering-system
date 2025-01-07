@@ -69,11 +69,13 @@ function CustomizeSection() {
 							className="bg-white border rounded-lg shadow-lg overflow-hidden cursor-pointer hover:shadow-2xl transition-shadow duration-300"
 							onClick={() => handleCustomizeClick(product.id)}
 						>
-							<img
-								src={product.productImages[0]}
-								alt={product.productName}
-								className="w-full h-64 object-fit bg-gray-200"
-							/>
+							<div className="flex justify-center align-items-center w-100 h-100 bg-gray-200">
+								<img
+									src={product.productImages[0]}
+									alt={product.productName}
+									className="w-auto h-64 object-fit bg-gray-200"
+								/>
+							</div>
 
 							<div className="p-4">
 								<h3 className="text-xl font-semibold text-gray-800">

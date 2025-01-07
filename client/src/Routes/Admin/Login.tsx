@@ -70,6 +70,7 @@ const Login = ({ setUser }) => {
 					autoClose: 3000,
 					position: "top-center",
 				});
+				navigate("/");
 			}
 		} catch (error) {
 			toast.update(pendingToastId, {
@@ -92,7 +93,6 @@ const Login = ({ setUser }) => {
 				navigate("/admin/dashboard");
 			else {
 				await login();
-				navigate("/");
 			}
 		}
 	};

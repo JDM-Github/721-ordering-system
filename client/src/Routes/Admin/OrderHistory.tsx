@@ -26,15 +26,12 @@ const OrderHistory = ({ user }) => {
 		setOpenModal(true);
 	};
 
-	// Close the modal
 	const handleCloseModal = () => {
 		setOpenModal(false);
 		setSelectedOrder(null);
 	};
 
 	const handleViewProduct = (order) => {
-		// navigate(`/product/${productId}`);
-		alert(JSON.stringify(order));
 		navigate("/view-design", {
 			state: {
 				order: order,
@@ -53,11 +50,17 @@ const OrderHistory = ({ user }) => {
 			if (data.success) {
 				const ord = data.orderSummaries.map((order) => ({
 					id: order.id,
+					orderId: order.orderId,
 					referenceNumber: order.referenceNumber,
 					status: order.status,
+					address: order.user.address,
+					contactNumber: order.user.contactNumber,
 					orderStatus: order.orderStatus,
+					downPaymentStatus: order.downPaymentStatus,
+					paymentLink: order.paymentLink,
 					createdAt: new Date(order.createdAt).toLocaleDateString(),
 					products: order.products.map((product) => ({
+						product: product,
 						productId: product.productId,
 						productName: product.productName,
 						price: product.price,
@@ -66,7 +69,6 @@ const OrderHistory = ({ user }) => {
 						productImages: product.productImages,
 					})),
 				}));
-				console.log(data.orderSummaries);
 				setOrders(ord);
 			} else {
 				toast.error(data.message || "Unable to load order history");
@@ -82,6 +84,47 @@ const OrderHistory = ({ user }) => {
 		loadRequest();
 	}, []);
 
+	const handlePayOrder = (param) => {
+		window.location.href = param;
+	};
+	const handlePayRemainingBalance = (param) => {
+		window.location.href = param;
+	};
+	const removeOrder = async (id) => {
+		const toastId = toast.loading("Processing your request...");
+		try {
+			const data = await RequestHandler.handleRequest(
+				"post",
+				"product/delete-order",
+				{ id: id }
+			);
+
+			if (data.success) {
+				toast.update(toastId, {
+					render: "Order has been deleted.",
+					type: "success",
+					isLoading: false,
+					autoClose: 3000,
+				});
+				loadRequest();
+			} else {
+				toast.update(toastId, {
+					render: data.message || "Unable to load order history",
+					type: "error",
+					isLoading: false,
+					autoClose: 3000,
+				});
+			}
+		} catch (error) {
+			toast.update(toastId, {
+				render: error.message || "Unable to load order history",
+				type: "error",
+				isLoading: false,
+				autoClose: 3000,
+			});
+		}
+	};
+
 	const columns = [
 		{ field: "id", headerName: "Order ID", width: 200 },
 		{
@@ -95,6 +138,11 @@ const OrderHistory = ({ user }) => {
 			width: 100,
 		},
 		{
+			field: "downPaymentStatus",
+			headerName: "Downpayment Status",
+			width: 100,
+		},
+		{
 			field: "orderStatus",
 			headerName: "Order Status",
 			width: 100,
@@ -103,18 +151,72 @@ const OrderHistory = ({ user }) => {
 		{
 			field: "actions",
 			headerName: "Actions",
-			renderCell: (params) => (
-				<>
-					<Button
-						variant="contained"
-						color="primary"
-						onClick={() => handleViewOrder(params.row)}
-						style={{ backgroundColor: "#FFA500" }}
-					>
-						View Order
-					</Button>
-				</>
-			),
+			renderCell: (params) => {
+				const {
+					id,
+					downPaymentStatus,
+					orderStatus,
+					orderId,
+					paymentLink,
+				} = params.row;
+
+				return (
+					<>
+						<Button
+							variant="contained"
+							color="primary"
+							onClick={() => handleViewOrder(params.row)}
+							style={{
+								backgroundColor: "#FFA500",
+								marginRight: "10px",
+							}}
+						>
+							View Order
+						</Button>
+						{((downPaymentStatus === "PENDING" &&
+							orderStatus === "------") ||
+							(downPaymentStatus === "------" &&
+								orderStatus === "PENDING")) && (
+							<Button
+								variant="contained"
+								color="primary"
+								onClick={() => handlePayOrder(paymentLink)}
+								style={{
+									backgroundColor: "#FFA500",
+									marginRight: "10px",
+								}}
+							>
+								Pay Order
+							</Button>
+						)}
+						{orderId !== "" &&
+							downPaymentStatus === "PAID" &&
+							orderStatus === "PENDING" && (
+								<Button
+									variant="contained"
+									color="primary"
+									onClick={() =>
+										handlePayRemainingBalance(paymentLink)
+									}
+									style={{ backgroundColor: "#FF1E00FF" }}
+								>
+									Pay Remaining Balance
+								</Button>
+							)}
+						{downPaymentStatus === "EXPIRED" ||
+							(orderStatus === "EXPIRED" && (
+								<Button
+									variant="contained"
+									color="primary"
+									onClick={() => removeOrder(id)}
+									style={{ backgroundColor: "#FF1E00FF" }}
+								>
+									Delete Order
+								</Button>
+							))}
+					</>
+				);
+			},
 			width: 300,
 		},
 	];
@@ -163,7 +265,17 @@ const OrderHistory = ({ user }) => {
 				</div>
 			</div>
 
-			<Dialog open={openModal} onClose={handleCloseModal}>
+			<Dialog
+				open={openModal}
+				onClose={handleCloseModal}
+				fullWidth
+				maxWidth="lg"
+				PaperProps={{
+					style: {
+						minWidth: "60vw",
+					},
+				}}
+			>
 				<DialogTitle>Order Details</DialogTitle>
 				<DialogContent>
 					{selectedOrder && (
@@ -172,59 +284,141 @@ const OrderHistory = ({ user }) => {
 								Reference Number:{" "}
 								{selectedOrder.referenceNumber}
 							</h3>
-							<List>
-								{selectedOrder.products &&
-								selectedOrder.products.length > 0 ? (
-									selectedOrder.products.map(
-										(product, index) => (
-											<ListItem key={index}>
-												{product.productImages &&
-													product
-														.productImages[0] && (
-														<img
-															src={
-																product
-																	.productImages[0]
-															}
-															alt={
-																product.productName
-															}
-															style={{
-																width: "100px",
-																height: "100px",
-																objectFit:
-																	"cover",
-																marginRight:
-																	"10px",
-															}}
-														/>
-													)}
-												<ListItemText
-													primary={`Product Name: ${product.productName}`}
-													secondary={`Price: $${product.price} | Quantity: ${product.quantity}`}
-												/>
-
-												<Button
-													variant="outlined"
-													color="primary"
-													onClick={() =>
-														handleViewProduct(
-															product
-														)
-													}
-													style={{ marginLeft: 10 }}
+							<h3>
+								Contact Number: {selectedOrder.contactNumber}
+							</h3>
+							<h3>Address: {selectedOrder.address}</h3>
+							<h3>Status: {selectedOrder.status}</h3>
+							<div
+								style={{
+									minHeight: "50vh",
+									overflowY: "auto",
+								}}
+							>
+								<List
+									style={{
+										borderRadius: "8px",
+										padding: "5px",
+									}}
+								>
+									{selectedOrder.products &&
+									selectedOrder.products.length > 0 ? (
+										selectedOrder.products.map(
+											(product, index) => (
+												<ListItem
+													key={index}
+													className="bg-gray-100"
+													style={{
+														display: "flex",
+														alignItems: "center",
+														justifyContent:
+															"space-between",
+														borderBottom:
+															index !==
+															selectedOrder
+																.products
+																.length -
+																1
+																? "1px solid #e0e0e0"
+																: "none",
+														padding: "10px 0",
+													}}
 												>
-													View Product
-												</Button>
-											</ListItem>
+													<div
+														style={{
+															marginLeft: "20px",
+															display: "flex",
+															alignItems:
+																"center",
+															flex: 1,
+														}}
+													>
+														{product.productImages &&
+															product
+																.productImages[0] && (
+																<img
+																	src={
+																		product
+																			.productImages[0]
+																	}
+																	alt={
+																		product.productName
+																	}
+																	style={{
+																		width: "80px",
+																		height: "80px",
+																		objectFit:
+																			"cover",
+																		borderRadius:
+																			"8px",
+																		marginRight:
+																			"15px",
+																	}}
+																/>
+															)}
+														<div
+															style={{ flex: 1 }}
+														>
+															<strong
+																style={{
+																	fontSize:
+																		"16px",
+																	color: "#333",
+																}}
+															>
+																{
+																	product.productName
+																}
+															</strong>
+															<p
+																style={{
+																	fontSize:
+																		"14px",
+																	color: "#555",
+																}}
+															>
+																Price: ₱
+																{product.price}{" "}
+																| Quantity:{" "}
+																{
+																	product.quantity
+																}
+															</p>
+														</div>
+													</div>
+													<Button
+														variant="outlined"
+														color="primary"
+														onClick={() =>
+															handleViewProduct(
+																product
+															)
+														}
+														style={{
+															marginRight: "20px",
+															fontSize: "14px",
+															padding: "5px 10px",
+															textTransform:
+																"none",
+														}}
+													>
+														View
+													</Button>
+												</ListItem>
+											)
 										)
-									)
-								) : (
-									<ListItem>
-										No products in this order.
-									</ListItem>
-								)}
-							</List>
+									) : (
+										<ListItem
+											style={{
+												textAlign: "center",
+												padding: "20px",
+											}}
+										>
+											No products in this order.
+										</ListItem>
+									)}
+								</List>
+							</div>
 						</div>
 					)}
 				</DialogContent>

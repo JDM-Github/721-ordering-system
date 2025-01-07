@@ -21,6 +21,11 @@ import EditPageRoute from "./EditProduct.tsx";
 import ViewDesign from "./ViewDesign.tsx";
 import PaymentSuccess from "./PaymentSuccess.tsx";
 import PaymentFailed from "./PaymentFailed.tsx";
+import Verify from "./Verify.tsx";
+import Notification from "./Notification.tsx";
+import ForgotPassword from "./ForgotPassword.tsx";
+import CompletedOrder from "./CompletedOrder.tsx";
+import EditCustomization from "./EditCustomization.tsx";
 
 export default function AdminRoute({ className }) {
 	const [user, setUser] = useState({});
@@ -37,6 +42,15 @@ export default function AdminRoute({ className }) {
 					<Route index path="/" element={<Dashboard />} />
 					<Route path="/register" element={<RegistrationPage />} />
 					<Route
+						path="/forgot-password"
+						element={<ForgotPassword />}
+					/>
+					<Route
+						path="/notification"
+						element={<Notification user={user} />}
+					/>
+					<Route path="/verify" element={<Verify />} />
+					<Route
 						path="/login"
 						element={<LoginPage setUser={setUser} />}
 					/>
@@ -48,13 +62,17 @@ export default function AdminRoute({ className }) {
 						element={<PaymentSuccess />}
 					/>
 					<Route path="/payment-failed" element={<PaymentFailed />} />
-					<Route path="/edit" element={<EditPageRoute />} />
+					<Route path="/edit" element={<EditCustomization />} />
 					<Route path="/view-design" element={<ViewDesign />} />
 					<Route
 						path="/customize-templates"
 						element={<CustomizeSection />}
 					/>
 					<Route path="/order-summary" element={<OrderSummary />} />
+					<Route
+						path="/completed-order"
+						element={<CompletedOrder user={user} />}
+					/>
 					<Route
 						path="/account"
 						element={

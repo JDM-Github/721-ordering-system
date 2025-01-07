@@ -117,9 +117,9 @@ const Register: React.FC = () => {
 	const handleSubmit = (e: React.FormEvent) => {
 		e.preventDefault();
 		if (validate()) {
-			console.log("Form submitted:", formData);
+			// console.log("Form submitted:", formData);
+			handleCreateAccount();
 		}
-		handleCreateAccount();
 	};
 
 	return (
@@ -307,6 +307,10 @@ const Register: React.FC = () => {
 								{errors.password}
 							</p>
 						)}
+						<p className="text-gray-500 text-sm mt-1">
+							Password must be at least 8 characters, contain 1
+							uppercase letter, 1 number, and 1 special character.
+						</p>
 					</div>
 
 					{/* Confirm Password Input */}

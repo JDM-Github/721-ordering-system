@@ -187,23 +187,28 @@ const CustomizationPage: React.FC = () => {
 		};
 	}, [activeImage, setImageComponents, setLabelComponents, setActiveImage]);
 
-	const saveData = async () => {};
-	const loadData = async (file: File) => {};
-
-	const addToCart = async () => {
-		if (!user || Object.keys(user).length === 0) {
-			toast.error("Please log in to save your order.", {
-				position: "top-left",
-			});
-			return;
-		}
-
+	const saveData = async () => {
 		const id = product?.id;
-		const toastId = toast.loading("Adding customize product to cart...", {
-			position: "top-left",
-		});
+		const customization = {
+			id,
+			customName,
+			customNumber,
+			notes,
+			selectedSize,
+			imagePattern,
+			customize_list: await getCustomizationList(),
+		};
+		const jsonData = JSON.stringify(customization);
+		const blob = new Blob([jsonData], { type: "application/json" });
+		const link = document.createElement("a");
+		link.href = URL.createObjectURL(blob);
+		link.download = "customization.json";
+		link.click();
+	};
+
+	const getCustomizationList = async () => {
 		if (product == null) {
-			return;
+			return null;
 		}
 
 		const customize_list: any = [];
@@ -237,13 +242,6 @@ const CustomizationPage: React.FC = () => {
 							if (data.success) {
 								imageUrl = data.uploadedDocument;
 							} else {
-								toast.update(toastId, {
-									render: data.message,
-									type: "error",
-									isLoading: false,
-									autoClose: 3000,
-									position: "top-left",
-								});
 								return null;
 							}
 						} catch (error) {
@@ -251,13 +249,6 @@ const CustomizationPage: React.FC = () => {
 								"Error submitting the document:",
 								error
 							);
-							toast.update(toastId, {
-								render: "Error submitting the document",
-								type: "error",
-								isLoading: false,
-								autoClose: 3000,
-								position: "top-left",
-							});
 						}
 						return {
 							...component,
@@ -285,6 +276,79 @@ const CustomizationPage: React.FC = () => {
 			};
 			customize_list.push(customize);
 		}
+		return customize_list;
+	};
+	const loadCustomization = async (customization) => {
+		setSelectedSize(customization.selectedSize || null);
+		setCustomNumber(customization.customNumber);
+		setCustomName(customization.customName);
+
+		for (const key in localStorage) {
+			if (key.startsWith("customization-")) {
+				localStorage.removeItem(key);
+			}
+		}
+
+		let haveSomething = false;
+		for (const [index, ord] of customization.customize_list.entries()) {
+			const customize = {
+				image: ord.image,
+				label: ord.label,
+				background: ord.backgroundColor,
+				color: ord.color,
+				pattern: ord.pattern,
+			};
+			haveSomething = true;
+			saveToLocalStorage(`customization-${index}`, customize);
+		}
+		if (haveSomething) {
+			const newCustomization = loadFromLocalStorage(`customization-${0}`);
+			// alert(JSON.stringify(newCustomization));
+
+			setImageComponents(newCustomization.image);
+			setLabelComponents(newCustomization.label);
+			setBackgroundColor(newCustomization.background);
+			setColor(newCustomization.color);
+			setPattern(newCustomization.pattern);
+		}
+	};
+	const loadData = async (file) => {
+		try {
+			const reader = new FileReader();
+			reader.onload = (event: any) => {
+				try {
+					const jsonData = JSON.parse(event.target.result);
+					loadCustomization(jsonData.customization);
+				} catch (err) {
+					console.error("Error parsing JSON", err);
+					toast.error("Failed to parse the file as JSON.");
+				}
+			};
+			reader.onerror = (err) => {
+				console.error("Error reading file", err);
+				toast.error("Failed to read the file.");
+			};
+			reader.readAsText(file);
+		} catch (err) {
+			console.error("Error loading the file", err);
+			toast.error("Failed to load the file.");
+		}
+	};
+	const addToCart = async () => {
+		if (!user || Object.keys(user).length === 0) {
+			toast.error("Please log in to save your order.", {
+				position: "top-left",
+			});
+			return;
+		}
+
+		const id = product?.id;
+		const toastId = toast.loading("Adding customize product to cart...", {
+			position: "top-left",
+		});
+		if (product == null) {
+			return;
+		}
 
 		const customization = {
 			id,
@@ -293,7 +357,7 @@ const CustomizationPage: React.FC = () => {
 			notes,
 			selectedSize,
 			imagePattern,
-			customize_list,
+			customize_list: await getCustomizationList(),
 		};
 
 		try {
@@ -356,7 +420,6 @@ const CustomizationPage: React.FC = () => {
 			);
 			setLoading(false);
 			if (data.success === false) {
-				alert(JSON.stringify(data.message));
 			} else {
 				setProduct(data.product);
 				setSelectedSize(data.product.size[0] || null);
@@ -375,9 +438,7 @@ const CustomizationPage: React.FC = () => {
 				}
 				localStorage.setItem("targetId", `${data.product.id}`);
 			}
-		} catch (error) {
-			alert(JSON.stringify(error));
-		}
+		} catch (error) {}
 	};
 	useEffect(() => {
 		loadAllProducts();
@@ -392,6 +453,16 @@ const CustomizationPage: React.FC = () => {
 	) => {
 		if (event.target.files && event.target.files[0]) {
 			const file = event.target.files[0];
+			if (file) {
+				const maxFileSize = 15 * 1024 * 1024;
+				if (file.size > maxFileSize) {
+					toast.error(
+						"File size exceeds 15MB. Please upload a smaller file."
+					);
+					event.target.value = "";
+					return;
+				}
+			}
 
 			const id = product?.id;
 			const toastId = toast.loading("Uploading image...", {
@@ -534,18 +605,28 @@ const CustomizationPage: React.FC = () => {
 	};
 	const containerRef = useRef<HTMLImageElement | null>(null);
 	const cardRef = useRef<HTMLDivElement>(null);
-	const reactToPrintFn = useReactToPrint({
-		content: () => cardRef.current,
-	});
 
 	const handleDownloadPng = async () => {
-		if (cardRef?.current) {
-			const canvas = await html2canvas(cardRef.current);
-			const image = canvas.toDataURL("image/png");
-			const link = document.createElement("a");
-			link.href = image;
-			link.download = "card.png";
-			link.click();
+		try {
+			const data = await RequestHandler.handleRequest(
+				"post",
+				"product/screenshot",
+				{
+					url: "http://localhost:3000/customize?id=1036002842317357057",
+				}
+			);
+			if (data.success) {
+				alert(JSON.stringify(data.screenshot));
+				console.log(data.screenshot);
+				const img = document.createElement("img");
+				img.src = `data:image/png;base64,${data.screenshot}`;
+				document.body.appendChild(img);
+			} else {
+				toast.error("Cannot load screenshot");
+			}
+		} catch (error) {
+			console.error("Error uploading image:", error);
+			toast.error("Error submitting the document");
 		}
 	};
 
@@ -732,36 +813,6 @@ const CustomizationPage: React.FC = () => {
 								className="p-3 border border-gray-300 rounded-lg resize-none w-full"
 								rows={3}
 							/>
-
-							<button
-								className="w-16 h-16 me-3 bg-red-500 rounded-full shadow hover:bg-red-600"
-								onClick={reactToPrintFn}
-							>
-								<svg
-									xmlns="http://www.w3.org/2000/svg"
-									className="h-16 w-16 text-white"
-									fill="none"
-									viewBox="0 0 24 24"
-									stroke="currentColor"
-								>
-									<path
-										strokeLinecap="round"
-										strokeLinejoin="round"
-										strokeWidth="2"
-										d="M6 9V3h12v6m-3 6h3a2 2 0 012 2v4H4v-4a2 2 0 012-2h3m0 0v4h6v-4m-6 0h6"
-									/>
-								</svg>
-							</button>
-							<button
-								className="w-16 h-16 bg-red-500 rounded-full shadow hover:bg-red-600"
-								onClick={handleDownloadPng}
-							>
-								<img
-									src="https://static.vecteezy.com/system/resources/thumbnails/014/440/983/small_2x/image-icon-design-in-blue-circle-png.png"
-									alt="Save Icon"
-									className="w-16 h-16"
-								/>
-							</button>
 						</div>
 
 						{/* Action Buttons */}

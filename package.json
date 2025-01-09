@@ -9,10 +9,8 @@
 	},
 	"dependencies": {
 		"@mui/x-data-grid": "^7.23.0",
-		"ag-psd": "^22.0.2",
-		"bcrypt": "5.1.1",
+		"@paypal/checkout-server-sdk": "^1.0.3",
 		"bcryptjs": "^2.4.3",
-		"canvas": "^3.0.1",
 		"chart.js": "^4.4.6",
 		"cloudinary": "^2.5.1",
 		"cors": "^2.8.5",

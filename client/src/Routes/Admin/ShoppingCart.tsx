@@ -186,7 +186,8 @@ const ShoppingCart: React.FC = () => {
 
 								<div className="flex-grow mb-4 sm:mb-0 sm:ml-4">
 									<h3 className="text-lg font-semibold">
-										{item.Product.productName +
+										{(
+											item.Product.productName +
 											(item.customization.customName !==
 											""
 												? " (" +
@@ -199,8 +200,42 @@ const ShoppingCart: React.FC = () => {
 																.customNumber
 														: "") +
 												  ")"
-												: "")}
+												: "")
+										).length > 25
+											? (
+													item.Product.productName +
+													(item.customization
+														.customName !== ""
+														? " (" +
+														  item.customization
+																.customName +
+														  (item.customization
+																.customNumber !==
+														  ""
+																? " | " +
+																  item
+																		.customization
+																		.customNumber
+																: "") +
+														  ")"
+														: "")
+											  ).slice(0, 25) + "...)"
+											: item.Product.productName +
+											  (item.customization.customName !==
+											  ""
+													? " (" +
+													  item.customization
+															.customName +
+													  (item.customization
+															.customNumber !== ""
+															? " | " +
+															  item.customization
+																	.customNumber
+															: "") +
+													  ")"
+													: "")}
 									</h3>
+
 									<p className="text-gray-500">
 										Price: ₱{item.Product.price}
 									</p>

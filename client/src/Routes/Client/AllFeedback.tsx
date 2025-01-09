@@ -17,8 +17,8 @@ const AllFeedback = () => {
 			if (data.success) {
 				const ord = data.feedback.map((feedback) => ({
 					id: feedback.id,
-					name: feedback.user.firstName + " " + feedback.user.lastName,
-					email: feedback.user.email,
+					name: feedback.User.firstName + " " + feedback.User.lastName,
+					email: feedback.User.email,
 					rate: feedback.rate,
 					comment: feedback.comment,
 				}));

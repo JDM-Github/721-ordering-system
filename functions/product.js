@@ -11,43 +11,83 @@ const {
 	Notification,
 	Feedback,
 } = require("./models");
-const { Op, where } = require("sequelize");
+const { Op } = require("sequelize");
 const sendEmail = require("./emailSender");
 const { chromium } = require("playwright");
-const { writePsdBuffer } = require("ag-psd");
-const { createCanvas, loadImage } = require("canvas");
-const fs = require("fs");
 
 const router = express.Router();
 
-const PAYMONGO_API_KEY = "sk_test_HMD8fpUnNtVh5bTG35TQXmXC";
+// const PAYMONGO_API_KEY = "sk_test_HMD8fpUnNtVh5bTG35TQXmXC";
+const paypal = require("@paypal/checkout-server-sdk");
+const PAYPAL_CLIENT_ID =
+	"Af0tB87keOdzXZpl_Ib8lb86Udu5oTWSL-xHDwAz4q9GiBQSFbejrkAqY2QQU5XAlYJ5PyFc6wsM45Wq";
+const PAYPAL_CLIENT_SECRET =
+	"EO6ufyuol6bxnX_E9HV9OmpqgD9SCWI5AEEohSaLYjBpJqbsVzv650YBQDWk7mZgPIPqE0IRpoQ5Gcyu";
 
-// router.post("/screenshot", async (req, res) => {
-// 	const { url, delay = 5, wait_until = "load" } = req.body;
+const environment = new paypal.core.SandboxEnvironment(
+	PAYPAL_CLIENT_ID,
+	PAYPAL_CLIENT_SECRET
+);
+const client = new paypal.core.PayPalHttpClient(environment);
+const getOrderPaymentStatus = async (orderId) => {
+	const url = `https://api.sandbox.paypal.com/v2/checkout/orders/${orderId}`;
 
-// 	if (!url) {
-// 		return res.status(400).send("URL is required");
-// 	}
+	try {
+		const response = await fetch(url, {
+			method: "GET",
+			headers: {
+				Authorization: `Bearer ${await getAccessToken()}`,
+				"Content-Type": "application/json",
+			},
+		});
 
-// 	try {
-// 		const browser = await chromium.launch();
-// 		const page = await browser.newPage();
+		if (!response.ok) {
+			throw new Error(`Error: ${response.statusText}`);
+		}
 
-// 		await page.goto(url, { waitUntil: wait_until });
-// 		if (delay) {
-// 			await page.waitForTimeout(delay * 1000);
-// 		}
+		const data = await response.json();
+		const orderStatus = data.status;
 
-// 		const screenshotBuffer = await page.screenshot();
-// 		const screenshotBase64 = screenshotBuffer.toString("base64");
-// 		// res.set("Content-Type", "image/png");
-// 		res.send({ success: true, screenshot: screenshotBase64 });
-// 		await browser.close();
-// 	} catch (err) {
-// 		console.error("Error capturing screenshot:", err);
-// 		res.status(500).send("Internal Server Error");
-// 	}
-// });
+		return orderStatus;
+	} catch (err) {
+		console.error("Error fetching payment status:", err);
+		return "error";
+	}
+};
+
+const getAccessToken = async () => {
+	const url = "https://api.sandbox.paypal.com/v1/oauth2/token"; 
+	const credentials = Buffer.from(
+		`${PAYPAL_CLIENT_ID}:${PAYPAL_CLIENT_SECRET}`
+	).toString("base64");
+
+	try {
+		const response = await fetch(url, {
+			method: "POST",
+			headers: {
+				Authorization: `Basic ${credentials}`,
+				"Content-Type": "application/x-www-form-urlencoded",
+			},
+			body: "grant_type=client_credentials",
+		});
+
+		if (!response.ok) {
+			const errorData = await response.json();
+			console.error("Error fetching access token:", errorData);
+			throw new Error("Error fetching access token");
+		}
+
+		const data = await response.json();
+		console.log(data.access_token);
+		return data.access_token;
+	} catch (error) {
+		console.error("Error fetching access token:", error);
+		throw error;
+	}
+};
+
+
+
 
 router.post("/screenshot", async (req, res) => {
 	const { url, delay = 10, wait_until = "load", hiddenData = {} } = req.body;
@@ -76,30 +116,12 @@ router.post("/screenshot", async (req, res) => {
 			},
 		});
 
-		const canvas = createCanvas(1200, 800);
-		const ctx = canvas.getContext("2d");
-		const image = await loadImage(screenshotBuffer);
-		ctx.drawImage(image, 0, 0);
-
-		const psd = {
-			width: canvas.width,
-			height: canvas.height,
-			children: [
-				{
-					name: "Screenshot Layer",
-					canvas: canvas,
-					metadata: { hiddenData },
-				},
-			],
-		};
-		const psdBuffer = writePsdBuffer(psd);
-
 		await browser.close();
 
 		res.json({
 			success: true,
 			screenshot: screenshotBuffer.toString("base64"),
-			psd: psdBuffer.toString("base64"),
+			psd: null,
 		});
 	} catch (err) {
 		console.error("Error capturing screenshot:", err);
@@ -111,30 +133,30 @@ router.post("/screenshot", async (req, res) => {
 });
 
 
-const getOrderPaymentStatus = async (referenceNumber) => {
-	const url = `https://api.paymongo.com/v1/checkout_sessions/${referenceNumber}`;
+// const getOrderPaymentStatus = async (referenceNumber) => {
+// 	const url = `https://api.paymongo.com/v1/checkout_sessions/${referenceNumber}`;
 
-	try {
-		const response = await fetch(url, {
-			method: "GET",
-			headers: {
-				Authorization: `Basic ${Buffer.from(PAYMONGO_API_KEY).toString(
-					"base64"
-				)}`,
-				"Content-Type": "application/json",
-			},
-		});
+// 	try {
+// 		const response = await fetch(url, {
+// 			method: "GET",
+// 			headers: {
+// 				Authorization: `Basic ${Buffer.from(PAYMONGO_API_KEY).toString(
+// 					"base64"
+// 				)}`,
+// 				"Content-Type": "application/json",
+// 			},
+// 		});
 
-		if (!response.ok) {
-			throw new Error(`Error: ${response.statusText}`);
-		}
-		const data = await response.json();
-		return data.data.attributes.paid_at;
-	} catch (err) {
-		console.error("Error fetching payment status:", err);
-		return "error";
-	}
-};
+// 		if (!response.ok) {
+// 			throw new Error(`Error: ${response.statusText}`);
+// 		}
+// 		const data = await response.json();
+// 		return data.data.attributes.paid_at;
+// 	} catch (err) {
+// 		console.error("Error fetching payment status:", err);
+// 		return "error";
+// 	}
+// };
 
 router.post("/add-to-cart", async (req, res) => {
 	try {
@@ -239,6 +261,8 @@ router.post("/get-feedback", async (req, res) => {
 			],
 		});
 
+		console.log(feedback);
+
 		// if (!feedback || feedback.length === 0) {
 		// 	return res.send({
 		// 		success: false,
@@ -272,7 +296,7 @@ router.post("/get-dashboard", async (req, res) => {
 			return acc;
 		}, {});
 
-		const orderStatusCounts = await OrderProduct.findAll({
+		const orderStatusCounts = await OrderSummary.findAll({
 			attributes: [
 				"status",
 				[sequelize.fn("COUNT", sequelize.col("status")), "count"],
@@ -291,7 +315,7 @@ router.post("/get-dashboard", async (req, res) => {
 			"Week 4": 0,
 		};
 
-		const completedOrders = await OrderProduct.findAll({
+		const completedOrders = await OrderSummary.findAll({
 			attributes: [
 				[sequelize.literal(`EXTRACT(WEEK FROM "completedAt")`), "week"],
 				[sequelize.fn("COUNT", sequelize.col("id")), "count"],
@@ -308,6 +332,7 @@ router.post("/get-dashboard", async (req, res) => {
 			group: [sequelize.literal(`EXTRACT(WEEK FROM "completedAt")`)],
 			order: [[sequelize.literal("week"), "ASC"]],
 		});
+		// console.log(completedOrders);
 
 		completedOrders.forEach(({ dataValues }) => {
 			const week = `Week ${dataValues.week}`;
@@ -368,7 +393,13 @@ router.post("/order-update-status", async (req, res) => {
 			message: `Your order status has been updated to ${newStatus}.`,
 		});
 		const isCompleted = newStatus === "Completed";
-		await order.update({ status: newStatus, isCompleted, isPaid: true });
+		const completedAt = isCompleted ? new Date() : null;
+		await order.update({
+			status: newStatus,
+			isCompleted,
+			isPaid: true,
+			completedAt,
+		});
 		res.status(201).json({ success: true, order });
 	} catch (error) {
 		console.error(error);
@@ -628,6 +659,7 @@ router.post("/add-product", async (req, res) => {
 			description,
 			isCustomizable,
 		});
+		console.log(newProduct);
 
 		return res.status(201).json({
 			success: true,
@@ -698,14 +730,16 @@ router.post("/add-material", async (req, res) => {
 
 router.get("/get-all-product", async (req, res) => {
 	try {
-		const { status } = req.query;
+		const { status, isCustomizable } = req.query;
 		const whereClause = status
-			? { status, isCustomizable: false, stocks: { [Op.gt]: 0 } }
+			? { status, stocks: { [Op.gt]: 0 } }
 			: {
 					status: "Available",
-					isCustomizable: false,
 					stocks: { [Op.gt]: 0 },
 			  };
+		if (isCustomizable !== undefined) {
+			whereClause["isCustomizable"] = isCustomizable;
+		}
 		const products = await Product.findAll({ where: whereClause });
 		const materials = await Materials.findAll();
 		res.status(200).json({ success: true, products, materials });
@@ -877,12 +911,22 @@ router.post("/get-all-order", async (req, res) => {
 								new Date(orderSummary.expiredAt) <= currentTime
 							) {
 								await orderSummary.update({ isExpired: true });
+								await Notification.create({
+									userId: orderSummary.userId,
+									title: "Order Expired",
+									message: `Your order with reference number ${orderSummary.referenceNumber} has expired.`,
+								});
 							} else {
 								const orderStatus = await getOrderPaymentStatus(
 									orderSummary.orderId
 								);
-								if (orderStatus > 0) {
+								if (orderStatus === "APPROVED") {
 									await orderSummary.update({ isPaid: true });
+									await Notification.create({
+										userId: orderSummary.userId,
+										title: "Order Paid",
+										message: `Your order with reference number ${orderSummary.referenceNumber} has been successfully paid.`,
+									});
 								}
 							}
 						}
@@ -896,13 +940,23 @@ router.post("/get-all-order", async (req, res) => {
 						await orderSummary.update({
 							isDownPaymentExpired: true,
 						});
+						await Notification.create({
+							userId: orderSummary.userId,
+							title: "Downpayment Expired",
+							message: `Your downpayment for reference number ${orderSummary.referenceNumber} has expired.`,
+						});
 					} else {
 						const orderStatus = await getOrderPaymentStatus(
 							orderSummary.downPaymentOrderId
 						);
-						if (orderStatus > 0) {
+						if (orderStatus === "APPROVED") {
 							await orderSummary.update({
 								isDownpaymentPaid: true,
+							});
+							await Notification.create({
+								userId: orderSummary.userId,
+								title: "Downpayment Paid",
+								message: `Your downpayment for reference number ${orderSummary.referenceNumber} has been successfully paid.`,
 							});
 						}
 					}
@@ -917,12 +971,23 @@ router.post("/get-all-order", async (req, res) => {
 					const currentTime = new Date();
 					if (new Date(orderSummary.expiredAt) <= currentTime) {
 						await orderSummary.update({ isExpired: true });
+						await Notification.create({
+							userId: orderSummary.userId,
+							title: "Order Expired",
+							message: `Your order with reference number ${orderSummary.referenceNumber} has expired.`,
+						});
 					} else {
 						const orderStatus = await getOrderPaymentStatus(
 							orderSummary.orderId
 						);
-						if (orderStatus > 0) {
+						console.log(orderStatus);
+						if (orderStatus === "APPROVED") {
 							await orderSummary.update({ isPaid: true });
+							await Notification.create({
+								userId: orderSummary.userId,
+								title: "Order Paid",
+								message: `Your order with reference number ${orderSummary.referenceNumber} has been successfully paid.`,
+							});
 						}
 					}
 				}

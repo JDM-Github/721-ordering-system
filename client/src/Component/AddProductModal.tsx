@@ -99,7 +99,6 @@ const AddProductModal = ({
 				description,
 				isCustomizable,
 			};
-
 			const data = await RequestHandler.handleRequest(
 				"post",
 				"product/add-product",
@@ -347,7 +346,9 @@ const AddProductModal = ({
 							type="checkbox"
 							id="isCustomizable"
 							checked={isCustomizable}
-							onChange={() => setIsCustomizable(!isCustomizable)}
+							onChange={(e) =>
+								setIsCustomizable(e.target.checked)
+							}
 							className="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
 						/>
 						<label

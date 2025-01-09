@@ -37,7 +37,6 @@ export default function AdminRoute({ className }) {
 		<div className="admin">
 			<Navigation user={user} setUser={setUser} />
 			<div className="admin-content">
-				{/* <TopBar clickHandler={undefined} /> */}
 				<Routes>
 					<Route index path="/" element={<Dashboard />} />
 					<Route path="/register" element={<RegistrationPage />} />

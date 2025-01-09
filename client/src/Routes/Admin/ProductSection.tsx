@@ -22,8 +22,7 @@ function ProductSection() {
 		try {
 			const data = await RequestHandler.handleRequest(
 				"get",
-				"product/get-all-product",
-				{}
+				"product/get-all-product?isCustomizable=false",
 			);
 			setLoading(false);
 			if (data.success === false) {

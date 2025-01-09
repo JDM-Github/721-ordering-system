@@ -283,6 +283,10 @@ const OrderSummary = sequelize.define("OrderSummary", {
 		type: DataTypes.BOOLEAN,
 		defaultValue: false
 	},
+	completedAt: {
+		type: DataTypes.DATE,
+		defaultValue: null,
+	}
 });
 
 const Notification = sequelize.define("Notification", {

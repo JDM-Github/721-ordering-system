@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import RequestHandler from "../../Functions/RequestHandler";
+import { FaEye, FaEyeSlash } from "react-icons/fa";
 
 interface FormRegister {
 	firstName: string;
@@ -34,6 +35,7 @@ const Register: React.FC = () => {
 	});
 
 	const [errors, setErrors] = useState<FormErrors>({});
+	const [showPassword, setShowPassword] = useState(false);
 
 	const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 		const { name, value } = e.target;
@@ -294,14 +296,23 @@ const Register: React.FC = () => {
 						>
 							Password
 						</label>
-						<input
-							type="password"
-							id="password"
-							name="password"
-							value={formData.password}
-							onChange={handleChange}
-							className="w-full p-3 mt-1 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
-						/>
+						<div className="relative">
+							<input
+								type={showPassword ? "text" : "password"}
+								id="password"
+								name="password"
+								value={formData.password}
+								onChange={handleChange}
+								className="w-full p-3 mt-1 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+							/>
+							<button
+								type="button"
+								onClick={() => setShowPassword((prev) => !prev)}
+								className="absolute inset-y-0 right-3 flex items-center text-gray-500"
+							>
+								{showPassword ? <FaEyeSlash /> : <FaEye />}{" "}
+							</button>
+						</div>
 						{errors.password && (
 							<p className="text-red-500 text-sm">
 								{errors.password}

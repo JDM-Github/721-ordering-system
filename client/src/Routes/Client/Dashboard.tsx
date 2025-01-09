@@ -22,11 +22,6 @@ ChartJS.register(
 );
 
 export default function Dashboard() {
-	// totalOrders,
-	// 			totalItemsLeft,
-	// 			totalUsers,
-	// 			statusCounts,
-	// 			completedOrdersByWeek,
 	const [totalOrders, setTotalOrders] = useState<any>(0);
 	const [totalItemsLeft, setTotalItemsLeft] = useState<any>(0);
 	const [totalUsers, setTotalUsers] = useState<any>(0);
@@ -48,11 +43,11 @@ export default function Dashboard() {
 				setStatusCounts(data.data.statusCounts);
 				setCompletedOrdersByWeek(data.data.completedOrdersByWeek);
 				setBarLabels(
-					data.data.completedOrdersByWeek.map((item) => item.count)
+					data.data.completedOrdersByWeek
 				);
-				setPieLabels(
-					data.data.completedOrdersByWeek.map((item) => item.week)
-				);
+
+				setPieLabels(data.data.statusCounts);
+
 			} else {
 				toast.error(data.message || "Unable to load order history");
 				return;
@@ -133,16 +128,20 @@ export default function Dashboard() {
 				>
 					{/* Pie Chart */}
 					<div className="w-full lg:w-1/2 p-4 bg-white rounded-lg shadow-md flex items-center justify-center overflow-hidden">
-						<div className="w-full h-full p-4 rounded-lg shadow-lg">
+						<div className="w-full h-full p-16 rounded-lg shadow-lg">
 							<h3 className="text-xl font-semibold text-gray-800 mb-4">
 								Order Status Analysis
 							</h3>
 							<Pie
 								data={{
-									labels: pieLabels,
+									labels: pieLabels.map(
+										(item) => item.status
+									),
 									datasets: [
 										{
-											data: [],
+											data: pieLabels.map(
+												(item) => item.count
+											),
 											backgroundColor: [
 												"#FF9800",
 												"#FFEB3B",
@@ -166,17 +165,20 @@ export default function Dashboard() {
 
 					{/* Bar Chart */}
 					<div className="w-full lg:w-1/2 p-4 bg-white rounded-lg shadow-md flex items-center justify-center overflow-hidden">
-						<div className="w-full h-full p-4 rounded-lg shadow-lg">
+						<div className="w-full h-full p-16 rounded-lg shadow-lg">
 							<h3 className="text-xl font-semibold text-gray-800 mb-4">
 								Orders Processed Over Time
 							</h3>
 							<Bar
+								className="w-full h-96"
 								data={{
-									labels: barLabels,
+									labels: barLabels.map((item) => item.week),
 									datasets: [
 										{
 											label: "Orders Processed",
-											data: [],
+											data: barLabels.map(
+												(item) => item.count
+											),
 											backgroundColor: "#FF9800",
 											borderRadius: 5,
 											borderColor: "#FB8C00",

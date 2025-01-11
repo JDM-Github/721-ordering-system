@@ -1,18 +1,24 @@
-import React from "react";
-import { Routes, Route, Link, NavLink } from "react-router-dom";
-import { ToastContainer } from "react-toastify";
+import React, { useEffect } from "react";
+import { Routes, Route, Link, NavLink, useNavigate } from "react-router-dom";
+import { toast, ToastContainer } from "react-toastify";
 import Dashboard from "./Dashboard.tsx";
 import Inventory from "./Inventory.tsx";
 import OrderHistory from "./OrderHistory.tsx";
 import AllFeedback from "./AllFeedback.tsx";
 
 export default function ClientRoute() {
+	const navigate = useNavigate();
+	const authToken = sessionStorage.getItem("authToken");
+	useEffect(() => {
+		if (authToken !== "admin-token") {
+			toast.error("You are not authorized to view this page.");
+			navigate("/?message=invalid-auth");
+		}
+	}, []);
 	return (
 		<>
 			<div className="min-h-screen bg-gray-100 flex">
-				{/* Sidebar */}
 				<div className="w-1/5 bg-gradient-to-tl from-orange-500 via-orange-600 to-orange-700 text-white p-6 flex flex-col shadow-lg rounded-lg">
-					{/* Admin Profile */}
 					<div className="flex items-center mb-8">
 						<div className="w-14 h-14 bg-white rounded-full flex justify-center items-center shadow-lg">
 							<span className="text-2xl font-semibold text-orange-600">
@@ -153,6 +159,9 @@ export default function ClientRoute() {
 							<li>
 								<NavLink
 									to="/"
+									onClick={() => {
+										sessionStorage.clear();
+									}}
 									className={({ isActive }) =>
 										`flex items-center py-3 px-5 rounded-lg transition duration-300 ${
 											isActive

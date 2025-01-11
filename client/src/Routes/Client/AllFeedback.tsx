@@ -3,8 +3,17 @@ import RequestHandler from "../../Functions/RequestHandler";
 import { DataGrid } from "@mui/x-data-grid";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 import { toast } from "react-toastify";
+import { useNavigate } from "react-router-dom";
 
 const AllFeedback = () => {
+	const navigate = useNavigate();
+	const authToken = sessionStorage.getItem("authToken");
+	useEffect(() => {
+		if (authToken !== "admin-token") {
+			toast.error("You are not authorized to view this page.");
+			navigate("/?message=invalid-auth");
+		}
+	}, []);
 	const [feedback, setFeedback] = useState([]);
 
 	const loadRequest = async () => {
@@ -12,12 +21,13 @@ const AllFeedback = () => {
 			const data = await RequestHandler.handleRequest(
 				"post",
 				"product/get-feedback",
-				{  }
+				{}
 			);
 			if (data.success) {
 				const ord = data.feedback.map((feedback) => ({
 					id: feedback.id,
-					name: feedback.User.firstName + " " + feedback.User.lastName,
+					name:
+						feedback.User.firstName + " " + feedback.User.lastName,
 					email: feedback.User.email,
 					rate: feedback.rate,
 					comment: feedback.comment,

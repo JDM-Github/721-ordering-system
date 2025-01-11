@@ -599,11 +599,11 @@ const EditCustomization: React.FC = () => {
 					{/* Left Side: Product Image */}
 					<div
 						ref={cardRef}
-						className="flex flex-col justify-between h-[60vh] overflow-y-hidden px-4 scrollbar-thin border border-gray-300 z-100"
+						className="flex flex-col justify-between h-[70vh] overflow-y-hidden px-4 scrollbar-thin border border-gray-300 z-100"
 					>
-						<div className="relative flex">
+						<div className="relative flex justify-center align-items-center">
 							<div
-								className="w-full h-full max-h-[60vh]"
+								className="w-full h-full min-h-[400px] max-h-[400px] min-w-[400px] max-w-[400px]"
 								style={{ backgroundColor: backgroundColor }}
 								ref={containerRef}
 							>
@@ -614,6 +614,9 @@ const EditCustomization: React.FC = () => {
 									imagePattern={imagePattern}
 								/>
 							</div>
+							<div
+								className="absolute w-full h-full min-h-[400px] max-h-[400px] min-w-[400px] max-w-[400px]"
+							>
 							{labelComponents.map((labelComp, index) => (
 								<LabelComponent
 									key={labelComp.uniqueId}
@@ -640,6 +643,7 @@ const EditCustomization: React.FC = () => {
 									setisreloaded={setisreloaded}
 								/>
 							))}
+							</div>
 						</div>
 					</div>
 

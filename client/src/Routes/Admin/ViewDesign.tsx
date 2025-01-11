@@ -240,7 +240,7 @@ export default function ViewDesign() {
 
 	const handleDownloadPng = async () => {
 		if (productId) {
-			const toastId = toast.loading("Downloading screenshot...", {
+			const toastId = toast.loading("Downloading image...", {
 				position: "top-right",
 			});
 
@@ -330,11 +330,11 @@ export default function ViewDesign() {
 					{/* Left Side: Product Image */}
 					<div
 						ref={cardRef}
-						className="flex flex-col justify-between h-[60vh] overflow-y-hidden px-4 scrollbar-thin border border-gray-300 z-100"
+						className="flex flex-col justify-between min-h-[70vh] overflow-y-hidden px-4 scrollbar-thin border border-gray-300 z-100"
 					>
-						<div className="relative flex">
+						<div className="relative flex justify-center align-items-center">
 							<div
-								className="w-full h-full max-h-[60vh]"
+								className="w-full h-full min-h-[400px] max-h-[400px] min-w-[400px] max-w-[400px]"
 								style={{ backgroundColor: backgroundColor }}
 								ref={containerRef}
 							>
@@ -345,34 +345,40 @@ export default function ViewDesign() {
 									imagePattern={imagePattern}
 								/>
 							</div>
-							{labelComponents.map((labelComp, index) => (
-								<LabelComponent
-									key={labelComp.uniqueId}
-									containerRef={containerRef}
-									labelComp={labelComp}
-									uniqueId={labelComp.uniqueId}
-									activeImage={activeImage}
-									setActiveImage={setActiveImage}
-									updateLabelComponent={updateLabelComponent}
-									isreloaded={isreloaded}
-									setisreloaded={setisreloaded}
-									disabled={true}
-								/>
-							))}
-							{imageComponents.map((imageComp, index) => (
-								<ImageComponent
-									key={imageComp.uniqueId}
-									containerRef={containerRef}
-									imageComp={imageComp}
-									uniqueId={imageComp.uniqueId}
-									activeImage={activeImage}
-									setActiveImage={setActiveImage}
-									updateImageComponent={updateImageComponent}
-									isreloaded={isreloaded}
-									setisreloaded={setisreloaded}
-									disabled={true}
-								/>
-							))}
+							<div className="absolute w-full h-full min-h-[400px] max-h-[400px] min-w-[400px] max-w-[400px]">
+								{labelComponents.map((labelComp, index) => (
+									<LabelComponent
+										key={labelComp.uniqueId}
+										containerRef={containerRef}
+										labelComp={labelComp}
+										uniqueId={labelComp.uniqueId}
+										activeImage={activeImage}
+										setActiveImage={setActiveImage}
+										updateLabelComponent={
+											updateLabelComponent
+										}
+										isreloaded={isreloaded}
+										setisreloaded={setisreloaded}
+										disabled={true}
+									/>
+								))}
+								{imageComponents.map((imageComp, index) => (
+									<ImageComponent
+										key={imageComp.uniqueId}
+										containerRef={containerRef}
+										imageComp={imageComp}
+										uniqueId={imageComp.uniqueId}
+										activeImage={activeImage}
+										setActiveImage={setActiveImage}
+										updateImageComponent={
+											updateImageComponent
+										}
+										isreloaded={isreloaded}
+										setisreloaded={setisreloaded}
+										disabled={true}
+									/>
+								))}
+							</div>
 						</div>
 					</div>
 

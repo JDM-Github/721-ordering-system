@@ -9,6 +9,10 @@ function ChangePasswordModal({ onClose, userData, setUserData }) {
 		confirmPassword: "",
 	});
 
+	const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+	const [showNewPassword, setShowNewPassword] = useState(false);
+	const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
 	const handleChange = (e) => {
 		setPasswordData({ ...passwordData, [e.target.name]: e.target.value });
 	};
@@ -75,27 +79,60 @@ function ChangePasswordModal({ onClose, userData, setUserData }) {
 			<div className="bg-white rounded-lg shadow-lg p-6 w-96">
 				<h2 className="text-2xl font-semibold mb-4">Change Password</h2>
 				<div className="space-y-4">
-					<input
-						name="currentPassword"
-						type="password"
-						placeholder="Current Password"
-						onChange={handleChange}
-						className="w-full p-3 border rounded-lg"
-					/>
-					<input
-						name="newPassword"
-						type="password"
-						placeholder="New Password"
-						onChange={handleChange}
-						className="w-full p-3 border rounded-lg"
-					/>
-					<input
-						name="confirmPassword"
-						type="password"
-						placeholder="Confirm New Password"
-						onChange={handleChange}
-						className="w-full p-3 border rounded-lg"
-					/>
+					<div className="relative">
+						<input
+							name="currentPassword"
+							type={showCurrentPassword ? "text" : "password"}
+							placeholder="Current Password"
+							onChange={handleChange}
+							className="w-full p-3 border rounded-lg"
+						/>
+						<button
+							type="button"
+							className="absolute right-3 top-3 text-gray-500"
+							onClick={() =>
+								setShowCurrentPassword(!showCurrentPassword)
+							}
+						>
+							{showCurrentPassword ? "Hide" : "Show"}
+						</button>
+					</div>
+
+					<div className="relative">
+						<input
+							name="newPassword"
+							type={showNewPassword ? "text" : "password"}
+							placeholder="New Password"
+							onChange={handleChange}
+							className="w-full p-3 border rounded-lg"
+						/>
+						<button
+							type="button"
+							className="absolute right-3 top-3 text-gray-500"
+							onClick={() => setShowNewPassword(!showNewPassword)}
+						>
+							{showNewPassword ? "Hide" : "Show"}
+						</button>
+					</div>
+
+					<div className="relative">
+						<input
+							name="confirmPassword"
+							type={showConfirmPassword ? "text" : "password"}
+							placeholder="Confirm New Password"
+							onChange={handleChange}
+							className="w-full p-3 border rounded-lg"
+						/>
+						<button
+							type="button"
+							className="absolute right-3 top-3 text-gray-500"
+							onClick={() =>
+								setShowConfirmPassword(!showConfirmPassword)
+							}
+						>
+							{showConfirmPassword ? "Hide" : "Show"}
+						</button>
+					</div>
 				</div>
 				<div className="flex justify-end space-x-4 mt-6">
 					<button

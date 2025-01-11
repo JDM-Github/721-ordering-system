@@ -88,12 +88,14 @@ const Login = ({ setUser }) => {
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
 		if (validate()) {
+			sessionStorage.clear();
 			if (
-				formData.emailOrUsername === "admin" &&
-				formData.password === "admin"
-			)
+				formData.emailOrUsername === "721bacoor@gmail.com" &&
+				formData.password === "@bacooradmin"
+			) {
+				sessionStorage.setItem("authToken", "admin-token");
 				navigate("/admin/dashboard");
-			else {
+			} else {
 				await login();
 			}
 		}

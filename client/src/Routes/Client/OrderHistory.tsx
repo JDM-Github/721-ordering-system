@@ -20,13 +20,19 @@ import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 
 const OrderHistory = () => {
+	const navigate = useNavigate();
+	const authToken = sessionStorage.getItem("authToken");
+	useEffect(() => {
+		if (authToken !== "admin-token") {
+			toast.error("You are not authorized to view this page.");
+			navigate("/?message=invalid-auth");
+		}
+	}, []);
 	const [orders, setOrders] = useState([]);
 	const [openModal, setOpenModal] = useState(false);
 	const [selectedOrder, setSelectedOrder] = useState<any>(null);
-	const navigate = useNavigate();
 
 	const handleViewOrder = (order) => {
-		alert(JSON.stringify(order));
 		setSelectedOrder(order);
 		setOpenModal(true);
 	};
@@ -37,12 +43,7 @@ const OrderHistory = () => {
 	};
 
 	const handleViewProduct = (order) => {
-		navigate("/view-design", {
-			state: {
-				order: order,
-				orders: null,
-			},
-		});
+		navigate(`/view-design?id=${order.product.orderProductId}`);
 	};
 
 	const updateStatus = async (id, newStatus, userId, email) => {
@@ -136,7 +137,6 @@ const OrderHistory = () => {
 						productImages: product.productImages,
 					})),
 				}));
-				console.log(data.orderSummaries);
 				setOrders(ord);
 			} else {
 				toast.error(data.message || "Unable to load order history");

@@ -20,17 +20,17 @@ const router = express.Router();
 // const PAYMONGO_API_KEY = "sk_test_HMD8fpUnNtVh5bTG35TQXmXC";
 const paypal = require("@paypal/checkout-server-sdk");
 const PAYPAL_CLIENT_ID =
-	"Af0tB87keOdzXZpl_Ib8lb86Udu5oTWSL-xHDwAz4q9GiBQSFbejrkAqY2QQU5XAlYJ5PyFc6wsM45Wq";
+	"AeORboTyKjwni9iaqfisnlEBQtby2Qac8QNHRmCpRFrKx1OmPcL96rcB3Wv9XgPEIERpCIRGcwZc0fIU";
 const PAYPAL_CLIENT_SECRET =
-	"EO6ufyuol6bxnX_E9HV9OmpqgD9SCWI5AEEohSaLYjBpJqbsVzv650YBQDWk7mZgPIPqE0IRpoQ5Gcyu";
+	"ELRvSQHE3MAkUOEUl_CdAMjHR21HDpCuhsWI-RxW-TCo94AZUXnJJ06EJEGDlDeeahIAwOwJmiENGB3y";
 
-const environment = new paypal.core.SandboxEnvironment(
+const environment = new paypal.core.LiveEnvironment(
 	PAYPAL_CLIENT_ID,
 	PAYPAL_CLIENT_SECRET
 );
 const client = new paypal.core.PayPalHttpClient(environment);
 const getOrderPaymentStatus = async (orderId) => {
-	const url = `https://api.sandbox.paypal.com/v2/checkout/orders/${orderId}`;
+	const url = `https://api.paypal.com/v2/checkout/orders/${orderId}`;
 
 	try {
 		const response = await fetch(url, {
@@ -56,7 +56,7 @@ const getOrderPaymentStatus = async (orderId) => {
 };
 
 const getAccessToken = async () => {
-	const url = "https://api.sandbox.paypal.com/v1/oauth2/token"; 
+	const url = "https://api.paypal.com/v1/oauth2/token"; 
 	const credentials = Buffer.from(
 		`${PAYPAL_CLIENT_ID}:${PAYPAL_CLIENT_SECRET}`
 	).toString("base64");
@@ -90,7 +90,7 @@ const getAccessToken = async () => {
 
 
 router.post("/screenshot", async (req, res) => {
-	const { url, delay = 10, wait_until = "load", hiddenData = {} } = req.body;
+	const { url, delay = 8, wait_until = "load", hiddenData = {} } = req.body;
 
 	if (!url) {
 		return res
@@ -101,7 +101,7 @@ router.post("/screenshot", async (req, res) => {
 	try {
 		const browser = await chromium.launch();
 		const page = await browser.newPage();
-		await page.setViewportSize({ width: 1920, height: 1080 });
+		await page.setViewportSize({ width: 1024*2, height: 768*2 });
 		await page.goto(url, { waitUntil: wait_until });
 		if (delay) {
 			await page.waitForTimeout(delay * 1000);
@@ -109,10 +109,10 @@ router.post("/screenshot", async (req, res) => {
 
 		const screenshotBuffer = await page.screenshot({
 			clip: {
-				x: 370,
-				y: 120,
-				width: 550,
-				height: 550,
+				x: 0,
+				y: 0,
+				width: 1366,
+				height: 768,
 			},
 		});
 
@@ -1020,6 +1020,7 @@ router.post("/get-all-order", async (req, res) => {
 				}
 
 				const products = orderProducts.map((orderProduct) => ({
+					orderProductId: orderProduct.id,
 					productId: orderProduct.productId,
 					productName: orderProduct.Product.productName,
 					price: orderProduct.Product.price,

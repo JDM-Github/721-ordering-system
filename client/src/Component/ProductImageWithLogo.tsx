@@ -275,9 +275,9 @@ export default function ProductImageWithLogo({
 						<feColorMatrix
 							type="matrix"
 							values={`0 0 0 0 ${colorRGB.r / 255} 
-                                    0 0 0 0 ${colorRGB.g / 255} 
-                                    0 0 0 0 ${colorRGB.b / 255} 
-                                    0 0 0 1 0`}
+                      0 0 0 0 ${colorRGB.g / 255} 
+                      0 0 0 0 ${colorRGB.b / 255} 
+                      0 0 0 1 0`}
 						/>
 					</filter>
 					<filter id="texture">
@@ -299,7 +299,7 @@ export default function ProductImageWithLogo({
 							width="100%"
 							height="100%"
 							result="tile"
-						></feTile>
+						/>
 						<feComposite
 							in2="SourceGraphic"
 							operator="in"
@@ -315,7 +315,14 @@ export default function ProductImageWithLogo({
 				</defs>
 			</svg>
 
-			<div className="relative w-full h-full">
+			<div
+				className="relative w-full"
+				// style={{
+				// 	minHeight: "60vh",
+				// 	height: "auto",
+				// }}
+			>
+				{/* Use aspect ratio to calculate the width */}
 				<svg
 					width="100%"
 					height="100%"
@@ -336,6 +343,7 @@ export default function ProductImageWithLogo({
 								opacity="1"
 								width="100%"
 								height="100%"
+								style={{ objectFit: "cover" }}
 							/>
 						</g>
 					</g>
@@ -348,52 +356,15 @@ export default function ProductImageWithLogo({
 							: "https://placehold.co/600x400"
 					}
 					alt={product?.productName}
-					className="w-full h-full object-fill rounded-lg absolute top-0 left-0"
+					className="w-full h-full object-cover rounded-lg absolute top-0 left-0"
 					style={{
 						filter: "url(#tint)",
 						opacity: 0.8,
 						mixBlendMode: "multiply",
 					}}
 				/>
-
-				{/* <img
-					src={
-						showFront && product.productImages[index]
-							? product.productImages[index]
-							: "https://placehold.co/600x400"
-					}
-					alt={product?.productName}
-					className="w-full h-full object-fill rounded-lg absolute top-0 left-0"
-					style={{
-						filter: "url(#textureFilter)",
-						opacity: 0.6,
-						mixBlendMode: "multiply",
-					}}
-				/> */}
-
-				{/* {imagePattern && (
-					// <div
-					// 	className="absolute top-0 left-0 w-full h-full pointer-events-none"
-					// 	style={{
-					// 		// clipPath: "inset(0)",
-					// 		mixBlendMode: "multiply",
-					// 	}}
-					// >
-					<ImageComponent
-						key={imagePattern.uniqueId}
-						containerRef={containerRef}
-						imageComp={imagePattern}
-						uniqueId={imagePattern.uniqueId}
-						activeImage={activeImage}
-						setActiveImage={setActiveImage}
-						updateImageComponent={updateImageComponent}
-						pattern={true}
-					/>
-					// </div>
-				)} */}
 			</div>
-
-			{/* Thumbnail for back/front toggle */}
 		</>
 	);
+
 }

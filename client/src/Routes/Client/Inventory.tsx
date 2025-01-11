@@ -18,8 +18,17 @@ import { DataGrid } from "@mui/x-data-grid";
 import AddProductModal from "../../Component/AddProductModal.tsx";
 import MaterialsModal from "../../Component/AddMaterialModal.tsx";
 import { toast } from "react-toastify";
+import { useNavigate } from "react-router-dom";
 
 const Inventory = () => {
+	const navigate = useNavigate();
+	const authToken = sessionStorage.getItem("authToken");
+	useEffect(() => {
+		if (authToken !== "admin-token") {
+			toast.error("You are not authorized to view this page.");
+			navigate("/?message=invalid-auth");
+		}
+	}, []);
 	const [materials, setMaterials] = useState<any>([]);
 	const [isModalOpen, setIsModalOpen] = useState(false);
 	const [selectedMaterial, setSelectedMaterial] = useState<any>(null);
@@ -373,8 +382,9 @@ const Inventory = () => {
 											{
 												field: "productImages",
 												headerName: "Image",
-												width: 150,
+												width: 80,
 												renderCell: (params) => (
+													<div className="bg-gray-200 center flex justify-center align-items-center">
 													<img
 														src={params.value[0]}
 														alt={params.row.name}
@@ -383,6 +393,7 @@ const Inventory = () => {
 															height: 50,
 														}}
 													/>
+													</div>
 												),
 											},
 											{

@@ -14,12 +14,21 @@ import { toast } from "react-toastify";
 // };
 
 function AccountInfo({ userData, setUserData }) {
-	const [user, setUser] = useState(userData);
-	const [isEditing, setIsEditing] = useState(false);
+	// const [user, setUser] = useState(userData);
+
+	const [user, setUser] = useState<any>(userData);
 	const [formData, setFormData] = useState(userData);
 	const [originalFormData, setOriginalFormData] = useState(userData);
-	const [isPasswordModalOpen, setPasswordModalOpen] = useState(false);
+	useEffect(() => {
+		const userDetails = JSON.parse(localStorage.getItem("user") ?? "{}");
 
+		setUser(userDetails);
+		setFormData(userDetails);
+		setOriginalFormData(userDetails);
+	}, []);
+
+	const [isEditing, setIsEditing] = useState(false);
+	const [isPasswordModalOpen, setPasswordModalOpen] = useState(false);
 	const handleInputChange = (e) => {
 		setFormData({ ...formData, [e.target.name]: e.target.value });
 	};
@@ -97,7 +106,6 @@ function AccountInfo({ userData, setUserData }) {
 				</h2>
 				<hr className="mb-8 border-gray-300" />
 				<div className="flex flex-col lg:flex-row">
-					{/* Profile Image Section */}
 					<div className="flex flex-col items-center justify-center lg:items-center lg:w-1/3 mb-8 lg:mb-0">
 						<img
 							src={user.profileImage}
@@ -137,7 +145,6 @@ function AccountInfo({ userData, setUserData }) {
 						)}
 					</div>
 
-					{/* Profile Info Section */}
 					<div className="flex-1 lg:pl-10">
 						<div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
 							{[
@@ -173,7 +180,6 @@ function AccountInfo({ userData, setUserData }) {
 							))}
 						</div>
 
-						{/* Save Changes Button */}
 					</div>
 				</div>
 			</div>

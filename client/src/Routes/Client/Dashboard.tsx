@@ -11,6 +11,7 @@ import {
 } from "chart.js";
 import RequestHandler from "../../Functions/RequestHandler";
 import { toast } from "react-toastify";
+import { useNavigate } from "react-router-dom";
 
 ChartJS.register(
 	ArcElement,
@@ -22,13 +23,20 @@ ChartJS.register(
 );
 
 export default function Dashboard() {
+	const navigate = useNavigate();
+	const authToken = sessionStorage.getItem("authToken");
+
+	useEffect(() => {
+		if (authToken !== "admin-token") {
+			toast.error("You are not authorized to view this page.");
+			navigate("/?message=invalid-auth");
+		}
+	}, []);
 	const [totalOrders, setTotalOrders] = useState<any>(0);
 	const [totalItemsLeft, setTotalItemsLeft] = useState<any>(0);
 	const [totalUsers, setTotalUsers] = useState<any>(0);
 	const [barLabels, setBarLabels] = useState<any>([]);
 	const [pieLabels, setPieLabels] = useState<any>([]);
-	const [statusCounts, setStatusCounts] = useState<any>([]);
-	const [completedOrdersByWeek, setCompletedOrdersByWeek] = useState<any>([]);
 
 	const loadRequest = async () => {
 		try {
@@ -40,14 +48,9 @@ export default function Dashboard() {
 				setTotalOrders(data.data.totalOrders);
 				setTotalItemsLeft(data.data.totalItemsLeft);
 				setTotalUsers(data.data.totalUsers);
-				setStatusCounts(data.data.statusCounts);
-				setCompletedOrdersByWeek(data.data.completedOrdersByWeek);
-				setBarLabels(
-					data.data.completedOrdersByWeek
-				);
+				setBarLabels(data.data.completedOrdersByWeek);
 
 				setPieLabels(data.data.statusCounts);
-
 			} else {
 				toast.error(data.message || "Unable to load order history");
 				return;

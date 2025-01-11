@@ -169,11 +169,11 @@ function calculateItemTotal(items) {
 
 const paypal = require("@paypal/checkout-server-sdk");
 const PAYPAL_CLIENT_ID =
-	"Af0tB87keOdzXZpl_Ib8lb86Udu5oTWSL-xHDwAz4q9GiBQSFbejrkAqY2QQU5XAlYJ5PyFc6wsM45Wq";
+	"AX5AGNee2pN271sDzuXWPldkFw9x_97bvDEKdpXcwNgmdE26uTD64JjEi2XRpY2AWKyUn29kicp1mocQ";
 const PAYPAL_CLIENT_SECRET =
-	"EO6ufyuol6bxnX_E9HV9OmpqgD9SCWI5AEEohSaLYjBpJqbsVzv650YBQDWk7mZgPIPqE0IRpoQ5Gcyu";
+	"EIKjEnAUbgNvX6ZswF0WurD8ocna3IAiF7TyHnL_T8B_548iOSGgomNiQxFNOX3fl8CuE9uXX_ojyNup";
 
-const environment = new paypal.core.SandboxEnvironment(
+const environment = new paypal.core.LiveEnvironment(
 	PAYPAL_CLIENT_ID,
 	PAYPAL_CLIENT_SECRET
 );
@@ -234,8 +234,8 @@ router.post("/create-payment", async (req, res) => {
 			brand_name: "721 Ordering",
 			landing_page: "BILLING",
 			user_action: "PAY_NOW",
-			return_url: "https://721ordering.netlify.app/history",
-			cancel_url: "https://721ordering.netlify.app/history",
+			return_url: "https://721ordering.netlify.app?message=success",
+			cancel_url: "https://721ordering.netlify.app?message=failed",
 		},
 	});
 

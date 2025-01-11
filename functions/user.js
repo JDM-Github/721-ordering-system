@@ -468,13 +468,14 @@ router.post("/edit-password", async (req, res) => {
 				message: "User does not exists",
 			});
 		}
-		const hashedOldPassword = await bcrypt.hash(oldPass, 10);
-		if (existingUser.password !== hashedOldPassword)
+
+		const isPasswordValid = await bcrypt.compare(oldPass, existingUser.password);
+		if (!isPasswordValid) {
 			return res.send({
 				success: false,
 				message: "User account current password does not match.",
 			});
-
+		}
 		const hashedPassword = await bcrypt.hash(password, 10);
 		await existingUser.update({
 			password: hashedPassword,

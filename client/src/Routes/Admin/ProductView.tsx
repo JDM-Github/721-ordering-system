@@ -16,6 +16,179 @@ interface Product {
 	isCustomizable: boolean;
 }
 
+function SizeChartModal({ onClose }) {
+	return (
+		<div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
+			<div
+				className="bg-white rounded-lg shadow-xl p-8 w-100 max-w-xl"
+				style={{ maxWidth: "800px", width: "100%" }}
+			>
+				<div className="mb-8">
+					<h3 className="text-2xl font-semibold mb-2 bg-red-500 p-2 rounded center">
+						JERSEY
+					</h3>
+					<table className="min-w-full table-auto border-collapse">
+						<thead>
+							<tr className="bg-orange-100 text-gray-800">
+								<th className="border px-4 py-2 text-left">
+									Size (in...){" "}
+								</th>
+								<th className="border px-4 py-2 text-center">
+									2XS / XS
+								</th>
+								<th className="border px-4 py-2 text-center">
+									S
+								</th>
+								<th className="border px-4 py-2 text-center">
+									M
+								</th>
+								<th className="border px-4 py-2 text-center">
+									L
+								</th>
+								<th className="border px-4 py-2 text-center">
+									XL
+								</th>
+								<th className="border px-4 py-2 text-center">
+									2XL
+								</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr className="hover:bg-orange-50 transition duration-200">
+								<td className="border px-4 py-2">Chest</td>
+								<td className="border px-4 py-2 text-center">
+									34-36
+								</td>
+								<td className="border px-4 py-2 text-center">
+									38-40
+								</td>
+								<td className="border px-4 py-2 text-center">
+									42-44
+								</td>
+								<td className="border px-4 py-2 text-center">
+									46
+								</td>
+								<td className="border px-4 py-2 text-center">
+									48
+								</td>
+								<td className="border px-4 py-2 text-center">
+									50
+								</td>
+							</tr>
+							<tr className="hover:bg-orange-50 transition duration-200">
+								<td className="border px-4 py-2">Length</td>
+								<td className="border px-4 py-2 text-center">
+									36
+								</td>
+								<td className="border px-4 py-2 text-center">
+									27
+								</td>
+								<td className="border px-4 py-2 text-center">
+									28
+								</td>
+								<td className="border px-4 py-2 text-center">
+									29
+								</td>
+								<td className="border px-4 py-2 text-center">
+									30
+								</td>
+								<td className="border px-4 py-2 text-center">
+									31
+								</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+
+				<div className="mb-8">
+					<h3 className="text-2xl font-semibold mb-2 bg-red-500 p-2 rounded center">
+						SHORTS MALE
+					</h3>
+					<table className="min-w-full table-auto border-collapse">
+						<thead>
+							<tr className="bg-orange-100 text-gray-800">
+								<th className="border px-4 py-2 text-left">
+									Size (in...){" "}
+								</th>
+								<th className="border px-4 py-2 text-center">
+									2XS / XS
+								</th>
+								<th className="border px-4 py-2 text-center">
+									S
+								</th>
+								<th className="border px-4 py-2 text-center">
+									M
+								</th>
+								<th className="border px-4 py-2 text-center">
+									L
+								</th>
+								<th className="border px-4 py-2 text-center">
+									XL
+								</th>
+								<th className="border px-4 py-2 text-center">
+									2XL
+								</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr className="hover:bg-orange-50 transition duration-200">
+								<td className="border px-4 py-2">Waist</td>
+								<td className="border px-4 py-2 text-center">
+									28-30
+								</td>
+								<td className="border px-4 py-2 text-center">
+									32-34
+								</td>
+								<td className="border px-4 py-2 text-center">
+									36-38
+								</td>
+								<td className="border px-4 py-2 text-center">
+									40
+								</td>
+								<td className="border px-4 py-2 text-center">
+									42
+								</td>
+								<td className="border px-4 py-2 text-center">
+									44
+								</td>
+							</tr>
+							<tr className="hover:bg-orange-50 transition duration-200">
+								<td className="border px-4 py-2">Length</td>
+								<td className="border px-4 py-2 text-center">
+									16
+								</td>
+								<td className="border px-4 py-2 text-center">
+									17
+								</td>
+								<td className="border px-4 py-2 text-center">
+									18
+								</td>
+								<td className="border px-4 py-2 text-center">
+									19
+								</td>
+								<td className="border px-4 py-2 text-center">
+									20
+								</td>
+								<td className="border px-4 py-2 text-center">
+									21
+								</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+				<div className="flex justify-center mt-6">
+					<button
+						onClick={onClose}
+						className="bg-red-500 text-white py-3 px-6 rounded-lg hover:bg-red-600 transition duration-200"
+					>
+						Close
+					</button>
+				</div>
+			</div>
+		</div>
+	);
+}
+
 const ProductView: React.FC = () => {
 	interface User {
 		id: string;
@@ -141,6 +314,21 @@ const ProductView: React.FC = () => {
 	};
 	const handleCustomize = () => navigate(`/customize?id=${productId}`);
 
+	const [selectedSizeChart, setSelectedSizeChart] = useState(null);
+	const [isModalOpen, setIsModalOpen] = useState(false);
+
+	const handleSizeChartChange = (size) => {
+		setSelectedSizeChart(size);
+	};
+
+	const openSizeChartModal = () => {
+		setIsModalOpen(true);
+	};
+
+	const closeSizeChartModal = () => {
+		setIsModalOpen(false);
+	};
+
 	return (
 		<div className="bg-gray-50 flex justify-center items-center py-16 px-4">
 			{loading ? (
@@ -218,6 +406,18 @@ const ProductView: React.FC = () => {
 											</button>
 										))}
 								</div>
+
+								<button
+									onClick={openSizeChartModal}
+									className="mt-4 bg-red-500 text-white py-2 px-4 rounded-lg hover:bg-red-600"
+								>
+									View Size Chart
+								</button>
+								{isModalOpen && (
+									<SizeChartModal
+										onClose={closeSizeChartModal}
+									/>
+								)}
 							</div>
 
 							<div className="mb-8">

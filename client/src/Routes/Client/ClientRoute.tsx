@@ -28,7 +28,7 @@ export default function ClientRoute() {
 						<div className="ml-4">
 							<h2 className="text-xl font-bold">ADMINISTRATOR</h2>
 							<p className="text-sm text-gray-200">
-								admin@example.com
+								721bacoor@gmail.com
 							</p>
 						</div>
 					</div>

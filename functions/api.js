@@ -324,7 +324,7 @@ router.get("/payment-success", async (req, res) => {
 			return res.status(404).json({ error: "Order not found" });
 		}
 
-		await order.update({status: "Paid"});
+		await order.update({  isPaid: true});
 		await Notification.create({
 			userId: order.userId,
 			title: "Payment Successful",

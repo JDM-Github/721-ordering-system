@@ -167,7 +167,7 @@ const CompletedOrder = ({ user }) => {
 					)}
 				</>
 			),
-			width: 300,
+			width: 350,
 		},
 	];
 

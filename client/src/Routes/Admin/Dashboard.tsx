@@ -8,9 +8,9 @@ export default function Dashboard() {
 		const queryParams = new URLSearchParams(window.location.search);
 		const message = queryParams.get("message");
 
-		if (message === "success") {
+		if (message === "payment-success") {
 			toast.success("Order successfully placed!");
-		} else if (message === "failed") {
+		} else if (message === "payment-failed") {
 			toast.error("Order failed. Please try again!");
 		} else if (message === "invalid-auth") {
 			sessionStorage.clear();

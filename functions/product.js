@@ -20,9 +20,9 @@ const router = express.Router();
 // const PAYMONGO_API_KEY = "sk_test_HMD8fpUnNtVh5bTG35TQXmXC";
 const paypal = require("@paypal/checkout-server-sdk");
 const PAYPAL_CLIENT_ID =
-	"AeORboTyKjwni9iaqfisnlEBQtby2Qac8QNHRmCpRFrKx1OmPcL96rcB3Wv9XgPEIERpCIRGcwZc0fIU";
+	"AX5AGNee2pN271sDzuXWPldkFw9x_97bvDEKdpXcwNgmdE26uTD64JjEi2XRpY2AWKyUn29kicp1mocQ";
 const PAYPAL_CLIENT_SECRET =
-	"ELRvSQHE3MAkUOEUl_CdAMjHR21HDpCuhsWI-RxW-TCo94AZUXnJJ06EJEGDlDeeahIAwOwJmiENGB3y";
+	"EIKjEnAUbgNvX6ZswF0WurD8ocna3IAiF7TyHnL_T8B_548iOSGgomNiQxFNOX3fl8CuE9uXX_ojyNup";
 
 const environment = new paypal.core.LiveEnvironment(
 	PAYPAL_CLIENT_ID,
@@ -32,11 +32,14 @@ const client = new paypal.core.PayPalHttpClient(environment);
 const getOrderPaymentStatus = async (orderId) => {
 	const url = `https://api.paypal.com/v2/checkout/orders/${orderId}`;
 
+	const code = await getAccessToken();
+	console.log(code);
+
 	try {
 		const response = await fetch(url, {
 			method: "GET",
 			headers: {
-				Authorization: `Bearer ${await getAccessToken()}`,
+				Authorization: `Bearer ${code}`,
 				"Content-Type": "application/json",
 			},
 		});
@@ -47,6 +50,8 @@ const getOrderPaymentStatus = async (orderId) => {
 
 		const data = await response.json();
 		const orderStatus = data.status;
+
+		console.log(orderStatus);
 
 		return orderStatus;
 	} catch (err) {
@@ -101,7 +106,7 @@ router.post("/screenshot", async (req, res) => {
 	try {
 		const browser = await chromium.launch();
 		const page = await browser.newPage();
-		await page.setViewportSize({ width: 1024*2, height: 768*2 });
+		await page.setViewportSize({ width: 1024, height: 768 });
 		await page.goto(url, { waitUntil: wait_until });
 		if (delay) {
 			await page.waitForTimeout(delay * 1000);
@@ -111,7 +116,7 @@ router.post("/screenshot", async (req, res) => {
 			clip: {
 				x: 0,
 				y: 0,
-				width: 1366,
+				width: 1024,
 				height: 768,
 			},
 		});
@@ -857,6 +862,9 @@ router.post("/delete-order", async (req, res) => {
 
 router.post("/get-all-order", async (req, res) => {
 	const { userId, status, paid } = req.body;
+	const code = await getAccessToken();
+	console.log(code);
+
 	try {
 		const whereClause = {};
 
@@ -893,6 +901,9 @@ router.post("/get-all-order", async (req, res) => {
 		const ordersWithProducts = [];
 
 		for (const orderSummary of orderSummaries) {
+			const orderStatus = await getOrderPaymentStatus(
+				orderSummary.orderId
+			);
 			if (orderSummary.isDownpayment) {
 				if (orderSummary.isDownPaymentExpired) {
 				} else if (orderSummary.isDownpaymentPaid) {
@@ -980,7 +991,7 @@ router.post("/get-all-order", async (req, res) => {
 						const orderStatus = await getOrderPaymentStatus(
 							orderSummary.orderId
 						);
-						console.log(orderStatus);
+						// console.log(orderStatus);
 						if (orderStatus === "APPROVED") {
 							await orderSummary.update({ isPaid: true });
 							await Notification.create({
@@ -1085,7 +1096,7 @@ router.post("/get-all-order", async (req, res) => {
 			}
 		}
 
-		console.log(ordersWithProducts);
+		// console.log(ordersWithProducts);
 		res.status(200).json({
 			success: true,
 			orderSummaries: ordersWithProducts,

@@ -234,8 +234,10 @@ router.post("/create-payment", async (req, res) => {
 			brand_name: "721 Ordering",
 			landing_page: "BILLING",
 			user_action: "PAY_NOW",
-			return_url: "https://721ordering.netlify.app?message=success",
-			cancel_url: "https://721ordering.netlify.app?message=failed",
+			return_url:
+				"https://721ordering.netlify.app/.netlify/functions/api/payment-success",
+			cancel_url:
+				"https://721ordering.netlify.app/.netlify/functions/api/payment-failed",
 		},
 	});
 
@@ -251,6 +253,10 @@ router.post("/create-payment", async (req, res) => {
 			);
 			await cart.update({ products: updatedProducts });
 		}
+		
+		const approvalUrl = order.result.links.find(
+			(link) => link.rel === "approve"
+		).href;
 		if (isDownpayment) {
 			await OrderSummary.create({
 				userId: userId,
@@ -262,7 +268,7 @@ router.post("/create-payment", async (req, res) => {
 				),
 				isDownpayment: true,
 				remainingBalance: amount / 2,
-				paymentLink: `https://www.paypal.com/checkoutnow?token=${orderId}`,
+				paymentLink: approvalUrl,
 			});
 			await Notification.create({
 				userId: userId,
@@ -276,7 +282,7 @@ router.post("/create-payment", async (req, res) => {
 				orderId: orderId,
 				products: orderIds,
 				expiredAt: new Date(new Date().getTime() + 15 * 60 * 1000),
-				paymentLink: `https://www.paypal.com/checkoutnow?token=${orderId}`,
+				paymentLink: approvalUrl,
 			});
 			await Notification.create({
 				userId: userId,
@@ -285,9 +291,6 @@ router.post("/create-payment", async (req, res) => {
 			});
 		}
 
-		const approvalUrl = order.result.links.find(
-			(link) => link.rel === "approve"
-		).href;
 
 		res.send({
 			success: true,
@@ -299,6 +302,74 @@ router.post("/create-payment", async (req, res) => {
 		res.status(500).json({ error: "Failed to create payment" });
 	}
 });
+
+router.get("/payment-success", async (req, res) => {
+	const { token } = req.query;
+	if (!token) {
+		return res.status(400).json({ error: "Payment token is missing" });
+	}
+	try {
+		const captureRequest = new paypal.orders.OrdersCaptureRequest(token);
+		const captureResponse = await client.execute(captureRequest);
+
+		if (captureResponse.result.status !== "COMPLETED") {
+			res.redirect(
+				`https://721ordering.netlify.app?message=payment-failed`
+			);
+		}
+
+		const orderId = captureResponse.result.id;
+		const order = await OrderSummary.findOne({ where: { orderId } });
+		if (!order) {
+			return res.status(404).json({ error: "Order not found" });
+		}
+
+		await order.update({status: "Paid"});
+		await Notification.create({
+			userId: order.userId,
+			title: "Payment Successful",
+			message: `Your payment for reference number ${order.referenceNumber} has been successfully captured. Thank you for your purchase!`,
+		});
+
+		res.redirect(
+			`https://721ordering.netlify.app?message=payment-success`
+		);
+	} catch (error) {
+		console.error("Error capturing payment:", error);
+		res.status(500).json({ error: "Failed to capture payment" });
+	}
+});
+
+router.get("/payment-failed", async (req, res) => {
+	const { token } = req.query;
+	if (!token) {
+		return res.status(400).json({ error: "Payment token is missing" });
+	}
+
+	try {
+		const order = await OrderSummary.findOne({
+			where: { downPaymentOrderId: token },
+		});
+		if (!order) {
+			return res.status(404).json({ error: "Order not found" });
+		}
+
+		await order.update({status: "Failed", expiredAt: new Date()});
+		await Notification.create({
+			userId: order.userId,
+			title: "Payment Failed",
+			message: `Your payment for reference number ${order.referenceNumber} was not successful. Please try again.`,
+		});
+
+		res.redirect(
+			"https://721ordering.netlify.app?message=payment-failed"
+		); 
+	} catch (error) {
+		console.error("Error handling failed payment:", error);
+		res.status(500).json({ error: "Failed to process payment failure" });
+	}
+});
+
 
 
 // const PAYMONGO_API_KEY = "sk_test_xQUPaznwdL8WkBfuLA5p3ihK";

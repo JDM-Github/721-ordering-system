@@ -511,7 +511,7 @@ export default function ViewDesign() {
 									/>
 								</svg>
 							</button> */}
-							<button
+							{/* <button
 								className="w-16 h-16 bg-red-500 rounded-full shadow hover:bg-red-600"
 								onClick={handleDownloadPng}
 							>
@@ -520,17 +520,17 @@ export default function ViewDesign() {
 									alt="Save Icon"
 									className="w-16 h-16"
 								/>
-							</button>
+							</button> */}
 						</div>
 
 						{/* Action Buttons */}
 						<div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4 mt-6 mb-3">
-							<button
+							{/* <button
 								onClick={handleDownloadDesign}
 								className="w-full sm:w-1/3 py-3 bg-red-500 text-white rounded-lg hover:bg-red-600 transition duration-200"
 							>
 								Download Design
-							</button>
+							</button> */}
 							<button
 								onClick={() => window.history.back()}
 								className="text-center w-full sm:w-1/3 py-3 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition duration-200"

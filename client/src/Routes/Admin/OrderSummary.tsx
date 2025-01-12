@@ -123,7 +123,7 @@ function OrderSummary() {
 									/>
 								</div>
 
-								{item.Product.isCustomizable && (
+								{/* {item.Product.isCustomizable && (
 									<Link
 										to={{
 											pathname: `/view-design`,
@@ -133,7 +133,7 @@ function OrderSummary() {
 									>
 										View Design
 									</Link>
-								)}
+								)} */}
 							</div>
 							<p className="text-lg font-medium mt-4 md:mt-0">
 								₱
@@ -193,12 +193,12 @@ function OrderSummary() {
 								>
 									Cancel Order
 								</button>
-								<button
+								{/* <button
 									onClick={handleDownPayment}
 									className="bg-green-500 text-white py-3 rounded-lg hover:bg-green-600 transition duration-200"
 								>
 									Pay 50% Downpayment
-								</button>
+								</button> */}
 							</div>
 
 							<div className="mt-6 bg-gray-100 p-4 rounded-lg text-gray-700 text-sm">

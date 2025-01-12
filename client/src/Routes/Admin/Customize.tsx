@@ -821,7 +821,7 @@ const CustomizationPage: React.FC = () => {
 
 						{/* Action Buttons */}
 						<div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4 mt-6 mb-3">
-							<button
+							{/* <button
 								onClick={handleDownloadDesign}
 								className="w-full sm:w-1/3 py-3 bg-red-500 text-white rounded-lg hover:bg-red-600 transition duration-200"
 							>
@@ -832,7 +832,7 @@ const CustomizationPage: React.FC = () => {
 								className="w-full sm:w-1/3 py-3 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition duration-200"
 							>
 								Load Design
-							</button>
+							</button> */}
 							<input
 								id="fileInput"
 								type="file"

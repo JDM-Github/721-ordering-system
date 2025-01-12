@@ -153,7 +153,7 @@ const OrderHistory = () => {
 	}, []);
 
 	const columns = [
-		{ field: "id", headerName: "Order ID", width: 200 },
+		{ field: "id", headerName: "Order ID", width: 100 },
 		{
 			field: "email",
 			headerName: "Email",
@@ -169,11 +169,16 @@ const OrderHistory = () => {
 			headerName: "Reference Number",
 			width: 100,
 		},
-		// {
-		// 	field: "orderStatus",
-		// 	headerName: "Order Status",
-		// 	width: 100,
-		// },
+		{
+			field: "status",
+			headerName: "Status",
+			width: 100,
+		},
+		{
+			field: "orderStatus",
+			headerName: "Order Status",
+			width: 100,
+		},
 		{ field: "createdAt", headerName: "Order Date", width: 100 },
 		{
 			field: "actions",

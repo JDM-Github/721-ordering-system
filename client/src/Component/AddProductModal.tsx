@@ -10,6 +10,7 @@ type OriginalType = {
 	price?: number;
 	size?: string[];
 	stocks?: number;
+	stockPerSize?: [number];
 	description?: string;
 	isCustomizable?: boolean;
 };
@@ -36,6 +37,9 @@ const AddProductModal = ({
 	);
 	const [price, setPrice] = useState(original?.price || 0);
 	const [size, setSize] = useState(original?.size || ["S", "M", "L", "XL"]);
+	const [stockPerSize, setStockPerSize] = useState(
+		original?.stockPerSize || [0, 0, 0, 0]
+	);
 	const [stocks, setStocks] = useState(original?.stocks || 0);
 	const [description, setDescription] = useState(original?.description || "");
 	const [isCustomizable, setIsCustomizable] = useState(
@@ -53,41 +57,54 @@ const AddProductModal = ({
 		setter(updatedList);
 	};
 
+	const handleStockChange = (index, value) => {
+		const updatedStockPerSize = [...stockPerSize];
+		updatedStockPerSize[index] = parseInt(value) || 0; 
+		setStockPerSize(updatedStockPerSize); 
+	};
+
 	const handleSave = async () => {
 		let imageUrls: any = [];
+		const loadingToastId = toast.loading("Uploading images...");
+		const uploadImagePromises = productImages.map(async (image: any) => {
+			if (image instanceof File) {
+				const formData = new FormData();
+				formData.append("file", image);
 
-		const uploadImagePromises = productImages.map(async (image) => {
-			const formData = new FormData();
-			formData.append("file", image);
+				try {
+					const imageUploadData: any =
+						await RequestHandler.handleRequest(
+							"post",
+							"file/upload-image",
+							formData,
+							{
+								headers: {
+									"Content-Type": "multipart/form-data",
+								},
+							}
+						);
 
-			try {
-				const imageUploadData: any = await RequestHandler.handleRequest(
-					"post",
-					"file/upload-image",
-					formData,
-					{
-						headers: {
-							"Content-Type": "multipart/form-data",
-						},
+					if (imageUploadData.success) {
+						imageUrls.push(imageUploadData.uploadedDocument);
+					} else {
+						toast.error(
+							imageUploadData.message || "Image upload failed"
+						);
+						throw new Error("Image upload failed");
 					}
-				);
-				if (imageUploadData.success) {
-					imageUrls.push(imageUploadData.uploadedDocument);
-				} else {
-					toast.error(
-						imageUploadData.message || "Image upload failed"
-					);
-					throw new Error("Image upload failed");
+				} catch (error) {
+					console.error("Error uploading the image:", error);
+					toast.error("Error uploading one or more images.");
+					throw error;
 				}
-			} catch (error) {
-				console.error("Error uploading the image:", error);
-				toast.error("Error uploading one or more images.");
-				throw error;
+			} else {
+				imageUrls.push(image);
 			}
 		});
 
 		try {
 			await Promise.all(uploadImagePromises);
+
 			const newProduct = {
 				id,
 				productName,
@@ -96,25 +113,31 @@ const AddProductModal = ({
 				price,
 				size,
 				stocks,
+				stockPerSize,
 				description,
 				isCustomizable,
 			};
+
 			const data = await RequestHandler.handleRequest(
 				"post",
 				"product/add-product",
 				newProduct
 			);
-			if (!data.success) {
-				alert(JSON.stringify(data));
-			} else {
-				onSave();
+
+			if (data.success) {
 				toast.success("Product saved successfully!");
+				onSave();
+			} else {
+				toast.error(data.message || "Product saving failed.");
 			}
 		} catch (error) {
 			toast.error("An error occurred while saving the product.");
+		} finally {
+			toast.dismiss(loadingToastId);
 		}
 		onClose();
 	};
+
 
 	if (!isOpen) return null;
 
@@ -156,7 +179,7 @@ const AddProductModal = ({
 								<input
 									type="file"
 									accept="image/*"
-									onChange={(e) =>
+									onChange={(e: any) =>
 										handleListChange(
 											setProductImages,
 											productImages,
@@ -167,13 +190,14 @@ const AddProductModal = ({
 									className="block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
 								/>
 								<button
-									onClick={() =>
+									onClick={() => {
 										handleRemoveFromList(
 											setProductImages,
 											productImages,
 											index
-										)
-									}
+										);
+										
+									}}
 									className="text-red-600 hover:text-red-800"
 								>
 									Remove
@@ -253,7 +277,7 @@ const AddProductModal = ({
 							type="number"
 							id="price"
 							value={price}
-							onChange={(e) => setPrice(e.target.value)}
+							onChange={(e: any) => setPrice(e.target.value)}
 							className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
 							placeholder="Enter product price"
 						/>
@@ -283,14 +307,28 @@ const AddProductModal = ({
 									className="block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
 									placeholder="Enter size"
 								/>
+								<input
+									type="number"
+									value={stockPerSize[index] || 0} 
+									onChange={(e: any) =>
+										handleStockChange(index, e.target.value)
+									} 
+									className="w-20 p-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+									placeholder="Stock"
+								/>
 								<button
-									onClick={() =>
+									onClick={() => {
 										handleRemoveFromList(
 											setSize,
 											size,
 											index
-										)
-									}
+										);
+										handleRemoveFromList(
+											setStockPerSize,
+											stockPerSize,
+											index
+										);
+									}}
 									className="text-red-600 hover:text-red-800"
 								>
 									Remove
@@ -306,7 +344,7 @@ const AddProductModal = ({
 					</div>
 
 					{/* Stocks */}
-					<div>
+					{/* <div>
 						<label
 							htmlFor="stocks"
 							className="block text-sm font-medium text-gray-700"
@@ -317,11 +355,11 @@ const AddProductModal = ({
 							type="number"
 							id="stocks"
 							value={stocks}
-							onChange={(e) => setStocks(e.target.value)}
+							onChange={(e: any) => setStocks(e.target.value)}
 							className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
 							placeholder="Enter stock quantity"
 						/>
-					</div>
+					</div> */}
 
 					{/* Description */}
 					<div>

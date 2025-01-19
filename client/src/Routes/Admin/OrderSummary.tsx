@@ -36,8 +36,7 @@ function OrderSummary() {
 				}
 			);
 			if (response.redirectUrl) {
-				window.open(response.redirectUrl, "_blank");
-				navigate("/");
+				window.location.href = response.redirectUrl;
 			} else {
 				console.error("Payment URL not found.");
 				toast.error("Failed	to get the payment link.");
@@ -94,12 +93,16 @@ function OrderSummary() {
 									{item.Product.productName.slice(0, 25) +
 										"..."}
 								</h3>
-								<p className="text-gray-500">
-									Size: {item.customization.selectedSize}
-								</p>
-								<p className="text-gray-500">
-									Quantity: {item.quantity}
-								</p>
+								<div className="mt-2">
+									{item.Product.size.map((size, index) => (
+										<div key={size}>
+											<p className="text-gray-500">
+												{size} :{" "}
+												{item.quantityPerSize[index]}
+											</p>
+										</div>
+									))}
+								</div>
 
 								<div className="mt-2">
 									<label
@@ -193,12 +196,12 @@ function OrderSummary() {
 								>
 									Cancel Order
 								</button>
-								{/* <button
+								<button
 									onClick={handleDownPayment}
 									className="bg-green-500 text-white py-3 rounded-lg hover:bg-green-600 transition duration-200"
 								>
 									Pay 50% Downpayment
-								</button> */}
+								</button>
 							</div>
 
 							<div className="mt-6 bg-gray-100 p-4 rounded-lg text-gray-700 text-sm">

@@ -10,6 +10,11 @@ import {
 	List,
 	ListItem,
 	ListItemText,
+	Typography,
+	Table,
+	TableBody,
+	TableCell,
+	TableRow,
 } from "@mui/material";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 import { toast } from "react-toastify";
@@ -19,7 +24,19 @@ const OrderHistory = ({ user }) => {
 	const [orders, setOrders] = useState([]);
 	const [openModal, setOpenModal] = useState(false);
 	const [selectedOrder, setSelectedOrder] = useState<any>(null);
+
+	const [openRecieptModal, setOpenRecieptModal] = useState(false);
+	const [receipt, setReceipt] = useState<any>(null);
 	const navigate = useNavigate();
+
+	const handleViewReciept = (receiptJson) => {
+		setReceipt(receiptJson);
+		setOpenRecieptModal(true);
+	};
+	const handleCloseReceiptModal = () => {
+		setOpenRecieptModal(false);
+		setReceipt(null);
+	};
 
 	const handleViewOrder = (order) => {
 		setSelectedOrder(order);
@@ -58,6 +75,7 @@ const OrderHistory = ({ user }) => {
 					orderStatus: order.orderStatus,
 					downPaymentStatus: order.downPaymentStatus,
 					paymentLink: order.paymentLink,
+					orderReceiptJson: order.orderReceiptJson,
 					createdAt: new Date(order.createdAt).toLocaleDateString(),
 					products: order.products.map((product) => ({
 						product: product,
@@ -173,6 +191,26 @@ const OrderHistory = ({ user }) => {
 						>
 							View Order
 						</Button>
+						{!((downPaymentStatus === "PENDING" &&
+							orderStatus === "------") ||
+							(downPaymentStatus === "------" &&
+								orderStatus === "PENDING")) && (
+							<Button
+								variant="contained"
+								color="primary"
+								onClick={() =>
+									handleViewReciept(
+										params.row.orderReceiptJson
+									)
+								}
+								style={{
+									backgroundColor: "#FF7300FF",
+									marginRight: "10px",
+								}}
+							>
+								View Receipt
+							</Button>
+						)}
 						{((downPaymentStatus === "PENDING" &&
 							orderStatus === "------") ||
 							(downPaymentStatus === "------" &&
@@ -203,21 +241,34 @@ const OrderHistory = ({ user }) => {
 									Pay Remaining Balance
 								</Button>
 							)}
-						{downPaymentStatus === "EXPIRED" ||
-							(orderStatus === "EXPIRED" && (
-								<Button
-									variant="contained"
-									color="primary"
-									onClick={() => removeOrder(id)}
-									style={{ backgroundColor: "#FF1E00FF" }}
-								>
-									Delete Order
-								</Button>
-							))}
+						{((downPaymentStatus === "PENDING" &&
+							orderStatus === "------") ||
+							(downPaymentStatus === "------" &&
+								orderStatus === "PENDING")) && (
+							<Button
+								variant="contained"
+								color="primary"
+								onClick={() => removeOrder(id)}
+								style={{ backgroundColor: "#FF1E00FF" }}
+							>
+								Cancel Order
+							</Button>
+						)}
+						{(downPaymentStatus === "EXPIRED" ||
+							orderStatus === "EXPIRED") && (
+							<Button
+								variant="contained"
+								color="primary"
+								onClick={() => removeOrder(id)}
+								style={{ backgroundColor: "#FF1E00FF" }}
+							>
+								Delete Order
+							</Button>
+						)}
 					</>
 				);
 			},
-			width: 300,
+			width: 400,
 		},
 	];
 
@@ -264,6 +315,93 @@ const OrderHistory = ({ user }) => {
 					/>
 				</div>
 			</div>
+
+			<Dialog
+				open={openRecieptModal && receipt !== null}
+				onClose={handleCloseReceiptModal}
+				maxWidth="sm"
+				fullWidth
+			>
+				{receipt !== null && (
+					<>
+						<DialogTitle>Receipt Details</DialogTitle>
+						<DialogContent dividers>
+							<Typography variant="subtitle1" gutterBottom>
+								<strong>Reference Number:</strong>{" "}
+								{receipt.referenceNumber}
+							</Typography>
+							<Typography variant="subtitle1" gutterBottom>
+								<strong>Email:</strong> {receipt.user.email}
+							</Typography>
+							<Typography variant="subtitle1" gutterBottom>
+								<strong>Address:</strong> {receipt.user.address}
+							</Typography>
+
+							<Typography
+								variant="h6"
+								gutterBottom
+								style={{ marginTop: "20px" }}
+							>
+								Products
+							</Typography>
+							<Table>
+								<TableBody>
+									{receipt.products.map((product, index) => (
+										<TableRow key={index}>
+											<TableCell>
+												{product.name}
+											</TableCell>
+											<TableCell>
+												{product.quantity}
+											</TableCell>
+											<TableCell>{`PHP ${product.price}`}</TableCell>
+										</TableRow>
+									))}
+								</TableBody>
+							</Table>
+
+							<Typography
+								variant="h6"
+								gutterBottom
+								style={{ marginTop: "20px" }}
+							>
+								Payment Details
+							</Typography>
+							<Typography variant="subtitle1" gutterBottom>
+								<strong>Total Amount:</strong> PHP{" "}
+								{receipt.totalAmount}
+							</Typography>
+							{receipt.isDownpayment && (
+								<>
+									<Typography
+										variant="subtitle1"
+										gutterBottom
+									>
+										<strong>Downpayment Amount:</strong> PHP{" "}
+										{receipt.downpaymentAmount}
+									</Typography>
+									<Typography
+										variant="subtitle1"
+										gutterBottom
+									>
+										<strong>Remaining Balance:</strong> PHP{" "}
+										{receipt.remainingBalance}
+									</Typography>
+								</>
+							)}
+							<Typography variant="subtitle1" gutterBottom>
+								<strong>Date:</strong>{" "}
+								{new Date(receipt.date).toLocaleString()}
+							</Typography>
+						</DialogContent>
+					</>
+				)}
+				<DialogActions>
+					<Button onClick={handleCloseReceiptModal} color="primary">
+						Close
+					</Button>
+				</DialogActions>
+			</Dialog>
 
 			<Dialog
 				open={openModal}

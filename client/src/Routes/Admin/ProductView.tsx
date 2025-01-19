@@ -12,6 +12,7 @@ interface Product {
 	status: string;
 	stocks: number;
 	size: [string];
+	stockPerSize: [number];
 	description: string;
 	isCustomizable: boolean;
 }
@@ -209,6 +210,24 @@ const ProductView: React.FC = () => {
 
 	const queryParams = new URLSearchParams(location.search);
 	const productId = queryParams.get("id");
+
+	const [quantities, setQuantities] = useState({});
+	const handleQuantityChange = (size, value) => {
+		if (product == null) {
+			return;
+		}
+		const maxStock = product.stockPerSize[product.size.indexOf(size)];
+
+		if (value >= 0 && value <= maxStock) {
+			setQuantities((prev) => ({
+				...prev,
+				[size]: value,
+			}));
+		} else {
+			alert(`Maximum stock for ${size} is ${maxStock}.`);
+		}
+	};
+
 	const loadAllProducts = async () => {
 		setLoading(true);
 		try {
@@ -222,6 +241,14 @@ const ProductView: React.FC = () => {
 				alert(JSON.stringify(data));
 			} else {
 				setProduct(data.product);
+				const initialQuantities = data.product.size.reduce(
+					(acc, size) => {
+						acc[size] = 0;
+						return acc;
+					},
+					{}
+				);
+				setQuantities(initialQuantities);
 			}
 		} catch (error) {
 			alert(`An error occurred while archiving data. ${error}`);
@@ -235,12 +262,12 @@ const ProductView: React.FC = () => {
 		setSelectedSize(size);
 	};
 
-	const handleQuantityChange = (value: number) => {
-		if (product)
-			if (value >= 1 && value <= product.stocks) {
-				setQuantity(value);
-			}
-	};
+	// const handleQuantityChange = (value: number) => {
+	// 	if (product)
+	// 		if (value >= 1 && value <= product.stocks) {
+	// 			setQuantity(value);
+	// 		}
+	// };
 
 	const handleAddToCart = async () => {
 		if (!user || Object.keys(user).length === 0) {
@@ -250,13 +277,16 @@ const ProductView: React.FC = () => {
 		if (!product) {
 			toast.error("Invalid Product.");
 		}
-
-		if (!selectedSize) {
-			toast.error("Please select a size before adding to cart.");
+		const isValid = Object.values(quantities).some(
+			(quantity: any) => quantity > 0
+		);
+		if (!isValid) {
+			toast.error("Please select atleast one quantity for any size.");
 			return;
 		}
-
-		const toastId = toast.loading("Adding customize product to cart...");
+		const toastId = toast.loading(
+			"Adding customize product to cart..."
+		);
 		const customization = {
 			id: "",
 			color: "",
@@ -264,7 +294,7 @@ const ProductView: React.FC = () => {
 			customName: "",
 			customNumber: "",
 			notes: "",
-			selectedSize,
+			selectedSize: "",
 			product,
 			logoPosition: { x: 0, y: 0 },
 			logoPositionPixel: { x: 0, y: 0 },
@@ -280,6 +310,7 @@ const ProductView: React.FC = () => {
 					productId: product?.id,
 					customization,
 					quantity,
+					quantities,
 				}
 			);
 
@@ -353,9 +384,12 @@ const ProductView: React.FC = () => {
 
 					<div className="flex flex-col justify-between">
 						<div>
-							<h1 className="text-4xl font-bold text-orange-500 mb-6">
+							<h1 className="text-4xl font-bold text-orange-500 mb-3">
 								{product?.productName.slice(0, 20) + "..."}
 							</h1>
+							<h3 className="text-3xl font-bold text-red-500 mb-3">
+								₱{product?.price}
+							</h3>
 							<hr className="my-5" />
 
 							<div className="flex items-center space-x-4 mb-6">
@@ -385,7 +419,7 @@ const ProductView: React.FC = () => {
 							</div>
 
 							<div className="mb-8">
-								<h3 className="text-xl font-semibold text-gray-700 mb-3">
+								{/* <h3 className="text-xl font-semibold text-gray-700 mb-3">
 									Available Sizes
 								</h3>
 								<div className="flex space-x-2">
@@ -405,6 +439,42 @@ const ProductView: React.FC = () => {
 												{size}
 											</button>
 										))}
+								</div> */}
+								<h3 className="text-xl font-semibold text-gray-700 mb-3">
+									Select Quantities Per Size
+								</h3>
+								<div className="space-y-4">
+									{product?.size.map((size, index) => (
+										<div
+											key={size}
+											className="flex items-center space-x-4"
+										>
+											<p className="text-gray-700">
+												{size}
+											</p>
+											<input
+												type="number"
+												value={quantities[size] || ""}
+												min="0"
+												max={
+													product.stockPerSize[index]
+												}
+												onChange={(e) =>
+													handleQuantityChange(
+														size,
+														parseInt(
+															e.target.value
+														) || 0
+													)
+												}
+												className="w-20 p-2 border border-gray-300 rounded-lg"
+											/>
+											<p className="text-sm text-gray-500">
+												Max:{" "}
+												{product.stockPerSize[index]}
+											</p>
+										</div>
+									))}
 								</div>
 
 								<button
@@ -429,7 +499,7 @@ const ProductView: React.FC = () => {
 								</p>
 							</div>
 
-							<div className="mb-8">
+							{/* <div className="mb-8">
 								<h3 className="text-xl font-semibold text-gray-700 mb-3">
 									Select Quantity
 								</h3>
@@ -450,7 +520,7 @@ const ProductView: React.FC = () => {
 										Max: {product?.stocks}
 									</p>
 								</div>
-							</div>
+							</div> */}
 						</div>
 
 						<div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">

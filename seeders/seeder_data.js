@@ -16,7 +16,8 @@ module.exports = {
 					],
 					price: 19.0,
 					size: ["Small", "Medium", "Large"],
-					stocks: 50,
+					stockPerSize: [10, 20, 30],
+					stocks: 60,
 					description:
 						"A fully customizable 426079387_298817262916853_3624267491846849945_n.",
 					status: "Available",
@@ -35,7 +36,8 @@ module.exports = {
 					],
 					price: 19.0,
 					size: ["Small", "Medium", "Large"],
-					stocks: 50,
+					stockPerSize: [10, 20, 30],
+					stocks: 60,
 					description:
 						"A fully customizable 426118048_763033455429909_2921649109729644361_n.",
 					status: "Available",
@@ -54,7 +56,8 @@ module.exports = {
 					],
 					price: 19.0,
 					size: ["Small", "Medium", "Large"],
-					stocks: 50,
+					stockPerSize: [10, 20, 30],
+					stocks: 60,
 					description:
 						"A fully customizable 426153402_7292769350789431_6680330468210033735_n.",
 					status: "Available",
@@ -73,7 +76,8 @@ module.exports = {
 					],
 					price: 19.0,
 					size: ["Small", "Medium", "Large"],
-					stocks: 50,
+					stockPerSize: [10, 20, 30],
+					stocks: 60,
 					description:
 						"A fully customizable 426193281_7359762424104624_3453637945507459237_n.",
 					status: "Available",
@@ -92,7 +96,8 @@ module.exports = {
 					],
 					price: 19.0,
 					size: ["Small", "Medium", "Large"],
-					stocks: 50,
+					stockPerSize: [10, 20, 30],
+					stocks: 60,
 					description:
 						"A fully customizable 426258217_891716202704306_7007113271482448140_n.",
 					status: "Available",
@@ -111,7 +116,8 @@ module.exports = {
 					],
 					price: 19.0,
 					size: ["Small", "Medium", "Large"],
-					stocks: 50,
+					stockPerSize: [10, 20, 30],
+					stocks: 60,
 					description:
 						"A fully customizable 426266671_944870863668512_8942614886036492577_n.",
 					status: "Available",
@@ -130,7 +136,8 @@ module.exports = {
 					],
 					price: 19.0,
 					size: ["Small", "Medium", "Large"],
-					stocks: 50,
+					stockPerSize: [10, 20, 30],
+					stocks: 60,
 					description:
 						"A fully customizable 426279125_391697356800276_3479209077970323932_n.",
 					status: "Available",
@@ -149,7 +156,8 @@ module.exports = {
 					],
 					price: 19.0,
 					size: ["Small", "Medium", "Large"],
-					stocks: 50,
+					stockPerSize: [10, 20, 30],
+					stocks: 60,
 					description:
 						"A fully customizable 426699633_1135294571222839_4245952450212950229_n.",
 					status: "Available",
@@ -168,7 +176,8 @@ module.exports = {
 					],
 					price: 19.0,
 					size: ["Small", "Medium", "Large"],
-					stocks: 50,
+					stockPerSize: [10, 20, 30],
+					stocks: 60,
 					description:
 						"A fully customizable 430081472_825357166097308_3915898807211735142_n.",
 					status: "Available",
@@ -187,7 +196,8 @@ module.exports = {
 					],
 					price: 19.0,
 					size: ["Small", "Medium", "Large"],
-					stocks: 50,
+					stockPerSize: [10, 20, 30],
+					stocks: 60,
 					description:
 						"A fully customizable 430087067_1844415682673086_6627937031605383387_n.",
 					status: "Available",
@@ -206,7 +216,8 @@ module.exports = {
 					],
 					price: 19.0,
 					size: ["Small", "Medium", "Large"],
-					stocks: 50,
+					stockPerSize: [10, 20, 30],
+					stocks: 60,
 					description:
 						"A fully customizable 430091849_1371240460233219_6892461974523420249_n.",
 					status: "Available",
@@ -225,7 +236,8 @@ module.exports = {
 					],
 					price: 19.0,
 					size: ["Small", "Medium", "Large"],
-					stocks: 50,
+					stockPerSize: [10, 20, 30],
+					stocks: 60,
 					description:
 						"A fully customizable 430096797_937831817870043_1923018281651465044_n.",
 					status: "Available",
@@ -244,7 +256,8 @@ module.exports = {
 					],
 					price: 19.0,
 					size: ["Small", "Medium", "Large"],
-					stocks: 50,
+					stockPerSize: [10, 20, 30],
+					stocks: 60,
 					description:
 						"A fully customizable 430133514_943617093870722_3347687039440780209_n.",
 					status: "Available",
@@ -263,7 +276,8 @@ module.exports = {
 					],
 					price: 19.0,
 					size: ["Small", "Medium", "Large"],
-					stocks: 50,
+					stockPerSize: [10, 20, 30],
+					stocks: 60,
 					description:
 						"A fully customizable 430138323_954432086148453_1685077785921673679_n.",
 					status: "Available",
@@ -282,7 +296,8 @@ module.exports = {
 					],
 					price: 19.0,
 					size: ["Small", "Medium", "Large"],
-					stocks: 50,
+					stockPerSize: [10, 20, 30],
+					stocks: 60,
 					description:
 						"A fully customizable 430139325_656956143224066_1106114406198547564_n (1).",
 					status: "Available",
@@ -301,7 +316,8 @@ module.exports = {
 					],
 					price: 19.0,
 					size: ["Small", "Medium", "Large"],
-					stocks: 50,
+					stockPerSize: [10, 20, 30],
+					stocks: 60,
 					description:
 						"A fully customizable 430139325_656956143224066_1106114406198547564_n.",
 					status: "Available",
@@ -320,7 +336,8 @@ module.exports = {
 					],
 					price: 19.0,
 					size: ["Small", "Medium", "Large"],
-					stocks: 50,
+					stockPerSize: [10, 20, 30],
+					stocks: 60,
 					description:
 						"A fully customizable 430150249_1823288581509741_8144498043765118561_n.",
 					status: "Available",
@@ -339,7 +356,8 @@ module.exports = {
 					],
 					price: 19.0,
 					size: ["Small", "Medium", "Large"],
-					stocks: 50,
+					stockPerSize: [10, 20, 30],
+					stocks: 60,
 					description:
 						"A fully customizable 430200392_953049196398434_1083158647808346193_n.",
 					status: "Available",
@@ -358,7 +376,8 @@ module.exports = {
 					],
 					price: 19.0,
 					size: ["Small", "Medium", "Large"],
-					stocks: 50,
+					stockPerSize: [10, 20, 30],
+					stocks: 60,
 					description:
 						"A fully customizable 430206185_454610976994921_4852713851919158604_n.",
 					status: "Available",
@@ -377,7 +396,8 @@ module.exports = {
 					],
 					price: 19.0,
 					size: ["Small", "Medium", "Large"],
-					stocks: 50,
+					stockPerSize: [10, 20, 30],
+					stocks: 60,
 					description:
 						"A fully customizable 430266083_959875685731801_1261170441761725827_n.",
 					status: "Available",
@@ -396,7 +416,8 @@ module.exports = {
 					],
 					price: 19.0,
 					size: ["Small", "Medium", "Large"],
-					stocks: 50,
+					stockPerSize: [10, 20, 30],
+					stocks: 60,
 					description:
 						"A fully customizable 430294787_1287737169281753_1019911400741895826_n.",
 					status: "Available",
@@ -415,7 +436,8 @@ module.exports = {
 					],
 					price: 19.0,
 					size: ["Small", "Medium", "Large"],
-					stocks: 50,
+					stockPerSize: [10, 20, 30],
+					stocks: 60,
 					description:
 						"A fully customizable 430306924_285834497899253_6802373465413612808_n.",
 					status: "Available",
@@ -434,7 +456,8 @@ module.exports = {
 					],
 					price: 19.0,
 					size: ["Small", "Medium", "Large"],
-					stocks: 50,
+					stockPerSize: [10, 20, 30],
+					stocks: 60,
 					description:
 						"A fully customizable 430330333_3627010094182417_215250710724457935_n.",
 					status: "Available",
@@ -453,7 +476,8 @@ module.exports = {
 					],
 					price: 19.0,
 					size: ["Small", "Medium", "Large"],
-					stocks: 50,
+					stockPerSize: [10, 20, 30],
+					stocks: 60,
 					description:
 						"A fully customizable 430342196_1122307528813936_3946353859837874528_n.",
 					status: "Available",
@@ -472,7 +496,8 @@ module.exports = {
 					],
 					price: 19.0,
 					size: ["Small", "Medium", "Large"],
-					stocks: 50,
+					stockPerSize: [10, 20, 30],
+					stocks: 60,
 					description:
 						"A fully customizable 430343706_738114095174724_1026886709402726564_n.",
 					status: "Available",
@@ -491,7 +516,8 @@ module.exports = {
 					],
 					price: 19.0,
 					size: ["Small", "Medium", "Large"],
-					stocks: 50,
+					stockPerSize: [10, 20, 30],
+					stocks: 60,
 					description:
 						"A fully customizable 430657203_935907644894987_3735408367591945942_n.",
 					status: "Available",
@@ -510,7 +536,8 @@ module.exports = {
 					],
 					price: 19.0,
 					size: ["Small", "Medium", "Large"],
-					stocks: 50,
+					stockPerSize: [10, 20, 30],
+					stocks: 60,
 					description:
 						"A fully customizable 430766755_224109914128792_7880429183956483588_n.",
 					status: "Available",
@@ -529,7 +556,8 @@ module.exports = {
 					],
 					price: 19.0,
 					size: ["Small", "Medium", "Large"],
-					stocks: 50,
+					stockPerSize: [10, 20, 30],
+					stocks: 60,
 					description:
 						"A fully customizable 430811162_342847904958366_641965036722354894_n.",
 					status: "Available",
@@ -548,7 +576,8 @@ module.exports = {
 					],
 					price: 19.0,
 					size: ["Small", "Medium", "Large"],
-					stocks: 50,
+					stockPerSize: [10, 20, 30],
+					stocks: 60,
 					description:
 						"A fully customizable 430829283_7504847246238453_5565223574553668314_n.",
 					status: "Available",
@@ -567,7 +596,8 @@ module.exports = {
 					],
 					price: 19.0,
 					size: ["Small", "Medium", "Large"],
-					stocks: 50,
+					stockPerSize: [10, 20, 30],
+					stocks: 60,
 					description:
 						"A fully customizable 430835279_3811405805759554_6235324689027293758_n.",
 					status: "Available",
@@ -586,7 +616,8 @@ module.exports = {
 					],
 					price: 19.0,
 					size: ["Small", "Medium", "Large"],
-					stocks: 50,
+					stockPerSize: [10, 20, 30],
+					stocks: 60,
 					description:
 						"A fully customizable 433149959_935979441268153_470985596222488352_n.",
 					status: "Available",
@@ -605,7 +636,8 @@ module.exports = {
 					],
 					price: 19.0,
 					size: ["Small", "Medium", "Large"],
-					stocks: 50,
+					stockPerSize: [10, 20, 30],
+					stocks: 60,
 					description:
 						"A fully customizable 433188802_1495542251174544_8534825636323898607_n.",
 					status: "Available",
@@ -624,7 +656,8 @@ module.exports = {
 					],
 					price: 19.0,
 					size: ["Small", "Medium", "Large"],
-					stocks: 50,
+					stockPerSize: [10, 20, 30],
+					stocks: 60,
 					description:
 						"A fully customizable 433195129_427771599735374_306756190447622895_n.",
 					status: "Available",
@@ -643,7 +676,8 @@ module.exports = {
 					],
 					price: 19.0,
 					size: ["Small", "Medium", "Large"],
-					stocks: 50,
+					stockPerSize: [10, 20, 30],
+					stocks: 60,
 					description:
 						"A fully customizable 433197991_1364801854177090_1339097580222958760_n.",
 					status: "Available",
@@ -662,7 +696,8 @@ module.exports = {
 					],
 					price: 19.0,
 					size: ["Small", "Medium", "Large"],
-					stocks: 50,
+					stockPerSize: [10, 20, 30],
+					stocks: 60,
 					description:
 						"A fully customizable 433202263_958214465821366_7869225181697572744_n.",
 					status: "Available",
@@ -681,7 +716,8 @@ module.exports = {
 					],
 					price: 19.0,
 					size: ["Small", "Medium", "Large"],
-					stocks: 50,
+					stockPerSize: [10, 20, 30],
+					stocks: 60,
 					description:
 						"A fully customizable 433219411_969155794724009_4285462848578905267_n.",
 					status: "Available",
@@ -700,7 +736,8 @@ module.exports = {
 					],
 					price: 19.0,
 					size: ["Small", "Medium", "Large"],
-					stocks: 50,
+					stockPerSize: [10, 20, 30],
+					stocks: 60,
 					description:
 						"A fully customizable 433225610_1650654188805531_4720176188300205708_n.",
 					status: "Available",
@@ -719,7 +756,8 @@ module.exports = {
 					],
 					price: 19.0,
 					size: ["Small", "Medium", "Large"],
-					stocks: 50,
+					stockPerSize: [10, 20, 30],
+					stocks: 60,
 					description:
 						"A fully customizable 433276449_940001641109022_5438012347906481366_n.",
 					status: "Available",
@@ -738,7 +776,8 @@ module.exports = {
 					],
 					price: 19.0,
 					size: ["Small", "Medium", "Large"],
-					stocks: 50,
+					stockPerSize: [10, 20, 30],
+					stocks: 60,
 					description:
 						"A fully customizable 433409940_423859656904573_7633968140289884564_n.",
 					status: "Available",
@@ -757,7 +796,8 @@ module.exports = {
 					],
 					price: 19.0,
 					size: ["Small", "Medium", "Large"],
-					stocks: 50,
+					stockPerSize: [10, 20, 30],
+					stocks: 60,
 					description:
 						"A fully customizable 438101963_826402856208496_3894712906495001588_n.",
 					status: "Available",
@@ -776,7 +816,8 @@ module.exports = {
 					],
 					price: 19.0,
 					size: ["Small", "Medium", "Large"],
-					stocks: 50,
+					stockPerSize: [10, 20, 30],
+					stocks: 60,
 					description:
 						"A fully customizable 438158377_1558926064669773_2308604994675010321_n.",
 					status: "Available",
@@ -795,7 +836,8 @@ module.exports = {
 					],
 					price: 19.0,
 					size: ["Small", "Medium", "Large"],
-					stocks: 50,
+					stockPerSize: [10, 20, 30],
+					stocks: 60,
 					description:
 						"A fully customizable 438171569_382257228179653_8868661180758104205_n.",
 					status: "Available",
@@ -814,7 +856,8 @@ module.exports = {
 					],
 					price: 19.0,
 					size: ["Small", "Medium", "Large"],
-					stocks: 50,
+					stockPerSize: [10, 20, 30],
+					stocks: 60,
 					description:
 						"A fully customizable 438171632_372327399147368_5065230906619746721_n.",
 					status: "Available",
@@ -833,7 +876,8 @@ module.exports = {
 					],
 					price: 19.0,
 					size: ["Small", "Medium", "Large"],
-					stocks: 50,
+					stockPerSize: [10, 20, 30],
+					stocks: 60,
 					description:
 						"A fully customizable 438171638_992711735779388_8572720465642248335_n.",
 					status: "Available",
@@ -852,7 +896,8 @@ module.exports = {
 					],
 					price: 19.0,
 					size: ["Small", "Medium", "Large"],
-					stocks: 50,
+					stockPerSize: [10, 20, 30],
+					stocks: 60,
 					description:
 						"A fully customizable 438171751_7858620704200118_3493696996434989640_n.",
 					status: "Available",
@@ -871,7 +916,8 @@ module.exports = {
 					],
 					price: 19.0,
 					size: ["Small", "Medium", "Large"],
-					stocks: 50,
+					stockPerSize: [10, 20, 30],
+					stocks: 60,
 					description:
 						"A fully customizable 441375279_772039658048378_6195168571137105739_n.",
 					status: "Available",
@@ -890,7 +936,8 @@ module.exports = {
 					],
 					price: 19.0,
 					size: ["Small", "Medium", "Large"],
-					stocks: 50,
+					stockPerSize: [10, 20, 30],
+					stocks: 60,
 					description:
 						"A fully customizable 441379235_467592295947014_109410954682986662_n.",
 					status: "Available",
@@ -909,7 +956,8 @@ module.exports = {
 					],
 					price: 19.0,
 					size: ["Small", "Medium", "Large"],
-					stocks: 50,
+					stockPerSize: [10, 20, 30],
+					stocks: 60,
 					description:
 						"A fully customizable 441383846_1518115645794767_867262762237666920_n.",
 					status: "Available",
@@ -928,7 +976,8 @@ module.exports = {
 					],
 					price: 19.0,
 					size: ["Small", "Medium", "Large"],
-					stocks: 50,
+					stockPerSize: [10, 20, 30],
+					stocks: 60,
 					description:
 						"A fully customizable 441390757_1615005855710577_6304469971464303086_n.",
 					status: "Available",
@@ -947,7 +996,8 @@ module.exports = {
 					],
 					price: 19.0,
 					size: ["Small", "Medium", "Large"],
-					stocks: 50,
+					stockPerSize: [10, 20, 30],
+					stocks: 60,
 					description:
 						"A fully customizable 441423027_1403352900354793_4965639607602530903_n.",
 					status: "Available",
@@ -966,7 +1016,8 @@ module.exports = {
 					],
 					price: 19.0,
 					size: ["Small", "Medium", "Large"],
-					stocks: 50,
+					stockPerSize: [10, 20, 30],
+					stocks: 60,
 					description:
 						"A fully customizable 441423028_1627125448044753_8035019861416182758_n.",
 					status: "Available",
@@ -985,7 +1036,8 @@ module.exports = {
 					],
 					price: 19.0,
 					size: ["Small", "Medium", "Large"],
-					stocks: 50,
+					stockPerSize: [10, 20, 30],
+					stocks: 60,
 					description:
 						"A fully customizable 441430115_7597975536951606_6163009546915948355_n.",
 					status: "Available",
@@ -1004,7 +1056,8 @@ module.exports = {
 					],
 					price: 19.0,
 					size: ["Small", "Medium", "Large"],
-					stocks: 50,
+					stockPerSize: [10, 20, 30],
+					stocks: 60,
 					description:
 						"A fully customizable 441467631_324406660535178_4747881335898840131_n.",
 					status: "Available",
@@ -1023,7 +1076,8 @@ module.exports = {
 					],
 					price: 19.0,
 					size: ["Small", "Medium", "Large"],
-					stocks: 50,
+					stockPerSize: [10, 20, 30],
+					stocks: 60,
 					description:
 						"A fully customizable 441546583_982561669762993_8067527178258567990_n.",
 					status: "Available",
@@ -1042,7 +1096,8 @@ module.exports = {
 					],
 					price: 19.0,
 					size: ["Small", "Medium", "Large"],
-					stocks: 50,
+					stockPerSize: [10, 20, 30],
+					stocks: 60,
 					description:
 						"A fully customizable 441582724_822182933162691_5454771523749550192_n.",
 					status: "Available",
@@ -1061,7 +1116,8 @@ module.exports = {
 					],
 					price: 19.0,
 					size: ["Small", "Medium", "Large"],
-					stocks: 50,
+					stockPerSize: [10, 20, 30],
+					stocks: 60,
 					description:
 						"A fully customizable 441748747_8110866205624229_695774222862226678_n.",
 					status: "Available",
@@ -1080,7 +1136,8 @@ module.exports = {
 					],
 					price: 19.0,
 					size: ["Small", "Medium", "Large"],
-					stocks: 50,
+					stockPerSize: [10, 20, 30],
+					stocks: 60,
 					description:
 						"A fully customizable 441783810_3839241499628208_478878719764275429_n.",
 					status: "Available",
@@ -1099,7 +1156,8 @@ module.exports = {
 					],
 					price: 19.0,
 					size: ["Small", "Medium", "Large"],
-					stocks: 50,
+					stockPerSize: [10, 20, 30],
+					stocks: 60,
 					description:
 						"A fully customizable 441894392_7486795988083304_7362743603715517805_n.",
 					status: "Available",
@@ -1118,7 +1176,8 @@ module.exports = {
 					],
 					price: 19.0,
 					size: ["Small", "Medium", "Large"],
-					stocks: 50,
+					stockPerSize: [10, 20, 30],
+					stocks: 60,
 					description:
 						"A fully customizable 441894964_819674300044436_6298224530790927437_n.",
 					status: "Available",
@@ -1137,7 +1196,8 @@ module.exports = {
 					],
 					price: 19.0,
 					size: ["Small", "Medium", "Large"],
-					stocks: 50,
+					stockPerSize: [10, 20, 30],
+					stocks: 60,
 					description:
 						"A fully customizable 441927227_2106994549672040_1265760635970585714_n.",
 					status: "Available",
@@ -1156,7 +1216,8 @@ module.exports = {
 					],
 					price: 19.0,
 					size: ["Small", "Medium", "Large"],
-					stocks: 50,
+					stockPerSize: [10, 20, 30],
+					stocks: 60,
 					description:
 						"A fully customizable 441948858_1465982940677240_6327920829873608983_n.",
 					status: "Available",

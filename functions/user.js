@@ -44,6 +44,9 @@ router.post("/register", async (req, res) => {
 		}
 
 		const hashedPassword = await bcrypt.hash(password, 10);
+		const verificationToken = Math.floor(
+			100000 + Math.random() * 900000
+		).toString();
 		const newUser = await User.create({
 			firstName,
 			lastName,
@@ -53,18 +56,64 @@ router.post("/register", async (req, res) => {
 			address,
 			contactNumber,
 			password: hashedPassword,
+			verificationCode: verificationToken,
+			isVerified: false,
 		});
+
+		const verificationLink = `https://721ordering.netlify.app/.netlify/functions/api/user/verify?token=${verificationToken}`;
+		await sendEmail(
+			email,
+			"Please verify your email",
+			`Please click the link to verify your account: <a href="${verificationLink}">${verificationLink}</a>`,
+			`<p>Please click the link to verify your account: <a href="${verificationLink}">${verificationLink}</a></p>`
+		);
 
 		return res.send({
 			success: true,
-			message: "User created successfully",
-			userId: newUser,
+			message:
+				"User created successfully. Please verify your account through email.",
+			userId: newUser.id,
 		});
 	} catch (error) {
 		console.error(error);
 		return res.send({
 			success: false,
 			message: "Error creating user",
+			error,
+		});
+	}
+});
+
+router.get("/verify", async (req, res) => {
+	const { token } = req.query;
+
+	if (!token) {
+		return res.send({
+			success: false,
+			message: "Verification token is required.",
+		});
+	}
+
+	try {
+		const user = await User.findOne({
+			where: {
+				verificationCode: token,
+			},
+		});
+
+		if (!user) {
+			return res.send({
+				success: false,
+				message: "Invalid or expired verification token.",
+			});
+		}
+
+		await user.update({ isVerified: true });
+		return res.redirect(`https://721ordering.netlify.app/login`);
+	} catch (error) {
+		return res.send({
+			success: false,
+			message: "Error during verification",
 			error,
 		});
 	}
@@ -194,7 +243,6 @@ router.post("/send-verification", async (req, res) => {
 	}
 });
 
-
 router.post("/send-forgot-code", async (req, res) => {
 	try {
 		const { email } = req.body;
@@ -251,7 +299,8 @@ router.post("/send-forgot-code", async (req, res) => {
 
 router.post("/reset-password", async (req, res) => {
 	try {
-		const { email, verificationCode, newPassword, confirmPassword } = req.body;
+		const { email, verificationCode, newPassword, confirmPassword } =
+			req.body;
 
 		if (newPassword !== confirmPassword) {
 			return res.send({
@@ -269,7 +318,7 @@ router.post("/reset-password", async (req, res) => {
 					"Password must be at least 8 characters long, contain at least one uppercase letter, one lowercase letter, one number, and one special character.",
 			});
 		}
-	
+
 		const user = await User.findOne({
 			where: {
 				[Op.or]: [{ email }],
@@ -412,7 +461,6 @@ router.post("/get-all-notification", async (req, res) => {
 	}
 });
 
-
 router.post("/edit-account", async (req, res) => {
 	try {
 		const {
@@ -469,7 +517,10 @@ router.post("/edit-password", async (req, res) => {
 			});
 		}
 
-		const isPasswordValid = await bcrypt.compare(oldPass, existingUser.password);
+		const isPasswordValid = await bcrypt.compare(
+			oldPass,
+			existingUser.password
+		);
 		if (!isPasswordValid) {
 			return res.send({
 				success: false,

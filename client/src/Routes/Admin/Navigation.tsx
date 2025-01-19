@@ -102,12 +102,12 @@ function Navigation({ setUser, user }) {
 									>
 										Register
 									</Link>
-									<Link
+									{/* <Link
 										to="/verify"
 										className="block px-4 py-2 hover:bg-gray-200"
 									>
 										Verify
-									</Link>
+									</Link> */}
 									<Link
 										to="/forgot-password"
 										className="block px-4 py-2 hover:bg-gray-200"

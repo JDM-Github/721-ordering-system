@@ -20,6 +20,7 @@ interface Product {
 	price: [number];
 	status: string;
 	stocks: number;
+	stockPerSize: [number];
 	size: [string];
 	description: string;
 	availableColors: [string];
@@ -101,6 +102,22 @@ const CustomizationPage: React.FC = () => {
 	const [labelComponents, setLabelComponents] = useState<LabelComp[]>([]);
 	const [backgroundColor, setBackgroundColor] = useState("#eee");
 	const [index, setIndex] = useState(0);
+	const [quantities, setQuantities] = useState({});
+	const handleQuantityChange = (size, value) => {
+		if (product == null) {
+			return;
+		}
+		const maxStock = product.stockPerSize[product.size.indexOf(size)];
+
+		if (value >= 0 && value <= maxStock) {
+			setQuantities((prev) => ({
+				...prev,
+				[size]: value,
+			}));
+		} else {
+			toast.error(`Maximum stock for ${size} is ${maxStock}.`);
+		}
+	};
 
 	const updateImagePattern = (uniqueId, updatedProperties) => {
 		setImagePattern((prev) =>
@@ -342,6 +359,14 @@ const CustomizationPage: React.FC = () => {
 			return;
 		}
 
+		const isValid = Object.values(quantities).some(
+			(quantity: any) => quantity > 0
+		);
+		if (!isValid) {
+			toast.error("Please select atleast one quantity for any size.");
+			return;
+		}
+
 		const id = product?.id;
 		const toastId = toast.loading("Adding customize product to cart...", {
 			position: "top-left",
@@ -369,6 +394,7 @@ const CustomizationPage: React.FC = () => {
 					productId: id,
 					customization,
 					quantity,
+					quantities,
 				}
 			);
 
@@ -423,6 +449,13 @@ const CustomizationPage: React.FC = () => {
 			} else {
 				setProduct(data.product);
 				setSelectedSize(data.product.size[0] || null);
+
+				const initialQuantities = {};
+				data.product.size.forEach((size, index) => {
+					initialQuantities[size] = data.quantityPerSize[index];
+				});
+				setQuantities(initialQuantities);
+
 				const storedData = localStorage.getItem("targetId");
 				if (storedData !== `${data.product.id}`) {
 					localStorage.removeItem(`${data.product.id}`);
@@ -662,35 +695,37 @@ const CustomizationPage: React.FC = () => {
 									imagePattern={imagePattern}
 								/>
 							</div>
-							<div
-								className="absolute w-full h-full min-h-[400px] max-h-[400px] min-w-[400px] max-w-[400px]"
-							>
-							{labelComponents.map((labelComp, index) => (
-								<LabelComponent
-									key={labelComp.uniqueId}
-									containerRef={containerRef}
-									labelComp={labelComp}
-									uniqueId={labelComp.uniqueId}
-									activeImage={activeImage}
-									setActiveImage={setActiveImage}
-									updateLabelComponent={updateLabelComponent}
-									isreloaded={isreloaded}
-									setisreloaded={setisreloaded}
-								/>
-							))}
-							{imageComponents.map((imageComp, index) => (
-								<ImageComponent
-									key={imageComp.uniqueId}
-									containerRef={containerRef}
-									imageComp={imageComp}
-									uniqueId={imageComp.uniqueId}
-									activeImage={activeImage}
-									setActiveImage={setActiveImage}
-									updateImageComponent={updateImageComponent}
-									isreloaded={isreloaded}
-									setisreloaded={setisreloaded}
-								/>
-							))}
+							<div className="absolute w-full h-full min-h-[400px] max-h-[400px] min-w-[400px] max-w-[400px]">
+								{labelComponents.map((labelComp, index) => (
+									<LabelComponent
+										key={labelComp.uniqueId}
+										containerRef={containerRef}
+										labelComp={labelComp}
+										uniqueId={labelComp.uniqueId}
+										activeImage={activeImage}
+										setActiveImage={setActiveImage}
+										updateLabelComponent={
+											updateLabelComponent
+										}
+										isreloaded={isreloaded}
+										setisreloaded={setisreloaded}
+									/>
+								))}
+								{imageComponents.map((imageComp, index) => (
+									<ImageComponent
+										key={imageComp.uniqueId}
+										containerRef={containerRef}
+										imageComp={imageComp}
+										uniqueId={imageComp.uniqueId}
+										activeImage={activeImage}
+										setActiveImage={setActiveImage}
+										updateImageComponent={
+											updateImageComponent
+										}
+										isreloaded={isreloaded}
+										setisreloaded={setisreloaded}
+									/>
+								))}
 							</div>
 						</div>
 					</div>
@@ -741,7 +776,7 @@ const CustomizationPage: React.FC = () => {
 									{product.productName} (
 									{product.productAllNames[index]})
 								</h1>
-								<h3 className="text-xl font-semibold text-gray-700 mb-3">
+								{/* <h3 className="text-xl font-semibold text-gray-700 mb-3">
 									Available Sizes
 								</h3>
 								<div className="flex space-x-2">
@@ -760,7 +795,7 @@ const CustomizationPage: React.FC = () => {
 											{size}
 										</button>
 									))}
-								</div>
+								</div> */}
 							</div>
 
 							<div className="flex flex-col space-y-4">
@@ -784,7 +819,35 @@ const CustomizationPage: React.FC = () => {
 								/>
 							</div>
 
-							<div className="flex flex-col space-y-2">
+							<div className="space-y-4">
+								{product?.size.map((size, index) => (
+									<div
+										key={size}
+										className="flex items-center space-x-4"
+									>
+										<p className="text-gray-700">{size}</p>
+										<input
+											type="number"
+											value={quantities[size] || ""}
+											min="0"
+											max={product.stockPerSize[index]}
+											onChange={(e) =>
+												handleQuantityChange(
+													size,
+													parseInt(e.target.value) ||
+														0
+												)
+											}
+											className="w-20 p-2 border border-gray-300 rounded-lg"
+										/>
+										<p className="text-sm text-gray-500">
+											Max: {product.stockPerSize[index]}
+										</p>
+									</div>
+								))}
+							</div>
+
+							{/* <div className="flex flex-col space-y-2">
 								<input
 									type="number"
 									value={quantity}
@@ -808,7 +871,7 @@ const CustomizationPage: React.FC = () => {
 								<p className="text-sm text-gray-500">
 									Max available: {product?.stocks}
 								</p>
-							</div>
+							</div> */}
 
 							<textarea
 								placeholder="Additional notes (optional)"
@@ -821,18 +884,18 @@ const CustomizationPage: React.FC = () => {
 
 						{/* Action Buttons */}
 						<div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4 mt-6 mb-3">
-							{/* <button
+							<button
 								onClick={handleDownloadDesign}
 								className="w-full sm:w-1/3 py-3 bg-red-500 text-white rounded-lg hover:bg-red-600 transition duration-200"
 							>
-								Download Design
+								Download JSON
 							</button>
 							<button
 								onClick={handleLoadDesign}
 								className="w-full sm:w-1/3 py-3 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition duration-200"
 							>
-								Load Design
-							</button> */}
+								Load JSON
+							</button>
 							<input
 								id="fileInput"
 								type="file"

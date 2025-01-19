@@ -3,7 +3,7 @@ const pg = require("pg");
 const fs = require("fs");
 const { Sequelize, DataTypes, INTEGER } = require("sequelize");
 const sequelize = new Sequelize(
-	"postgresql://blue:XkS5RPgPRwHOkC8kjDmJQw@ok-wizard-4026.jxf.gcp-asia-southeast1.cockroachlabs.cloud:26257/defaultdb?sslmode=verify-full",
+	"postgresql://jdm:gA00MXJG6XdxLl7tZvCuEA@jdm-master-15017.7tt.aws-us-east-1.cockroachlabs.cloud:26257/online721?sslmode=verify-full",
 	{
 		dialect: "postgres",
 		dialectModule: pg,
@@ -38,6 +38,10 @@ const Product = sequelize.define(
 		size: {
 			type: DataTypes.ARRAY(DataTypes.STRING),
 			defaultValue: ["S", "M", "L", "XL"],
+		},
+		stockPerSize: {
+			type: DataTypes.ARRAY(DataTypes.STRING),
+			defaultValue: [0, 0, 0, 0],
 		},
 		stocks: {
 			type: DataTypes.INTEGER,
@@ -189,6 +193,10 @@ const OrderProduct = sequelize.define(
 			type: DataTypes.INTEGER,
 			defaultValue: 1,
 		},
+		quantityPerSize: {
+			type: DataTypes.ARRAY(DataTypes.STRING),
+			defaultValue: [0, 0, 0, 0],
+		},
 		customization: {
 			type: DataTypes.JSON,
 			defaultValue: {},
@@ -277,15 +285,19 @@ const OrderSummary = sequelize.define("OrderSummary", {
 	},
 	paymentLink: {
 		type: DataTypes.STRING,
-		defaultValue: ""
+		defaultValue: "",
 	},
 	alreadyFeedback: {
 		type: DataTypes.BOOLEAN,
-		defaultValue: false
+		defaultValue: false,
 	},
 	completedAt: {
 		type: DataTypes.DATE,
 		defaultValue: null,
+	},
+	orderReceiptJson: {
+		type: DataTypes.JSON,
+		defaultValue: {}
 	}
 });
 

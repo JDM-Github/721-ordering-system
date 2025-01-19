@@ -43,14 +43,6 @@ export default function LabelComponent({
 	const [startDrag, setStartDrag] = useState({ x: 0, y: 0 });
 	const [startResize, setStartResize] = useState({ x: 0, y: 0 });
 
-	// useEffect(() => {
-	// 	if (disabled) return;
-	// 	const containerRect = containerRef.current.getBoundingClientRect();
-	// 	updateLabelComponent(labelComp.uniqueId, {
-	// 		pixelx: containerRect.left,
-	// 		pixely: containerRect.top,
-	// 	});
-	// }, []);
 
 	useEffect(() => {
 		if (disabled) return;
@@ -83,9 +75,13 @@ export default function LabelComponent({
 			};
 			window.addEventListener("mouseup", handleMouseUp);
 			window.addEventListener("mousemove", handleMouseMove);
+			window.addEventListener("touchend", handleMouseUp);
+			window.addEventListener("touchmove", handleMouseMove);
 			return () => {
 				window.removeEventListener("mousemove", handleMouseMove);
 				window.removeEventListener("mouseup", handleMouseUp);
+				window.removeEventListener("touchend", handleMouseUp);
+				window.removeEventListener("touchmove", handleMouseMove);
 			};
 		}
 	}, [isDragging]);

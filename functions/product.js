@@ -13,27 +13,25 @@ const {
 } = require("./models");
 const { Op } = require("sequelize");
 const sendEmail = require("./emailSender");
-const { chromium } = require("playwright");
 
+const puppeteer = require("puppeteer");
 const router = express.Router();
 
-// const PAYMONGO_API_KEY = "sk_test_HMD8fpUnNtVh5bTG35TQXmXC";
+
 const paypal = require("@paypal/checkout-server-sdk");
 const PAYPAL_CLIENT_ID =
 	"AX5AGNee2pN271sDzuXWPldkFw9x_97bvDEKdpXcwNgmdE26uTD64JjEi2XRpY2AWKyUn29kicp1mocQ";
 const PAYPAL_CLIENT_SECRET =
 	"EIKjEnAUbgNvX6ZswF0WurD8ocna3IAiF7TyHnL_T8B_548iOSGgomNiQxFNOX3fl8CuE9uXX_ojyNup";
-
 const environment = new paypal.core.LiveEnvironment(
 	PAYPAL_CLIENT_ID,
 	PAYPAL_CLIENT_SECRET
 );
-const client = new paypal.core.PayPalHttpClient(environment);
+
 const getOrderPaymentStatus = async (orderId) => {
 	const url = `https://api.paypal.com/v2/checkout/orders/${orderId}`;
 
 	const code = await getAccessToken();
-	console.log(code);
 
 	try {
 		const response = await fetch(url, {
@@ -59,7 +57,6 @@ const getOrderPaymentStatus = async (orderId) => {
 		return "error";
 	}
 };
-
 const getAccessToken = async () => {
 	const url = "https://api.paypal.com/v1/oauth2/token"; 
 	const credentials = Buffer.from(
@@ -92,6 +89,63 @@ const getAccessToken = async () => {
 };
 
 
+// router.post("/screenshot", async (req, res) => {
+// 	const { html } = req.body;
+
+// 	if (!html) {
+// 		return res
+// 			.status(400)
+// 			.json({ success: false, message: "HTML content is required" });
+// 	}
+
+// 	try {
+// 		const image = await nodeHtmlToImage({ html });
+// 		res.status(200).send({
+// 			success: true,
+// 			image: image.toString("base64"),
+// 		});
+// 	} catch (error) {
+// 		console.error(error);
+// 		res.status(500).json({
+// 			success: false,
+// 			message: "Failed to generate image",
+// 		});
+// 	}
+// });
+// router.post("/screenshot", async (req, res) => {
+// 	const { url, delay = 8 } = req.body;
+
+// 	if (!url) {
+// 		return res
+// 			.status(400)
+// 			.send({ success: false, message: "URL is required" });
+// 	}
+
+// 	try {
+// 		const browser = await puppeteer.launch({ headless: true });
+// 		const page = await browser.newPage();
+// 		await page.goto(url, { waitUntil: "load" });
+// 		// if (delay) await page.waitForTimeout(delay * 1000);
+// 		if (delay) {
+// 			await new Promise((resolve) => setTimeout(resolve, delay * 1000));
+// 		}
+
+// 		const screenshotBuffer = await page.screenshot({ type: "png" });
+// 		await browser.close();
+
+// 		res.json({
+// 			success: true,
+// 			screenshot: screenshotBuffer.toString("base64"),
+// 			psd: null,
+// 		});
+// 	} catch (error) {
+// 		console.error("Error capturing screenshot:", error);
+// 		res.status(500).json({
+// 			success: false,
+// 			message: "Failed to capture screenshot",
+// 		});
+// 	}
+// });
 
 
 router.post("/screenshot", async (req, res) => {
@@ -104,29 +158,22 @@ router.post("/screenshot", async (req, res) => {
 	}
 
 	try {
-		const browser = await chromium.launch();
-		const page = await browser.newPage();
-		await page.setViewportSize({ width: 1024, height: 768 });
-		await page.goto(url, { waitUntil: wait_until });
-		if (delay) {
-			await page.waitForTimeout(delay * 1000);
+		const screenshotApiUrl = `https://api.screenshotapi.com/take?url=${encodeURIComponent(
+			url
+		)}&apiKey=key_rszGrDNCK7bsuPkNXWexdA&fullPage=true&waitUntil=load&waitUntil=networkidle0&waitUntil=networkidle2&waitUntil=domcontentloaded`;
+
+		const response = await fetch(screenshotApiUrl);
+
+		const screenshotData = await response.json();
+		console.log(JSON.stringify(screenshotData));
+
+		if (!screenshotData.screenshot) {
+			throw new Error("Failed to capture screenshot."); 
 		}
-
-		const screenshotBuffer = await page.screenshot({
-			clip: {
-				x: 0,
-				y: 0,
-				width: 1024,
-				height: 768,
-			},
-		});
-
-		await browser.close();
 
 		res.json({
 			success: true,
-			screenshot: screenshotBuffer.toString("base64"),
-			psd: null,
+			screenshot: screenshotData.screenshot,
 		});
 	} catch (err) {
 		console.error("Error capturing screenshot:", err);
@@ -138,44 +185,33 @@ router.post("/screenshot", async (req, res) => {
 });
 
 
-// const getOrderPaymentStatus = async (referenceNumber) => {
-// 	const url = `https://api.paymongo.com/v1/checkout_sessions/${referenceNumber}`;
-
-// 	try {
-// 		const response = await fetch(url, {
-// 			method: "GET",
-// 			headers: {
-// 				Authorization: `Basic ${Buffer.from(PAYMONGO_API_KEY).toString(
-// 					"base64"
-// 				)}`,
-// 				"Content-Type": "application/json",
-// 			},
-// 		});
-
-// 		if (!response.ok) {
-// 			throw new Error(`Error: ${response.statusText}`);
-// 		}
-// 		const data = await response.json();
-// 		return data.data.attributes.paid_at;
-// 	} catch (err) {
-// 		console.error("Error fetching payment status:", err);
-// 		return "error";
-// 	}
-// };
 
 router.post("/add-to-cart", async (req, res) => {
 	try {
-		const { userId, productId, customization, quantity } = req.body;
+		const { userId, productId, customization, quantity, quantities } =
+			req.body;
+
+		const totalQuantity = Object.values(quantities).reduce(
+			(sum, quantity) => sum + quantity,
+			0
+		);
 		const newOrder = await OrderProduct.create({
 			userId,
 			productId,
 			customization,
-			quantity,
+			quantity: totalQuantity,
+			quantityPerSize: Object.values(quantities),
 		});
 
 		let product = await Product.findByPk(productId);
+		const updatedStockPerSize = product.stockPerSize.map((stock, index) => {
+			const size = product.size[index];
+			const quantityToDeduct = quantities[size] || 0;
+			return stock - quantityToDeduct;
+		});
+
 		await product.update({
-			stocks: parseInt(product.stocks - parseInt(quantity)),
+			stockPerSize: updatedStockPerSize,
 		});
 		let cart = await CartSummary.findOne({
 			where: { userId: userId },
@@ -620,12 +656,13 @@ router.post("/add-product", async (req, res) => {
 			price,
 			size,
 			stocks,
+			stockPerSize,
 			description,
 			isCustomizable,
 		} = req.body;
 
-		if (!productName || !price || !stocks) {
-			return res.status(400).json({
+		if (!productName || !price) {
+			return res.send({
 				success: false,
 				message: "Product name, price, and stock are required fields.",
 			});
@@ -642,9 +679,10 @@ router.post("/add-product", async (req, res) => {
 					productAllNames,
 					price,
 					size,
-					stocks,
+					stocks: stockPerSize.reduce((a, b) => parseInt(a) + parseInt(b), 0),
 					description,
 					isCustomizable,
+					stockPerSize,
 				});
 				return res.status(200).json({
 					success: true,
@@ -659,10 +697,11 @@ router.post("/add-product", async (req, res) => {
 			productImages,
 			productAllNames,
 			price,
-			stocks,
+			stocks: stockPerSize.reduce((a, b) => a + b, 0),
 			size,
 			description,
 			isCustomizable,
+			stockPerSize,
 		});
 		console.log(newProduct);
 
@@ -745,8 +784,13 @@ router.get("/get-all-product", async (req, res) => {
 		if (isCustomizable !== undefined) {
 			whereClause["isCustomizable"] = isCustomizable;
 		}
-		const products = await Product.findAll({ where: whereClause });
-		const materials = await Materials.findAll();
+		const products = await Product.findAll({
+			where: whereClause,
+			order: [["createdAt", "DESC"]],
+		});
+		const materials = await Materials.findAll({
+			order: [["createdAt", "DESC"]],
+		});
 		res.status(200).json({ success: true, products, materials });
 	} catch (error) {
 		console.error(error);
@@ -901,9 +945,9 @@ router.post("/get-all-order", async (req, res) => {
 		const ordersWithProducts = [];
 
 		for (const orderSummary of orderSummaries) {
-			const orderStatus = await getOrderPaymentStatus(
-				orderSummary.orderId
-			);
+			// const orderStatus = await getOrderPaymentStatus(
+			// 	orderSummary.orderId
+			// );
 			if (orderSummary.isDownpayment) {
 				if (orderSummary.isDownPaymentExpired) {
 				} else if (orderSummary.isDownpaymentPaid) {
@@ -928,17 +972,17 @@ router.post("/get-all-order", async (req, res) => {
 									message: `Your order with reference number ${orderSummary.referenceNumber} has expired.`,
 								});
 							} else {
-								const orderStatus = await getOrderPaymentStatus(
-									orderSummary.orderId
-								);
-								if (orderStatus === "APPROVED") {
-									await orderSummary.update({ isPaid: true });
-									await Notification.create({
-										userId: orderSummary.userId,
-										title: "Order Paid",
-										message: `Your order with reference number ${orderSummary.referenceNumber} has been successfully paid.`,
-									});
-								}
+								// const orderStatus = await getOrderPaymentStatus(
+								// 	orderSummary.orderId
+								// );
+								// if (orderStatus === "APPROVED") {
+								// 	await orderSummary.update({ isPaid: true });
+								// 	await Notification.create({
+								// 		userId: orderSummary.userId,
+								// 		title: "Order Paid",
+								// 		message: `Your order with reference number ${orderSummary.referenceNumber} has been successfully paid.`,
+								// 	});
+								// }
 							}
 						}
 					}
@@ -957,19 +1001,19 @@ router.post("/get-all-order", async (req, res) => {
 							message: `Your downpayment for reference number ${orderSummary.referenceNumber} has expired.`,
 						});
 					} else {
-						const orderStatus = await getOrderPaymentStatus(
-							orderSummary.downPaymentOrderId
-						);
-						if (orderStatus === "APPROVED") {
-							await orderSummary.update({
-								isDownpaymentPaid: true,
-							});
-							await Notification.create({
-								userId: orderSummary.userId,
-								title: "Downpayment Paid",
-								message: `Your downpayment for reference number ${orderSummary.referenceNumber} has been successfully paid.`,
-							});
-						}
+						// const orderStatus = await getOrderPaymentStatus(
+						// 	orderSummary.downPaymentOrderId
+						// );
+						// if (orderStatus === "APPROVED") {
+						// 	await orderSummary.update({
+						// 		isDownpaymentPaid: true,
+						// 	});
+						// 	await Notification.create({
+						// 		userId: orderSummary.userId,
+						// 		title: "Downpayment Paid",
+						// 		message: `Your downpayment for reference number ${orderSummary.referenceNumber} has been successfully paid.`,
+						// 	});
+						// }
 					}
 				}
 			} else {
@@ -988,18 +1032,18 @@ router.post("/get-all-order", async (req, res) => {
 							message: `Your order with reference number ${orderSummary.referenceNumber} has expired.`,
 						});
 					} else {
-						const orderStatus = await getOrderPaymentStatus(
-							orderSummary.orderId
-						);
-						// console.log(orderStatus);
-						if (orderStatus === "APPROVED") {
-							await orderSummary.update({ isPaid: true });
-							await Notification.create({
-								userId: orderSummary.userId,
-								title: "Order Paid",
-								message: `Your order with reference number ${orderSummary.referenceNumber} has been successfully paid.`,
-							});
-						}
+						// const orderStatus = await getOrderPaymentStatus(
+						// 	orderSummary.orderId
+						// );
+						// // console.log(orderStatus);
+						// if (orderStatus === "APPROVED") {
+						// 	await orderSummary.update({ isPaid: true });
+						// 	await Notification.create({
+						// 		userId: orderSummary.userId,
+						// 		title: "Order Paid",
+						// 		message: `Your order with reference number ${orderSummary.referenceNumber} has been successfully paid.`,
+						// 	});
+						// }
 					}
 				}
 			}
@@ -1047,6 +1091,7 @@ router.post("/get-all-order", async (req, res) => {
 					orderId: orderSummary.orderId,
 					referenceNumber: orderSummary.referenceNumber,
 					createdAt: orderSummary.createdAt,
+					orderReceiptJson: orderSummary.orderReceiptJson,
 
 					downPaymentStatus: !orderSummary.isDownpayment
 						? "------"
@@ -1084,6 +1129,8 @@ router.post("/get-all-order", async (req, res) => {
 						: orderSummary.isFailed
 						? "FAILED"
 						: "PENDING",
+					orderReceiptJson: orderSummary.orderReceiptJson,
+
 					referenceNumber: orderSummary.referenceNumber,
 					createdAt: orderSummary.createdAt,
 					status: orderSummary.status,

@@ -40,6 +40,23 @@ export default function ViewDesign() {
 	const [index, setIndex] = useState(0);
 	const [customization, setCustomization] = useState<any>({});
 
+	const [quantities, setQuantities] = useState({});
+	const handleQuantityChange = (size, value) => {
+		if (product == null) {
+			return;
+		}
+		const maxStock = product.stockPerSize[product.size.indexOf(size)];
+
+		if (value >= 0 && value <= maxStock) {
+			setQuantities((prev) => ({
+				...prev,
+				[size]: value,
+			}));
+		} else {
+			alert(`Maximum stock for ${size} is ${maxStock}.`);
+		}
+	};
+
 	const updateImageComponent = (uniqueId, updatedProperties) => {
 		setImageComponents((prevComponents) =>
 			prevComponents.map((comp) =>
@@ -145,7 +162,7 @@ export default function ViewDesign() {
 
 					setCustomization({
 						customization: { ...customOrder.customization },
-						Product: { ...customOrder.Product }
+						Product: { ...customOrder.Product },
 					});
 
 					setProduct(customOrder.Product);
@@ -154,6 +171,13 @@ export default function ViewDesign() {
 					);
 					setCustomNumber(customOrder.customization.customNumber);
 					setCustomName(customOrder.customization.customName);
+
+					const initialQuantities = {};
+					customOrder.Product.size.forEach((size, index) => {
+						initialQuantities[size] =
+							customOrder.quantityPerSize[index];
+					});
+					setQuantities(initialQuantities);
 
 					for (const key in localStorage) {
 						if (key.startsWith("customization-")) {
@@ -192,6 +216,12 @@ export default function ViewDesign() {
 				customization: { ...order.product.customization },
 				Product: { ...order.product },
 			});
+
+			const initialQuantities = {};
+			order.product.size.forEach((size, index) => {
+				initialQuantities[size] = order.quantityPerSize[index];
+			});
+			setQuantities(initialQuantities);
 
 			setProduct(order.product);
 			setSelectedSize(order.product.customization.selectedSize || null);
@@ -245,12 +275,12 @@ export default function ViewDesign() {
 			});
 
 			try {
-				const currentDomain = window.location.origin; 
+				const currentDomain = window.location.origin;
 				const data = await RequestHandler.handleRequest(
 					"post",
 					"product/screenshot",
 					{
-						url: `${currentDomain}/view-design?id=${productId}`,
+						url: `https://721ordering.netlify.app/view-design?id=1037379655096893441`,
 						hiddenData: customization,
 					}
 				);
@@ -312,6 +342,34 @@ export default function ViewDesign() {
 			}
 		}
 	};
+	async function captureScreen() {
+		// try {
+		// 	const stream = await navigator.mediaDevices.getDisplayMedia({
+		// 		video: {
+		// 			width: { ideal: 1920 },
+		// 			height: { ideal: 1080 },
+		// 			frameRate: { ideal: 30 },
+		// 		},
+		// 	});
+		// 	const video = document.createElement("video");
+		// 	video.srcObject = stream;
+		// 	await video.play();
+		// 	await new Promise((resolve) => setTimeout(resolve, 1000));
+		// 	const canvas = document.createElement("canvas");
+		// 	canvas.width = video.videoWidth;
+		// 	canvas.height = video.videoHeight;
+		// 	const ctx = canvas.getContext("2d");
+		// 	ctx!.drawImage(video, 0, 0, canvas.width, canvas.height);
+		// 	stream.getTracks().forEach((track) => track.stop());
+		// 	const imgData = canvas.toDataURL("image/png");
+		// 	const link = document.createElement("a");
+		// 	link.href = imgData;
+		// 	link.download = "screenshot.png";
+		// 	link.click();
+		// } catch (error) {
+		// 	console.error("Error capturing screen:", error);
+		// }
+	}
 
 	return (
 		<div className="bg-gray-50 flex justify-center items-center py-8 px-4">
@@ -409,14 +467,16 @@ export default function ViewDesign() {
 							</div>
 
 							<div className="mb-8">
-								<h1 className="text-3xl font-semibold text-gray-700 mb-3"></h1>
-								<h3 className="text-xl font-semibold text-gray-700 mb-3">
+								<h1 className="text-3xl font-semibold text-gray-700 mb-3">
+									{product.productName} (
+									{product.productAllNames[index]})
+								</h1>
+								{/* <h3 className="text-xl font-semibold text-gray-700 mb-3">
 									Available Sizes
 								</h3>
 								<div className="flex space-x-2">
 									{product?.size.map((size) => (
 										<button
-											disabled={true}
 											key={size}
 											onClick={() =>
 												handleSizeChange(size)
@@ -430,7 +490,7 @@ export default function ViewDesign() {
 											{size}
 										</button>
 									))}
-								</div>
+								</div> */}
 							</div>
 
 							<div className="flex flex-col space-y-4">
@@ -456,7 +516,7 @@ export default function ViewDesign() {
 								/>
 							</div>
 
-							<div className="flex flex-col space-y-2">
+							{/* <div className="flex flex-col space-y-2">
 								<input
 									disabled={true}
 									type="number"
@@ -481,6 +541,38 @@ export default function ViewDesign() {
 								<p className="text-sm text-gray-500">
 									Max available: {product?.stocks}
 								</p>
+							</div> */}
+
+							<h3 className="text-xl font-semibold text-gray-700 mb-3">
+								Select Quantities Per Size
+							</h3>
+							<div className="space-y-4">
+								{product?.size.map((size, index) => (
+									<div
+										key={size}
+										className="flex items-center space-x-4"
+									>
+										<p className="text-gray-700">{size}</p>
+										<input
+											type="number"
+											value={quantities[size] || ""}
+											min="0"
+											max={product.stockPerSize[index]}
+											onChange={(e) =>
+												handleQuantityChange(
+													size,
+													parseInt(e.target.value) ||
+														0
+												)
+											}
+											disabled
+											className="w-20 p-2 border border-gray-300 rounded-lg"
+										/>
+										<p className="text-sm text-gray-500">
+											Max: {product.stockPerSize[index]}
+										</p>
+									</div>
+								))}
 							</div>
 
 							<textarea
@@ -511,26 +603,28 @@ export default function ViewDesign() {
 									/>
 								</svg>
 							</button> */}
-							{/* <button
-								className="w-16 h-16 bg-red-500 rounded-full shadow hover:bg-red-600"
-								onClick={handleDownloadPng}
-							>
-								<img
-									src="https://static.vecteezy.com/system/resources/thumbnails/014/440/983/small_2x/image-icon-design-in-blue-circle-png.png"
-									alt="Save Icon"
-									className="w-16 h-16"
-								/>
-							</button> */}
+							{productId && (
+								<button
+									className="w-16 h-16 bg-red-500 rounded-full shadow hover:bg-red-600"
+									onClick={handleDownloadPng}
+								>
+									<img
+										src="https://static.vecteezy.com/system/resources/thumbnails/014/440/983/small_2x/image-icon-design-in-blue-circle-png.png"
+										alt="Save Icon"
+										className="w-16 h-16"
+									/>
+								</button>
+							)}
 						</div>
 
 						{/* Action Buttons */}
 						<div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4 mt-6 mb-3">
-							{/* <button
+							<button
 								onClick={handleDownloadDesign}
 								className="w-full sm:w-1/3 py-3 bg-red-500 text-white rounded-lg hover:bg-red-600 transition duration-200"
 							>
-								Download Design
-							</button> */}
+								Download JSON
+							</button>
 							<button
 								onClick={() => window.history.back()}
 								className="text-center w-full sm:w-1/3 py-3 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition duration-200"

@@ -49,9 +49,13 @@ const ImageComponent = ({
 			};
 			window.addEventListener("mouseup", handleMouseUp);
 			window.addEventListener("mousemove", handleMouseMove);
+			window.addEventListener("touchend", handleMouseUp);
+			window.addEventListener("touchmove", handleMouseMove);
 			return () => {
 				window.removeEventListener("mousemove", handleMouseMove);
 				window.removeEventListener("mouseup", handleMouseUp);
+				window.removeEventListener("touchend", handleMouseUp);
+				window.removeEventListener("touchmove", handleMouseMove);
 			};
 		}
 	}, [isDragging]);

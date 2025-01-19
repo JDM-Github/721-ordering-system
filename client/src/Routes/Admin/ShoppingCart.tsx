@@ -245,22 +245,26 @@ const ShoppingCart: React.FC = () => {
 											value={
 												item.customization.selectedSize
 											}
-											onChange={(e) =>
-												updateSize(
-													item.id,
-													e.target.value
-												)
-											}
-											className="w-full sm:w-24 p-2 border border-gray-300 rounded-md"
+											className="min-w-[200px] w-full sm:w-24 p-2 border border-gray-300 rounded-md"
 										>
-											{item.Product.size.map((value) => (
-												<option
-													value={value}
-													key={value}
-												>
-													{value}
-												</option>
-											))}
+											{item.Product.size.map(
+												(value, index) => (
+													<option
+														value={value}
+														key={value}
+													>
+														{value} -{" "}
+														{item.quantityPerSize[
+															index
+														] > 0
+															? item
+																	.quantityPerSize[
+																	index
+															  ]
+															: "No quantity"}
+													</option>
+												)
+											)}
 										</select>
 									</div>
 								</div>
@@ -288,12 +292,6 @@ const ShoppingCart: React.FC = () => {
 										type="number"
 										value={item.quantity}
 										min="1"
-										onChange={(e) =>
-											updateQuantity(
-												item.id,
-												parseInt(e.target.value)
-											)
-										}
 										className="w-16 p-2 border border-gray-300 rounded-md"
 									/>
 									{/* <button className="bg-orange-500 text-white px-4 py-2 rounded-md hover:bg-orange-600">

@@ -14,6 +14,11 @@ import {
 	ListItemText,
 	MenuItem,
 	Select,
+	Typography,
+	Table,
+	TableBody,
+	TableCell,
+	TableRow,
 } from "@mui/material";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 import { toast } from "react-toastify";
@@ -30,6 +35,8 @@ const OrderHistory = () => {
 	}, []);
 	const [orders, setOrders] = useState([]);
 	const [openModal, setOpenModal] = useState(false);
+	const [openRecieptModal, setOpenRecieptModal] = useState(false);
+	const [receipt, setReceipt] = useState<any>(null);
 	const [selectedOrder, setSelectedOrder] = useState<any>(null);
 
 	const handleViewOrder = (order) => {
@@ -37,10 +44,20 @@ const OrderHistory = () => {
 		setOpenModal(true);
 	};
 
+	const handleViewReciept = (receiptJson) => {
+		setReceipt(receiptJson);
+		setOpenRecieptModal(true);
+	};
+	const handleCloseReceiptModal = () => {
+		setOpenRecieptModal(false);
+		setReceipt(null);
+	};
+
 	const handleCloseModal = () => {
 		setOpenModal(false);
 		setSelectedOrder(null);
 	};
+	
 
 	const handleViewProduct = (order) => {
 		navigate(`/view-design?id=${order.product.orderProductId}`);
@@ -72,8 +89,8 @@ const OrderHistory = () => {
 
 	const allStatuses = [
 		"Pending",
-		"Sewing",
 		"Printing",
+		"Sewing",
 		"Packing",
 		"Ready to pickup",
 		"Completed",
@@ -96,8 +113,14 @@ const OrderHistory = () => {
 					onChange={handleStatusChange}
 					style={{ width: "100px" }}
 				>
-					{allStatuses.map((statusOption) => (
-						<MenuItem key={statusOption} value={statusOption}>
+					{allStatuses.map((statusOption, index) => (
+						<MenuItem
+							key={statusOption}
+							value={statusOption}
+							disabled={
+								allStatuses.indexOf(selectedStatus) + 1 < index
+							}
+						>
 							{statusOption}
 						</MenuItem>
 					))}
@@ -105,6 +128,7 @@ const OrderHistory = () => {
 			</FormControl>
 		);
 	};
+
 
 	const loadRequest = async () => {
 		try {
@@ -123,6 +147,7 @@ const OrderHistory = () => {
 					status: order.status,
 					isCompleted: order.isCompleted,
 					orderStatus: order.orderStatus,
+					orderReceiptJson: order.orderReceiptJson,
 					// user: order.user,
 					email: order.user.email,
 					fullname: order.user.firstName + " " + order.user.lastName,
@@ -197,6 +222,17 @@ const OrderHistory = () => {
 						>
 							View Order
 						</Button>
+						<Button
+							variant="contained"
+							color="primary"
+							onClick={() => handleViewReciept(params.row.orderReceiptJson)}
+							style={{
+								backgroundColor: "#FF7300FF",
+								marginRight: "10px",
+							}}
+						>
+							View Receipt
+						</Button>
 						{!params.row.isCompleted && (
 							<StatusColumn
 								status={params.row.status}
@@ -219,7 +255,7 @@ const OrderHistory = () => {
 					</div>
 				);
 			},
-			width: 250,
+			width: 300,
 		},
 	];
 
@@ -236,6 +272,34 @@ const OrderHistory = () => {
 			fontFamily: "'Roboto', sans-serif",
 		},
 	});
+
+	const handleDownload = () => {
+		if (!selectedOrder) return;
+
+		const orderData = {
+			ReferenceNumber: selectedOrder.referenceNumber,
+			ContactNumber: selectedOrder.contactNumber,
+			Address: selectedOrder.address,
+			Status: selectedOrder.status,
+			Products: selectedOrder.products.map((product) => ({
+				Name: product.productName,
+				Price: `₱${product.price}`,
+				Quantity: product.quantity,
+			})),
+		};
+
+		const blob = new Blob([JSON.stringify(orderData, null, 2)], {
+			type: "application/json",
+		});
+		const url = URL.createObjectURL(blob);
+
+		const link = document.createElement("a");
+		link.href = url;
+		link.download = `Order_${selectedOrder.referenceNumber}.json`;
+		document.body.appendChild(link);
+		link.click();
+		document.body.removeChild(link);
+	};
 
 	return (
 		<ThemeProvider theme={theme}>
@@ -266,6 +330,93 @@ const OrderHistory = () => {
 					/>
 				</div>
 			</div>
+
+			<Dialog
+				open={openRecieptModal && receipt !== null}
+				onClose={handleCloseReceiptModal}
+				maxWidth="sm"
+				fullWidth
+			>
+				{receipt !== null && (
+					<>
+						<DialogTitle>Receipt Details</DialogTitle>
+						<DialogContent dividers>
+							<Typography variant="subtitle1" gutterBottom>
+								<strong>Reference Number:</strong>{" "}
+								{receipt.referenceNumber}
+							</Typography>
+							<Typography variant="subtitle1" gutterBottom>
+								<strong>Email:</strong> {receipt.user.email}
+							</Typography>
+							<Typography variant="subtitle1" gutterBottom>
+								<strong>Address:</strong> {receipt.user.address}
+							</Typography>
+
+							<Typography
+								variant="h6"
+								gutterBottom
+								style={{ marginTop: "20px" }}
+							>
+								Products
+							</Typography>
+							<Table>
+								<TableBody>
+									{receipt.products.map((product, index) => (
+										<TableRow key={index}>
+											<TableCell>
+												{product.name}
+											</TableCell>
+											<TableCell>
+												{product.quantity}
+											</TableCell>
+											<TableCell>{`PHP ${product.price}`}</TableCell>
+										</TableRow>
+									))}
+								</TableBody>
+							</Table>
+
+							<Typography
+								variant="h6"
+								gutterBottom
+								style={{ marginTop: "20px" }}
+							>
+								Payment Details
+							</Typography>
+							<Typography variant="subtitle1" gutterBottom>
+								<strong>Total Amount:</strong> PHP{" "}
+								{receipt.totalAmount}
+							</Typography>
+							{receipt.isDownpayment && (
+								<>
+									<Typography
+										variant="subtitle1"
+										gutterBottom
+									>
+										<strong>Downpayment Amount:</strong> PHP{" "}
+										{receipt.downpaymentAmount}
+									</Typography>
+									<Typography
+										variant="subtitle1"
+										gutterBottom
+									>
+										<strong>Remaining Balance:</strong> PHP{" "}
+										{receipt.remainingBalance}
+									</Typography>
+								</>
+							)}
+							<Typography variant="subtitle1" gutterBottom>
+								<strong>Date:</strong>{" "}
+								{new Date(receipt.date).toLocaleString()}
+							</Typography>
+						</DialogContent>
+					</>
+				)}
+				<DialogActions>
+					<Button onClick={handleCloseReceiptModal} color="primary">
+						Close
+					</Button>
+				</DialogActions>
+			</Dialog>
 
 			<Dialog
 				open={openModal}
@@ -427,6 +578,9 @@ const OrderHistory = () => {
 				<DialogActions>
 					<Button onClick={handleCloseModal} color="primary">
 						Close
+					</Button>
+					<Button onClick={handleDownload} color="secondary">
+						Download
 					</Button>
 				</DialogActions>
 			</Dialog>

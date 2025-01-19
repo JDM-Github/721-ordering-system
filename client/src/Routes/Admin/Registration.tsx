@@ -67,7 +67,7 @@ const Register: React.FC = () => {
 
 			if (data.success) {
 				toast.update(toastId, {
-					render: "User created successfully!",
+					render: "User created successfully! Please verify the account through your email.",
 					type: "success",
 					isLoading: false,
 					autoClose: 3000,

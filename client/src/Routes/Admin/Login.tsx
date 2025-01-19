@@ -1,10 +1,18 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import RequestHandler from "../../Functions/RequestHandler";
 import { toast } from "react-toastify";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 
 const Login = ({ setUser }) => {
+	useEffect(() => {
+		const queryParams = new URLSearchParams(window.location.search);
+		const message = queryParams.get("token");
+
+		if (message) {
+			toast.success("User v0erified successfully!");
+		}
+	}, []);
 	const navigate = useNavigate();
 	interface FormLogin {
 		emailOrUsername: string;

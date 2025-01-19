@@ -20,6 +20,7 @@ interface Product {
 	price: [number];
 	status: string;
 	stocks: number;
+	stockPerSize: [number];
 	size: [string];
 	description: string;
 	availableColors: [string];
@@ -126,10 +127,32 @@ const EditPageRoute: React.FC = () => {
 	const [backgroundColor, setBackgroundColor] = useState(
 		order?.customization.backgroundColor ?? "#eee"
 	);
+	const [quantities, setQuantities] = useState({});
+	const handleQuantityChange = (size, value) => {
+		if (product == null) {
+			return;
+		}
+		const maxStock = product.stockPerSize[product.size.indexOf(size)];
+
+		if (value >= 0 && value <= maxStock) {
+			setQuantities((prev) => ({
+				...prev,
+				[size]: value,
+			}));
+		} else {
+			toast.error(`Maximum stock for ${size} is ${maxStock}.`);
+		}
+	};
 	const [index, setIndex] = useState(0);
 	const [loading, setLoading] = useState(false);
 
 	useEffect(() => {
+		const initialQuantities = {};
+		order?.product.size.forEach((size, index) => {
+			initialQuantities[size] = order.quantityPerSize[index];
+		});
+		setQuantities(initialQuantities);
+
 		if (order?.customization.customize_list) {
 			for (
 				let i = 0;
@@ -237,8 +260,151 @@ const EditPageRoute: React.FC = () => {
 		};
 	}, [activeImage, setImageComponents, setLabelComponents, setActiveImage]);
 
-	const saveData = async () => {};
-	const loadData = async (file: File) => {};
+	const saveData = async () => {
+		const id = product?.id;
+		const customization = {
+			id,
+			customName,
+			customNumber,
+			notes,
+			selectedSize,
+			imagePattern,
+			customize_list: await getCustomizationList(),
+		};
+		const jsonData = JSON.stringify(customization);
+		const blob = new Blob([jsonData], { type: "application/json" });
+		const link = document.createElement("a");
+		link.href = URL.createObjectURL(blob);
+		link.download = "customization.json";
+		link.click();
+	};
+	const loadCustomization = async (customization) => {
+		setSelectedSize(customization.selectedSize || null);
+		setCustomNumber(customization.customNumber);
+		setCustomName(customization.customName);
+
+		for (const key in localStorage) {
+			if (key.startsWith("customization-")) {
+				localStorage.removeItem(key);
+			}
+		}
+
+		let haveSomething = false;
+		for (const [index, ord] of customization.customize_list.entries()) {
+			const customize = {
+				image: ord.image,
+				label: ord.label,
+				background: ord.backgroundColor,
+				color: ord.color,
+				pattern: ord.pattern,
+			};
+			haveSomething = true;
+			saveToLocalStorage(`customization-${index}`, customize);
+		}
+		if (haveSomething) {
+			const newCustomization = loadFromLocalStorage(`customization-${0}`);
+			setImageComponents(newCustomization.image);
+			setLabelComponents(newCustomization.label);
+			setBackgroundColor(newCustomization.background);
+			setColor(newCustomization.color);
+			setPattern(newCustomization.pattern);
+		}
+	};
+	const loadData = async (file) => {
+		try {
+			const reader = new FileReader();
+			reader.onload = (event: any) => {
+				try {
+					const jsonData = JSON.parse(event.target.result);
+					loadCustomization(jsonData.customization);
+				} catch (err) {
+					console.error("Error parsing JSON", err);
+					toast.error("Failed to parse the file as JSON.");
+				}
+			};
+			reader.onerror = (err) => {
+				console.error("Error reading file", err);
+				toast.error("Failed to read the file.");
+			};
+			reader.readAsText(file);
+		} catch (err) {
+			console.error("Error loading the file", err);
+			toast.error("Failed to load the file.");
+		}
+	};
+
+	const getCustomizationList = async () => {
+		if (product == null) {
+			return null;
+		}
+
+		const customize_list: any = [];
+		for (var i = 0; i < product?.productImages.length; i++) {
+			const newCustomization = loadFromLocalStorage(`customization-${i}`);
+			if (newCustomization === null) break;
+
+			const image = newCustomization.image;
+			const label = newCustomization.label;
+			const background = newCustomization.background;
+			const color = newCustomization.color;
+			const pattern = newCustomization.pattern;
+
+			const processedImage = await Promise.all(
+				image.map(async (component) => {
+					if (component.img && component.img instanceof File) {
+						let imageUrl = "";
+						const formData = new FormData();
+						formData.append("file", component.img);
+						try {
+							const data = await RequestHandler.handleRequest(
+								"post",
+								"file/upload-image",
+								formData,
+								{
+									headers: {
+										"Content-Type": "multipart/form-data",
+									},
+								}
+							);
+							if (data.success) {
+								imageUrl = data.uploadedDocument;
+							} else {
+								return null;
+							}
+						} catch (error) {
+							console.error(
+								"Error submitting the document:",
+								error
+							);
+						}
+						return {
+							...component,
+							imgFileUrl: imageUrl,
+							img: imageUrl,
+						};
+					}
+					return component;
+				})
+			);
+			const validImageComponents = processedImage.filter(
+				(component) => component !== null
+			);
+			const validLabelComponents = label.filter(
+				(component) => component.text !== ""
+			);
+
+			const customize = {
+				color,
+				pattern,
+				product,
+				backgroundColor: background,
+				image: validImageComponents,
+				label: validLabelComponents,
+			};
+			customize_list.push(customize);
+		}
+		return customize_list;
+	};
 
 	const addToCart = async () => {
 		if (!user || Object.keys(user).length === 0) {
@@ -355,6 +521,7 @@ const EditPageRoute: React.FC = () => {
 					productId: id,
 					customization,
 					quantity,
+					quantities
 				}
 			);
 
@@ -544,9 +711,9 @@ const EditPageRoute: React.FC = () => {
 	};
 	const containerRef = useRef<HTMLImageElement | null>(null);
 	const cardRef = useRef<HTMLDivElement>(null);
-	const reactToPrintFn = useReactToPrint({
-		content: () => cardRef.current,
-	});
+	// const reactToPrintFn = useReactToPrint({
+	// 	content: () => cardRef.current,
+	// });
 
 	const handlePrint = async () => {
 		if (cardRef?.current) {
@@ -682,7 +849,7 @@ const EditPageRoute: React.FC = () => {
 									{product.productName} (
 									{product.productAllNames[index]})
 								</h1>
-								<h3 className="text-xl font-semibold text-gray-700 mb-3">
+								{/* <h3 className="text-xl font-semibold text-gray-700 mb-3">
 									Available Sizes
 								</h3>
 								<div className="flex space-x-2">
@@ -701,7 +868,7 @@ const EditPageRoute: React.FC = () => {
 											{size}
 										</button>
 									))}
-								</div>
+								</div> */}
 							</div>
 
 							<div className="flex flex-col space-y-4">
@@ -725,7 +892,7 @@ const EditPageRoute: React.FC = () => {
 								/>
 							</div>
 
-							<div className="flex flex-col space-y-2">
+							{/* <div className="flex flex-col space-y-2">
 								<input
 									type="number"
 									value={quantity}
@@ -749,6 +916,33 @@ const EditPageRoute: React.FC = () => {
 								<p className="text-sm text-gray-500">
 									Max available: {product?.stocks}
 								</p>
+							</div> */}
+							<div className="space-y-4">
+								{product?.size.map((size, index) => (
+									<div
+										key={size}
+										className="flex items-center space-x-4"
+									>
+										<p className="text-gray-700">{size}</p>
+										<input
+											type="number"
+											value={quantities[size] || ""}
+											min="0"
+											max={product.stockPerSize[index]}
+											onChange={(e) =>
+												handleQuantityChange(
+													size,
+													parseInt(e.target.value) ||
+														0
+												)
+											}
+											className="w-20 p-2 border border-gray-300 rounded-lg"
+										/>
+										<p className="text-sm text-gray-500">
+											Max: {product.stockPerSize[index]}
+										</p>
+									</div>
+								))}
 							</div>
 
 							<textarea
@@ -759,7 +953,7 @@ const EditPageRoute: React.FC = () => {
 								rows={3}
 							/>
 
-							<button
+							{/* <button
 								className="w-16 h-16 me-3 bg-red-500 rounded-full shadow hover:bg-red-600"
 								onClick={reactToPrintFn}
 							>
@@ -777,8 +971,8 @@ const EditPageRoute: React.FC = () => {
 										d="M6 9V3h12v6m-3 6h3a2 2 0 012 2v4H4v-4a2 2 0 012-2h3m0 0v4h6v-4m-6 0h6"
 									/>
 								</svg>
-							</button>
-							<button
+							</button> */}
+							{/* <button
 								className="w-16 h-16 bg-red-500 rounded-full shadow hover:bg-red-600"
 								onClick={handleDownloadPng}
 							>
@@ -787,23 +981,23 @@ const EditPageRoute: React.FC = () => {
 									alt="Save Icon"
 									className="w-16 h-16"
 								/>
-							</button>
+							</button> */}
 						</div>
 
 						{/* Action Buttons */}
 						<div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4 mt-6 mb-3">
-							{/* <button
-								// onClick={handleDownloadDesign}
+							<button
+								onClick={handleDownloadDesign}
 								className="w-full sm:w-1/3 py-3 bg-red-500 text-white rounded-lg hover:bg-red-600 transition duration-200"
 							>
-								Download Design
+								Download JSON
 							</button>
 							<button
-								// onClick={handleLoadDesign}
+								onClick={handleLoadDesign}
 								className="w-full sm:w-1/3 py-3 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition duration-200"
 							>
-								Load Design
-							</button> */}
+								Load JSON
+							</button>
 							<button
 								onClick={handleAddToCart}
 								className="w-full sm:w-1/3 py-3 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition duration-200"

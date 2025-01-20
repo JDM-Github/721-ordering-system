@@ -23,7 +23,7 @@ module.exports = {
 						"Pocket",
 						"Right Sleeve",
 					],
-					price: 19.0,
+					price: 1.0,
 					size: ["S", "M", "L", "XL"],
 					stockPerSize: [10, 20, 30, 0],
 					stocks: 60,

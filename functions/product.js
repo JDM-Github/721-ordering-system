@@ -14,7 +14,6 @@ const {
 const { Op } = require("sequelize");
 const sendEmail = require("./emailSender");
 
-const puppeteer = require("puppeteer");
 const router = express.Router();
 
 

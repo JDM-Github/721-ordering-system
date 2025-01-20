@@ -1,7 +1,7 @@
 const express = require("express");
 const bcrypt = require("bcryptjs");
 const { User, Notification } = require("./models");
-const sendEmail = require("./emailSender");
+const sendEmail = require("./emailSender.js");
 const router = express.Router();
 const { Op } = require("sequelize");
 
@@ -65,7 +65,15 @@ router.post("/register", async (req, res) => {
 			email,
 			"Please verify your email",
 			`Please click the link to verify your account: <a href="${verificationLink}">${verificationLink}</a>`,
-			`<p>Please click the link to verify your account: <a href="${verificationLink}">${verificationLink}</a></p>`
+			`<p>Please click the link to verify your account: <a href="${verificationLink}">${verificationLink}</a></p>`,
+			(error, info) => {
+				if (error) {
+					console.log("Error sending notification:", error);
+					return false;
+				}
+				console.log("Notification sent successfully:", info);
+				return true;
+			}
 		);
 
 		return res.send({
@@ -224,7 +232,15 @@ router.post("/send-verification", async (req, res) => {
 			email,
 			"Your Verification Code",
 			`Your verification code is ${verificationCode}`,
-			`<p>Your verification code is <strong>${verificationCode}</strong></p>`
+			`<p>Your verification code is <strong>${verificationCode}</strong></p>`,
+			(error, info) => {
+				if (error) {
+					console.log("Error sending notification:", error);
+					return false;
+				}
+				console.log("Notification sent successfully:", info);
+				return true;
+			}
 		);
 
 		await user.update({
@@ -278,7 +294,15 @@ router.post("/send-forgot-code", async (req, res) => {
 			email,
 			"Your Password Verification Code",
 			`Your password verification code is ${verificationCode}`,
-			`<p>Your password verification code is <strong>${verificationCode}</strong></p>`
+			`<p>Your password verification code is <strong>${verificationCode}</strong></p>`,
+			(error, info) => {
+				if (error) {
+					console.log("Error sending notification:", error);
+					return false;
+				}
+				console.log("Notification sent successfully:", info);
+				return true;
+			}
 		);
 
 		await user.update({

@@ -10,7 +10,7 @@ const Login = ({ setUser }) => {
 		const message = queryParams.get("token");
 
 		if (message) {
-			toast.success("User v0erified successfully!");
+			toast.success("User verified successfully!");
 		}
 	}, []);
 	const navigate = useNavigate();

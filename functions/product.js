@@ -425,7 +425,7 @@ router.post("/order-update-status", async (req, res) => {
 		const subject = `Order ${id} Status Updated`;
 		const text = `Your order status has been updated to ${newStatus}.`;
 		const html = `<p>Your order status has been updated to <strong>${newStatus}</strong>.</p>`;
-		sendEmail(email, subject, text, html);
+		await sendEmail(email, subject, text, html);
 
 		await Notification.create({
 			userId: userId,

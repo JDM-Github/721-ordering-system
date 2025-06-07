@@ -3,7 +3,7 @@ const pg = require("pg");
 const fs = require("fs");
 const { Sequelize, DataTypes, INTEGER } = require("sequelize");
 const sequelize = new Sequelize(
-	"postgresql://jdm:eiPHi4DiF5wUqiZIskagQg@jdm-master-15017.7tt.aws-us-east-1.cockroachlabs.cloud:26257/online721?sslmode=verify-full",
+	"postgresql://721-user:nupbRd4iiLQL5sQdhUShZw@online-ordering-721-12109.j77.aws-ap-southeast-1.cockroachlabs.cloud:26257/721?sslmode=verify-full",
 	{
 		dialect: "postgres",
 		dialectModule: pg,
